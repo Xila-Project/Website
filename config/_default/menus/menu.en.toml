@@ -1,0 +1,15 @@
+#  menu items
+[[main]]
+  name = "Start"
+  weight = 1
+  url = "Start/"
+
+[[main]]
+  name = "Documentation"
+  weight = 2
+  url = "Documentation/"
+
+# [[main]]
+#   name = "Blog"
+#   weight = 4
+#   url = "blog/"
