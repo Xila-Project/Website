@@ -1,15 +1,10 @@
 #  menu items
 [[main]]
-  name = "Start"
+  name = "Get started"
   weight = 1
-  url = "Start/"
+  url = "documentation/get_started/"
 
 [[main]]
   name = "Documentation"
   weight = 2
-  url = "Documentation/"
-
-# [[main]]
-#   name = "Blog"
-#   weight = 4
-#   url = "blog/"
+  url = "documentation/"

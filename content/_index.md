@@ -6,33 +6,14 @@ colors = ["#627c62", "#11819b", "#ef7f1a", "#4e1154"]
 columnTitles = ["Section", "Status", "Author"]
 fileLink = "content/projects.csv"
 title = "Projects"
-
 +++
 
-# Welcome to Xila
+# 👋 Welcome to **Xila**
 
+Xila is an open-source operating system aimed at embedded systems that provides a user-friendly interface with powerful features. It is designed to run on microcontrollers with limited resources while providing efficient and scalable performance. The project aims to provide a fully functional operating system that can perform tasks such as multitasking, memory management, input-output handling, and file system management in constrained environments.
 
+With Xila, developers can build applications for all sorts of end-devices like robotics, smart home automation, wearables, and much more. Xila provides its users with a structured API, a high-level programming language, powerful tools, and clear documentation for ease of use and integration.
 
-{{< block "grid-2" >}}
-{{< column >}}
+The key objective of the project is to make development faster by leveraging Xila’s modular architecture, expandable library of drivers and libraries, and well-documented codebase. By utilizing these tools, developers can rapidly prototype and deploy new products without worrying about lower-level details. started
 
-# Compose your Docs with **Ease**.
-
-Compose is a lean `Hugo` domentation theme, inspired by [forestry.io](https://forestry.io/docs/welcome/).
-
-{{< tip "warning" >}}
-Feel free to open a [PR](https://github.com/onweru/compose/pulls), raise an [issue](https://github.com/onweru/compose/issues/new/choose "Open a Github Issue")(s) or request new feature(s). {{< /tip >}}
-
-{{< tip >}}
-You can generate diagrams, flowcharts, and piecharts from text in a similar manner as markdown using [mermaid](./docs/compose/mermaid/).
-
-Or, [generate graphs, charts](docs/compose/graphs-charts-tables/#show-a-pie-doughnut--bar-chart-at-once) and tables from a csv, ~~or a json~~ file.
-{{< /tip >}}
-
-{{< button "docs/compose/" "Read the Docs" >}}{{< button "https://github.com/onweru/compose" "Download Theme" >}}
-{{< /column >}}
-
-{{< column >}}
-![diy](/images/scribble.jpg)
-{{< /column >}}
-{{< /block >}}
+{{< button "documentation/get_started/" "Get started" >}}{{< button "https://github.com/AlixANNERAUD/Xila" "GitHub" >}}
