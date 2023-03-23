@@ -1,10 +1,15 @@
 #  menu items
 [[main]]
-  name = "Get started"
+  name = "🏃 Get started"
   weight = 1
   url = "documentation/get_started/"
 
 [[main]]
-  name = "Documentation"
+  name = "📖 Documentation"
   weight = 2
   url = "documentation/"
+
+[[main]]
+  name = "ℹ️ About"
+  weight = 3
+  url = "about/"
