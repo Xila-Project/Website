@@ -1,3 +1,3 @@
-# Xila Site
+# Xila Website
 
-Xila web site. Under construction.
+This repository contains all of the sources of the [Xila Website](https://xila.dev).
