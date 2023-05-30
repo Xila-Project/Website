@@ -8,7 +8,7 @@ title = "Xila"
 
 With Xila, developers can build applications for all sorts of end-devices like robotics, smart home automation, wearables, and much more. Xila provides its users with a structured API, a high-level programming language, powerful tools, and clear documentation for ease of use and integration.
 
-The key objective of the project is to make development faster by leveraging Xila’s modular architecture, expandable library of drivers and libraries, and well-documented codebase. By utilizing these tools, developers can rapidly prototype and deploy new products without worrying about lower-level details. started
+The key objective of the project is to make development faster by leveraging Xila’s modular architecture, expandable library of drivers and libraries, and well-documented codebase. By utilizing these tools, developers can rapidly prototype and deploy new products without worrying about lower-level details.
 
 {{< tip >}}
 Xila is currently in **alpha** stage. The project is still under active development and is not yet ready for production use. The API is subject to change and the documentation is not yet complete. We welcome any feedback and contributions.

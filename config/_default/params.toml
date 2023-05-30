@@ -35,8 +35,8 @@ key = "da87401a458102ec6bbd6cc5e5cf8d95" # Search-Only API Key
 
 # Site logo
 [logo]
-  lightMode = "images/Xila.png"
-  darkMode = "images/Xila.png"
+  lightMode = "images/Monochrome Dark.svg"
+  darkMode = "images/Monochrome.svg"
 
 [source]
   name = "GitHub"
