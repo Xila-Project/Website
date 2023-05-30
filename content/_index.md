@@ -14,4 +14,4 @@ The key objective of the project is to make development faster by leveraging Xil
 Xila is currently in **alpha** stage. The project is still under active development and is not yet ready for production use. The API is subject to change and the documentation is not yet complete. We welcome any feedback and contributions.
 {{< /tip >}}
 
-{{< button "documentation/get_started/" "🏃 Get started" >}}{{< button "https://github.com/AlixANNERAUD/Xila" "GitHub" >}}
+{{< button "documentation/get_started/" "🏃 Get started" >}}{{< button "https://github.com/Xila-Project" "GitHub" >}}

@@ -42,7 +42,7 @@ key = "da87401a458102ec6bbd6cc5e5cf8d95" # Search-Only API Key
   name = "GitHub"
   iconLight = "images/GitHubMarkLight.svg"
   iconDark = "images/GitHubMarkDark.svg"
-  url = "https://github.com/AlixANNERAUD/Xila"
+  url = "https://github.com/Xila-Project"
 
 # optional
 # attribution. Feel free to delete this
