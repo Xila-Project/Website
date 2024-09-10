@@ -2,12 +2,12 @@
 [[main]]
   name = "🏃 Get started"
   weight = 1
-  url = "documentation/get_started/"
+  url = "book/get_started/"
 
 [[main]]
-  name = "📖 Documentation"
+  name = "📖 Book"
   weight = 2
-  url = "documentation/"
+  url = "book/"
 
 [[main]]
   name = "ℹ️ About"
