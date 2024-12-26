@@ -10,6 +10,11 @@
   url = "book/"
 
 [[main]]
-  name = "ℹ️ About"
+  name = "📚 Documentation"
   weight = 3
+  url = "documentation/"
+
+[[main]]
+  name = "ℹ️ About"
+  weight = 4
   url = "about/"
