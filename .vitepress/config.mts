@@ -50,7 +50,7 @@ export default defineConfig({
       "link",
       {
         rel: "icon",
-        href: "/static/images/logo_dark.svg",
+        href: "/images/logo_dark.svg",
         type: "image/svg+xml",
       },
     ],
@@ -65,8 +65,8 @@ export default defineConfig({
   ],
   themeConfig: {
     logo: {
-      light: "/static/images/logo_light.svg",
-      dark: "/static/images/logo_dark.svg",
+      light: "/images/logo_light.svg",
+      dark: "/images/logo_dark.svg",
     },
     nav: [
       { text: "Home", link: "/" },
