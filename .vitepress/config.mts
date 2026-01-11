@@ -26,7 +26,8 @@ const guideSidebar: DefaultTheme.SidebarItem[] = [
     link: "/guide/design/",
     collapsed: false,
     items: [
-      { text: "Modules", link: "/guide/design/" },
+      { text: "Drivers", link: "/guide/design/drivers" },
+      { text: "Graphics", link: "/guide/design/graphics" },
       { text: "File system", link: "/guide/design/file_system" },
       { text: "Task", link: "/guide/design/task" },
     ],

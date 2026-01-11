@@ -12,3 +12,5 @@ Each subsystem of Xila is implemented as a module. Modules are designed to be as
 
 - [📁 Filesystem](./file_system.md)
 - [🏁 Task](./task.md)
+- [🖼️ Graphics](./graphics.md)
+- [🛠️ Drivers](./drivers.md)
