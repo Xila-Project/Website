@@ -6,6 +6,6 @@ layout: doc
 
 Here you will find how to get started with Xila.
 
-- [🖥️ Native](./Native.md)
-- [🛩️ Embedded](./Embedded.md)
-- [🌐 WASM](./WASM.md)
+- [🖥️ Native](./native.md)
+- [🛹 Embedded](./embedded.md)
+- [🌐 WASM](./wasm.md)

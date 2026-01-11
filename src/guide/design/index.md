@@ -10,5 +10,5 @@ Each subsystem of Xila is implemented as a module. Modules are designed to be as
 
 ## List of modules
 
-- [📁 Filesystem](./Filesystem.md)
-- [🏁 Task](./Task.md)
+- [📁 Filesystem](./file_system.md)
+- [🏁 Task](./task.md)

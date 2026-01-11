@@ -11,4 +11,4 @@ Here you will find how to get started with Xila hardware and software.
 
 1. **Install** your target's toolchain, either by using the `rustup target add` command or by installing it manually (`espup`).
 
-2. Follow the instructions in the [native](./Native.md) section to clone the repository and source the `Export.sh` script.
+2. Follow the instructions in the [native](./native.md) section to clone the repository and source the `Export.sh` script.
