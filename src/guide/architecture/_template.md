@@ -18,9 +18,11 @@ The [Module Name] module offers the following features:
 
 The [Module Name] module depends on the following modules:
 
-- [Dependency 1](./dependency1.md): Description of dependency 1.
-- [Dependency 2](./dependency2.md): Description of dependency 2.
-  It also relies on the following crates:
+- **Dependency 1**: Description of dependency 1.
+- **Dependency 2**: Description of dependency 2.
+
+It also relies on the following crates:
+
 - [Crate 1](https://link.to/crate1): Description of crate 1.
 - [Crate 2](https://link.to/crate2): Description of crate 2.
 
@@ -51,8 +53,8 @@ Planned future improvements for the [Module Name] module include:
 
 ## References
 
-- [Related Topic 1](./related_topic1.md)
-- [Related Topic 2](./related_topic2.md)
+- **Related Topic 1**: Link to related internal documentation.
+- **Related Topic 2**: Link to related internal documentation.
 
 ## See also
 

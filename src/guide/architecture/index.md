@@ -6,9 +6,9 @@ layout: doc
 
 Xila is designed with modularity and portability in mind. It is built to run on a variety of platforms, from embedded systems to desktop computers, and even in web browsers via WebAssembly (WASM).
 
-- [Drivers](./drivers): Xila supports a wide range of hardware drivers, allowing it to interface with various peripherals and devices.
-- [Crates](./crates): Internal libraries, or "crates", provide essential functionalities that can be leveraged by modules and applications.
-- [Modules](./modules): A special category of crates that are stateful and singleton, providing core services and functionalities to the operating system.
+- [Drivers](./drivers/): Xila supports a wide range of hardware drivers, allowing it to interface with various peripherals and devices.
+- [Crates](./crates/): Internal libraries, or "crates", provide essential functionalities that can be leveraged by modules and applications.
+- [Modules](./modules/): A special category of crates that are stateful and singleton, providing core services and functionalities to the operating system.
 - Applications: User-level programs that run on top of Xila, utilizing the services provided by the modules.
 
 ```mermaid
