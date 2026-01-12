@@ -23,7 +23,7 @@ const guideSidebar: DefaultTheme.SidebarItem[] = [
   },
   {
     text: "📐 Architecture",
-    link: "/guide/design/",
+    link: "/guide/architecture/",
     collapsed: false,
     items: [
       { text: "Drivers", link: "/guide/architecture/drivers" },
