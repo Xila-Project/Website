@@ -6,11 +6,22 @@ layout: doc
 
 Xila is designed with modularity and portability in mind. It is built to run on a variety of platforms, from embedded systems to desktop computers, and even in web browsers via WebAssembly (WASM).
 
-Each subsystem of Xila is implemented as a module. Modules are designed to be as independent as possible, allowing for easier maintenance and development. Each module is responsible for a specific task, such as managing the filesystem, handling the user interface, or managing tasks.
+- [Drivers](./drivers): Xila supports a wide range of hardware drivers, allowing it to interface with various peripherals and devices.
+- [Crates](./crates): Internal libraries, or "crates", provide essential functionalities that can be leveraged by modules and applications.
+- [Modules](./modules): A special category of crates that are stateful and singleton, providing core services and functionalities to the operating system.
+- Applications: User-level programs that run on top of Xila, utilizing the services provided by the modules.
 
-## List of modules
+```mermaid
+graph LR
+    subgraph Core
+        Modules <--> Crates
+    end
 
-- [📁 Filesystem](./file_system.md)
-- [🏁 Task](./task.md)
-- [🖼️ Graphics](./graphics.md)
-- [🛠️ Drivers](./drivers.md)
+    Drivers <--> Modules
+
+    Applications <--> Modules
+```
+
+Xila itself is implemented as a library, which means that applications can directly link against it. This design choice allows for greater flexibility and ease of use, as developers can build applications that leverage Xila's capabilities without the need for a traditional operating system layer.
+
+It's only in the end binary that Core, Drivers and Applications are assembled together to create a complete system.
