@@ -46,6 +46,7 @@ export default defineConfig({
   sitemap: {
     hostname: "https://xila.dev",
   },
+  lastUpdated: true,
   head: [
     [
       "link",
@@ -88,6 +89,9 @@ export default defineConfig({
     },
     footer: {
       message: `<a href='https://alix.anneraud.fr'>Alix ANNERAUD</a> - <a href="https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html">Under GPLv2 License</a> - ${new Date().getFullYear()} - Built with <a href="https://vitepress.dev/" target="_blank">VitePress</a>`,
+    },
+    editLink: {
+      pattern: "https://github.com/Xila-Project/Website/edit/main/src/:path",
     },
   },
 });
