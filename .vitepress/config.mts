@@ -34,7 +34,7 @@ const guideSidebar: DefaultTheme.SidebarItem[] = [
   },
   {
     text: "📖 About",
-    link: "/about/",
+    link: "/guide/about/",
   },
 ];
 
