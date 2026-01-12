@@ -18,7 +18,7 @@ This guide explains how to deploy Xila on real hardware or your host machine.
 
 ```toml
 [dependencies]
-xila = { git = "https://github.com/Xila-Project/Core.git", features = ["native"] }
+xila = { git = "https://github.com/Xila-Project/Core.git", features = ["host"] }
 ```
 
 2. **Set up your project workspace**:
