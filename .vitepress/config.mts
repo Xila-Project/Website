@@ -2,7 +2,7 @@ import { defineConfig, DefaultTheme } from "vitepress";
 
 const referenceSidebar: DefaultTheme.SidebarItem[] = [
   {
-    text: "Reference",
+    text: "🌟 Reference",
     items: [
       { text: "Host", link: "/host-reference" },
       { text: "WASM", link: "/wasm-reference" },
@@ -22,18 +22,18 @@ const guideSidebar: DefaultTheme.SidebarItem[] = [
     ],
   },
   {
-    text: "Design",
+    text: "📐 Architecture",
     link: "/guide/design/",
     collapsed: false,
     items: [
-      { text: "Drivers", link: "/guide/design/drivers" },
-      { text: "Graphics", link: "/guide/design/graphics" },
-      { text: "File system", link: "/guide/design/file_system" },
-      { text: "Task", link: "/guide/design/task" },
+      { text: "Drivers", link: "/guide/architecture/drivers" },
+      { text: "Graphics", link: "/guide/architecture/graphics" },
+      { text: "File system", link: "/guide/architecture/file_system" },
+      { text: "Task", link: "/guide/architecture/task" },
     ],
   },
   {
-    text: "About",
+    text: "📖 About",
     link: "/about/",
   },
 ];
