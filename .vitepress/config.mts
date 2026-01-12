@@ -28,9 +28,83 @@ const guideSidebar: DefaultTheme.SidebarItem[] = [
     collapsed: false,
     items: [
       { text: "Drivers", link: "/guide/architecture/drivers" },
-      { text: "Graphics", link: "/guide/architecture/graphics" },
-      { text: "File system", link: "/guide/architecture/file_system" },
-      { text: "Task", link: "/guide/architecture/task" },
+      {
+        text: "Crates",
+        link: "/guide/architecture/crates/",
+        collapsed: true,
+        items: [
+          {
+            text: "Authentication",
+            link: "/guide/architecture/crates/authentication",
+          },
+          { text: "Bootsplash", link: "/guide/architecture/crates/bootsplash" },
+          { text: "Device", link: "/guide/architecture/crates/device" },
+          { text: "Executable", link: "/guide/architecture/crates/executable" },
+          {
+            text: "File System",
+            link: "/guide/architecture/crates/file_system",
+          },
+          {
+            text: "Internationalization",
+            link: "/guide/architecture/crates/internationalization",
+          },
+          { text: "Testing", link: "/guide/architecture/crates/testing" },
+        ],
+      },
+      {
+        text: "Executables",
+        link: "/guide/architecture/executables/",
+        collapsed: true,
+        items: [
+          {
+            text: "Calculator",
+            link: "/guide/architecture/executables/calculator",
+          },
+          {
+            text: "Command Line Shell",
+            link: "/guide/architecture/executables/command_line_shell",
+          },
+          {
+            text: "File Manager",
+            link: "/guide/architecture/executables/file_manager",
+          },
+          {
+            text: "Graphical Shell",
+            link: "/guide/architecture/executables/graphical_shell",
+          },
+          {
+            text: "Settings",
+            link: "/guide/architecture/executables/settings",
+          },
+          {
+            text: "Terminal",
+            link: "/guide/architecture/executables/terminal",
+          },
+          { text: "WASM", link: "/guide/architecture/executables/wasm" },
+        ],
+      },
+      {
+        text: "Modules",
+        link: "/guide/architecture/modules/",
+        collapsed: true,
+        items: [
+          { text: "ABI", link: "/guide/architecture/modules/abi" },
+          { text: "Bindings", link: "/guide/architecture/modules/bindings" },
+          { text: "Graphics", link: "/guide/architecture/modules/graphics" },
+          { text: "Network", link: "/guide/architecture/modules/network" },
+          { text: "Task", link: "/guide/architecture/modules/task" },
+          { text: "Time", link: "/guide/architecture/modules/time" },
+          { text: "Users", link: "/guide/architecture/modules/users" },
+          {
+            text: "Virtual File System",
+            link: "/guide/architecture/modules/virtual_file_system",
+          },
+          {
+            text: "Virtual Machine",
+            link: "/guide/architecture/modules/virtual_machine",
+          },
+        ],
+      },
     ],
   },
   {
