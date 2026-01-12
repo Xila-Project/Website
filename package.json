@@ -8,7 +8,9 @@
     "check": "npm run format:check && npm run docs:build"
   },
   "devDependencies": {
+    "mermaid": "^11.12.2",
     "prettier": "3.7.4",
-    "vitepress": "^1.6.4"
+    "vitepress": "^1.6.4",
+    "vitepress-plugin-mermaid": "^2.0.17"
   }
 }

@@ -1,4 +1,5 @@
 import { defineConfig, DefaultTheme } from "vitepress";
+import { withMermaid } from "vitepress-plugin-mermaid";
 
 const referenceSidebar: DefaultTheme.SidebarItem[] = [
   {
@@ -39,7 +40,7 @@ const guideSidebar: DefaultTheme.SidebarItem[] = [
 ];
 
 // https://vitepress.dev/reference/site-config
-export default defineConfig({
+const configuration = defineConfig({
   title: "Xila",
   description: "An open-source operating system for embedded world",
   srcDir: "./src",
@@ -95,3 +96,5 @@ export default defineConfig({
     },
   },
 });
+
+export default withMermaid(configuration);
