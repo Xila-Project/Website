@@ -1,0 +1,5 @@
+---
+layout: doc
+---
+
+# WASM (executable)
