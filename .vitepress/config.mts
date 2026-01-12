@@ -12,13 +12,13 @@ const referenceSidebar: DefaultTheme.SidebarItem[] = [
 
 const guideSidebar: DefaultTheme.SidebarItem[] = [
   {
-    text: "Get started",
+    text: "🚀 Get started",
     link: "/guide/get_started/",
     collapsed: false,
     items: [
-      { text: "Native", link: "/guide/get_started/native" },
-      { text: "Embedded", link: "/guide/get_started/embedded" },
-      { text: "WASM", link: "/guide/get_started/wasm" },
+      { text: "Use (host)", link: "/guide/get_started/use_host" },
+      { text: "Use (WASM)", link: "/guide/get_started/use_wasm" },
+      { text: "Contribute", link: "/guide/get_started/contribute" },
     ],
   },
   {
