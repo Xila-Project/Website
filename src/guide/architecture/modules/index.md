@@ -10,6 +10,14 @@ Usually, a module is defined as a singleton structure (usually a static `OnceLoc
 
 ## List of modules
 
-- [📁 Virtual file system](./virtual_file_system.md)
-- [🏁 Task](./task.md)
+- [🔗 ABI](./abi.md)
+- [🔗 Bindings](./bindings.md)
 - [🖼️ Graphics](./graphics.md)
+- [📝 Log](./log.md)
+- [🧠 Memory](./memory.md)
+- [🌐 Network](./network.md)
+- [🏁 Task](./task.md)
+- [🕓 Time](./time.md)
+- [👥 Users](./users.md)
+- [🗃️ Virtual file system](./virtual_file_system.md)
+- [🖥️ Virtual machine](./virtual_machine.md)
