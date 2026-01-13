@@ -51,7 +51,7 @@ The task module has the following known limitations:
 
 Planned future improvements for the task module include:
 
-- **Enhanced scheduling**: Implement more advanced scheduling algorithms to improve task responsiveness and fairness.
+- **Allow task to be moved accross executors**: Currently, tasks are bound to the executor they were created on. It would be beneficial to allow tasks to be dynamically moved between executors to improve load balancing and resource utilization.
 
 ## References
 
