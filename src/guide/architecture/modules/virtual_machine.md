@@ -34,7 +34,7 @@ The virtual machine module depends on the following modules:
 
 It also relies on the following internal crates:
 
-- [Synchronization](https://doc.rust-lang.org/std/sync/): Used for thread-safe operations within the VM.
+- [Synchronization](../crates/synchronization.md): Provides thread-safe operations within the virtual machine module.
 - [Shared](../crates/shared.md): Provides common utilities and types used across Xila modules.
 
 ## Architecture
