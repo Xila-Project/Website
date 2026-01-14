@@ -26,9 +26,9 @@ The Users module maintains an in-memory database of users and groups, along with
 
 ```mermaid
 graph TD
-    Other_crates[Other crates]
-    Executables[Executables]
-    Other_modules[Other modules]
+    Other_crates@{ shape: processes, label: "Other crates" }
+    Executables@{ shape: processes, label: "Executables" }
+    Other_modules@{ shape: processes, label: "Other modules" }
     Users_module[Users module]
     Users[Users]
     Groups[Groups]
