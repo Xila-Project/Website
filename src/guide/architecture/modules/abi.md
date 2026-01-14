@@ -56,7 +56,8 @@ graph TD
     Binary -->|Link against| ABI_definitions
     Binary -->|Link against| Other_modules
     ABI_definitions -->|Use| ABI_context
-    ABI_declarations -->|Use| ABI_definitions
+    ABI_declarations -.->|Declare| ABI_definitions
+    Other_modules -->|Use| ABI_declarations
     ABI_definitions -->|Depends on| Other_modules
 ```
 
