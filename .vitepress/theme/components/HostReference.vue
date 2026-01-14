@@ -1,36 +1,34 @@
-<template>
-  <a :href="href" class="wasm-reference-link">
-    <slot>{{ text }}</slot>
-  </a>
-</template>
-
 <script setup>
-import { computed } from "vue";
+import {
+  ReferenceArchitecture,
+  ReferenceCrate,
+  ReferenceKind,
+} from "../utilities/reference";
+import Reference from "./Reference.vue";
 
 const props = defineProps({
-  path: {
+  crate: {
     type: String,
     required: true,
   },
-  text: {
+  kind: {
     type: String,
-    default: "",
+    required: false,
   },
-});
-
-const href = computed(() => {
-  return `/host-reference?path=${encodeURIComponent(props.path)}`;
+  identifier: {
+    type: String,
+    required: false,
+  },
 });
 </script>
 
-<style scoped>
-.wasm-reference-link {
-  color: var(--vp-c-brand-1);
-  text-decoration: none;
-}
-
-.wasm-reference-link:hover {
-  color: var(--vp-c-brand-2);
-  text-decoration: underline;
-}
-</style>
+<template>
+  <Reference
+    :architecture="ReferenceArchitecture.Host"
+    :crate="crate"
+    :kind="kind"
+    :identifier="identifier"
+  >
+    <slot />
+  </Reference>
+</template>
