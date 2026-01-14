@@ -45,3 +45,22 @@ export function getReferencePath(
 ): string {
   return `${kind}.${identifier}.html`;
 }
+
+export function getReferenceDisplayName(
+  crate: ReferenceCrate,
+  kind?: ReferenceKind,
+  identifier?: string,
+): string {
+  if (!kind || !identifier) {
+    return `<code>${crate}</code> crate`;
+  }
+
+  switch (kind) {
+    case ReferenceKind.Function:
+      return `<code>${identifier}</code>()`;
+    case ReferenceKind.Macro:
+      return `<code>${identifier}</code>!`;
+    default:
+      return `<code>${identifier}</code>`;
+  }
+}
