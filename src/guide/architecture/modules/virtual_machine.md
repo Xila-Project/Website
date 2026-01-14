@@ -89,7 +89,7 @@ Planned future improvements for the virtual machine module include:
 
 ## References
 
-- <HostReference path="virtual_machine/index.html" text="Virtual machine" />
+- <HostReference crate="virtual_machine" />
 
 ## See also
 

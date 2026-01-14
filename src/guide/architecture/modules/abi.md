@@ -33,11 +33,11 @@ Currently, the ABI exposes the following functionalities:
 
 The ABI module is implemented across three internal crates to ensure modularity and proper linkage:
 
-- <HostReference path="abi_declarations/index.html">`abi_declarations`</HostReference>
+- <HostReference crate="abi_declarations" />
   : Declares the functions and methods exposed through the ABI. It uses [cbindgen](https://github.com/eqrion/cbindgen) to generate the C header file `xila.generated.h`.
-- <HostReference path="abi_definitions/index.html">`abi_definitions`</HostReference>
+- <HostReference crate="abi_definitions" />
   : Defines the C-compatible data structures and types used in the ABI.
-- <HostReference path="abi_context/index.html">`abi_context`</HostReference>
+- <HostReference crate="abi_context" />
   : Manages the context and state required for ABI operations.
 
 The separation of declarations and definitions helps prevent multiple symbol definitions during linking, addressing differences in how Rust handles `#[no_mangle]` symbols compared to standard Rust symbols.
@@ -85,9 +85,9 @@ It also relies on the following internal crates:
 
 ## References
 
-- <HostReference path="abi_context/index.html">abi_context</HostReference>
-- <HostReference path="abi_declarations/index.html">abi_declarations</HostReference>
-- <HostReference path="abi_definitions/index.html">abi_definitions</HostReference>
+- <HostReference crate="abi_context" />
+- <HostReference crate="abi_declarations" />
+- <HostReference crate="abi_definitions" />
 
 ## See Also
 

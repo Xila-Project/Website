@@ -92,7 +92,7 @@ Planned future improvements for the virtual file system module include:
 
 ## References
 
-- <HostReference path="/virtual_file_system/index.html" text="Virtual file system" />
+- <HostReference crate="virtual_file_system" />
 
 ## See also
 

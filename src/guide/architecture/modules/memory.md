@@ -51,7 +51,7 @@ Planned future improvements for the Memory module include:
 
 ## References
 
-- <HostReference path="memory/index.html" text="Memory Manager" />
+- <HostReference crate="memory" />
 
 ## See also
 

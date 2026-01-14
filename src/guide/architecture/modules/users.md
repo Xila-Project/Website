@@ -61,7 +61,7 @@ Nothing planned at the moment.
 
 ## References
 
-- <HostReference path="users/index.html" text="Users" />
+- <HostReference crate="users" />
 
 ## See also
 

@@ -56,7 +56,7 @@ Planned future improvements for the Graphics module include:
 
 ## References
 
-- <HostReference path="graphics/index.html" text="Graphics Module" />
+- <HostReference crate="graphics" />
 
 ## See also
 

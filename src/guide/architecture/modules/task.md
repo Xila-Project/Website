@@ -55,7 +55,7 @@ Planned future improvements for the task module include:
 
 ## References
 
-- <HostReference path="task/index.html">Task Manager</HostReference>
+- <HostReference crate="task" />
 
 ## See also
 
