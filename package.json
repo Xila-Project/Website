@@ -12,5 +12,8 @@
     "prettier": "3.7.4",
     "vitepress": "^1.6.4",
     "vitepress-plugin-mermaid": "^2.0.17"
+  },
+  "dependencies": {
+    "vue": "^3.5.26"
   }
 }
