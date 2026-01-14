@@ -1,5 +1,6 @@
 import { defineConfig, DefaultTheme } from "vitepress";
 import { withMermaid } from "vitepress-plugin-mermaid";
+import { pagefindPlugin } from "vitepress-plugin-pagefind";
 
 const referenceSidebar: DefaultTheme.SidebarItem[] = [
   {
@@ -120,6 +121,9 @@ const configuration = defineConfig({
   srcDir: "./src",
   sitemap: {
     hostname: "https://xila.dev",
+  },
+  vite: {
+    plugins: [pagefindPlugin()],
   },
   lastUpdated: true,
   head: [
