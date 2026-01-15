@@ -28,7 +28,28 @@ const guideSidebar: DefaultTheme.SidebarItem[] = [
     link: "/guide/architecture/",
     collapsed: false,
     items: [
-      { text: "Drivers", link: "/guide/architecture/drivers" },
+      {
+        text: "Modules",
+        link: "/guide/architecture/modules/",
+        collapsed: true,
+        items: [
+          { text: "ABI", link: "/guide/architecture/modules/abi" },
+          { text: "Bindings", link: "/guide/architecture/modules/bindings" },
+          { text: "Graphics", link: "/guide/architecture/modules/graphics" },
+          { text: "Network", link: "/guide/architecture/modules/network" },
+          { text: "Task", link: "/guide/architecture/modules/task" },
+          { text: "Time", link: "/guide/architecture/modules/time" },
+          { text: "Users", link: "/guide/architecture/modules/users" },
+          {
+            text: "Virtual File System",
+            link: "/guide/architecture/modules/virtual_file_system",
+          },
+          {
+            text: "Virtual Machine",
+            link: "/guide/architecture/modules/virtual_machine",
+          },
+        ],
+      },
       {
         text: "Crates",
         link: "/guide/architecture/crates/",
@@ -52,6 +73,7 @@ const guideSidebar: DefaultTheme.SidebarItem[] = [
           { text: "Testing", link: "/guide/architecture/crates/testing" },
         ],
       },
+      { text: "Drivers", link: "/guide/architecture/drivers" },
       {
         text: "Executables",
         link: "/guide/architecture/executables/",
@@ -82,28 +104,6 @@ const guideSidebar: DefaultTheme.SidebarItem[] = [
             link: "/guide/architecture/executables/terminal",
           },
           { text: "WASM", link: "/guide/architecture/executables/wasm" },
-        ],
-      },
-      {
-        text: "Modules",
-        link: "/guide/architecture/modules/",
-        collapsed: true,
-        items: [
-          { text: "ABI", link: "/guide/architecture/modules/abi" },
-          { text: "Bindings", link: "/guide/architecture/modules/bindings" },
-          { text: "Graphics", link: "/guide/architecture/modules/graphics" },
-          { text: "Network", link: "/guide/architecture/modules/network" },
-          { text: "Task", link: "/guide/architecture/modules/task" },
-          { text: "Time", link: "/guide/architecture/modules/time" },
-          { text: "Users", link: "/guide/architecture/modules/users" },
-          {
-            text: "Virtual File System",
-            link: "/guide/architecture/modules/virtual_file_system",
-          },
-          {
-            text: "Virtual Machine",
-            link: "/guide/architecture/modules/virtual_machine",
-          },
         ],
       },
     ],
