@@ -15,7 +15,7 @@ const props = defineProps({
     type: String,
     required: false,
   },
-  identifier: {
+  symbol: {
     type: String,
     required: false,
   },
@@ -27,7 +27,7 @@ const props = defineProps({
     :architecture="ReferenceArchitecture.Host"
     :crate="crate"
     :kind="kind"
-    :identifier="identifier"
+    :symbol="symbol"
   >
     <slot />
   </Reference>

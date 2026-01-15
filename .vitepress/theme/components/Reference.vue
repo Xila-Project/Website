@@ -19,7 +19,7 @@ const props = defineProps({
     type: String,
     required: false,
   },
-  identifier: {
+  symbol: {
     type: String,
     required: false,
   },
@@ -29,13 +29,13 @@ const href = computed(() => {
   let file = "index.html";
 
   if (props.kind) {
-    if (props.identifier === undefined) {
-      throw new Error("Identifier is required when kind is provided");
+    if (props.symbol === undefined) {
+      throw new Error("Symbol is required when kind is provided");
     }
-    file = getReferencePath(props.kind, props.identifier);
+    file = getReferencePath(props.kind, props.symbol);
   } else {
-    if (props.identifier !== undefined) {
-      throw new Error("Identifier should not be provided when kind is missing");
+    if (props.symbol !== undefined) {
+      throw new Error("Symbol should not be provided when kind is missing");
     }
   }
 
@@ -49,7 +49,7 @@ const href = computed(() => {
 });
 
 const label = computed(() =>
-  getReferenceDisplayName(props.crate, props.kind, props.identifier),
+  getReferenceDisplayName(props.crate, props.kind, props.symbol),
 );
 </script>
 

@@ -39,28 +39,37 @@ export enum ReferenceKind {
   Type = "type",
 }
 
-export function getReferencePath(
-  kind: ReferenceKind,
-  identifier: string,
-): string {
-  return `${kind}.${identifier}.html`;
+export function getReferencePath(kind: ReferenceKind, symbol: string): string {
+  return `${kind}.${symbol}.html`;
 }
 
 export function getReferenceDisplayName(
   crate: ReferenceCrate,
   kind?: ReferenceKind,
-  identifier?: string,
+  symbol?: string,
 ): string {
-  if (!kind || !identifier) {
+  if (!kind || !symbol) {
     return `<code>${crate}</code> crate`;
   }
 
   switch (kind) {
     case ReferenceKind.Function:
-      return `<code>${identifier}</code>()`;
+      return `<code>${symbol}</code>() function`;
+    case ReferenceKind.Module:
+      return `<code>${symbol}</code> module`;
+    case ReferenceKind.Trait:
+      return `<code>${symbol}</code> trait`;
+    case ReferenceKind.Type:
+      return `<code>${symbol}</code> type`;
+    case ReferenceKind.Constant:
+      return `<code>${symbol}</code> constant`;
     case ReferenceKind.Macro:
-      return `<code>${identifier}</code>!`;
+      return `<code>${symbol}</code>! macro`;
+    case ReferenceKind.Enumeration:
+      return `<code>${symbol}</code> enumeration`;
+    case ReferenceKind.Structure:
+      return `<code>${symbol}</code> structucture`;
     default:
-      return `<code>${identifier}</code>`;
+      return `<code>${symbol}</code>`;
   }
 }
