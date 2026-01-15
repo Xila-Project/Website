@@ -61,7 +61,10 @@ const guideSidebar: DefaultTheme.SidebarItem[] = [
           },
           { text: "Bootsplash", link: "/guide/architecture/crates/bootsplash" },
           { text: "Device", link: "/guide/architecture/crates/device" },
-          { text: "Executable", link: "/guide/architecture/crates/executable" },
+          {
+            text: "Executables",
+            link: "/guide/architecture/crates/executables",
+          },
           {
             text: "File System",
             link: "/guide/architecture/crates/file_system",
