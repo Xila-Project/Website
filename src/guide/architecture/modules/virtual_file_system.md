@@ -49,7 +49,7 @@ A file system can be implemented through the <HostReference crate="file_system" 
 
 Currently, Xila provides the following file systems:
 
-- [`Little FS`](https://xila.gitbook.io/xila/guide/architecture/file_system/little_fs): A lightweight file system designed for embedded systems.
+- [`Little FS`](../crates/little_fs.md): A lightweight file system designed for embedded systems.
 
 Once a file system is implemented, it can be mounted to a specific path.
 
