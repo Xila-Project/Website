@@ -45,7 +45,7 @@ Xila supports the following file types:
 ### File system implementation
 
 Xila virtual file system is designed to be extensible and mount multiple file systems.
-A file system can be implemented through the `file_system::file_system_trait` trait.
+A file system can be implemented through the <HostReference crate="file_system" kind="trait" symbol="FileSystemOperations" />.
 
 Currently, Xila provides the following file systems:
 
