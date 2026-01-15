@@ -27,5 +27,5 @@ xila = { git = "https://github.com/Xila-Project/Core.git", features = ["wasm"] }
    - Leverage Xila's APIs for specific functionalities such as graphics and networking.
 
 ::: info
-For more details, refer to the [`wasm_test`](https://github.com/Xila-Project/Core/tree/main/modules/bindings/host/tests/wasm_test).
+For more details, refer to the <CodeReference path="executables/calculator" /> example application.
 :::

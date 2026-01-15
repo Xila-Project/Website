@@ -49,5 +49,5 @@ cd examples/wasm && trunk serve
 ```
 
 ::: info
-For the full list of available commands, refer to the [`Makefile.toml`](https://github.com/Xila-Project/Core/blob/main/Makefile.toml).
+For the full list of available commands, refer to the <CodeReference path="Makefile.toml" />.
 :::

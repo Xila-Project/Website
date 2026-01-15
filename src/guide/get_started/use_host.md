@@ -28,5 +28,5 @@ xila = { git = "https://github.com/Xila-Project/Core.git", features = ["host"] }
    - Run the graphical shell, command-line shell, or your custom application.
 
 ::: info
-For more details, refer to the [`native_example`](https://github.com/Xila-Project/Core/tree/main/examples/native) or [`wasm_example`](https://github.com/Xila-Project/Core/tree/main/examples/wasm).
+For more details, refer to the <CodeReference path="examples/native" /> or <CodeReference path="examples/wasm" />.
 :::
