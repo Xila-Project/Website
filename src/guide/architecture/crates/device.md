@@ -4,4 +4,29 @@ layout: doc
 
 # 🔌 Device
 
-This crate provide primitives and interfaces for device implementation and management within Xila. It includes abstractions for various types of devices, such as input/output devices, storage devices, and communication devices. The device crate handles tasks such as device initialization, configuration, and communication, allowing for seamless integration of hardware components into the Xila operating system. By providing a standardized interface for device management, this crate enables developers to easily create and manage device drivers, ensuring compatibility and interoperability across different hardware platforms.
+This crate provide primitives and <HostReference crate="file_system" kind="trait" symbol="ControlCommand" /> implementation for device drivers to interact with devices in a standardized way.
+
+It defines the basic abstractions for character and block devices, defining how they should handle read, write, and control operations.
+
+## Dependencies
+
+The device crate depends on the following crates:
+
+- [File system](../crates/file_system.md): For file system primitives used by the VFS module.
+
+## Known limitations
+
+There are currently no known limitations.
+
+## Future improvements
+
+Just implements all the necessary traits and types for device drivers.
+
+## References
+
+- <HostReference crate="device" />
+
+## See also
+
+- [File system](../crates/file_system.md)
+- [Drivers](../drivers.md)
