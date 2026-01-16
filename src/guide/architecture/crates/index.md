@@ -12,5 +12,6 @@ Here is the list of available crates in Xila:
 - [✨ Bootsplash](./bootsplash.md)
 - [🔌 Device](./device.md)
 - [🏃 Executables](./executables.md)
+- [📁 File System](./file_system.md)
 - [🌐 Internationalization](./internationalization.md)
 - [🧪 Testing](./testing.md)
