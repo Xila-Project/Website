@@ -54,7 +54,7 @@ export function getReferenceDisplayName(
 
   switch (kind) {
     case ReferenceKind.Function:
-      return `<code>${symbol}</code>() function`;
+      return `<code>${symbol}()</code> function`;
     case ReferenceKind.Module:
       return `<code>${symbol}</code> module`;
     case ReferenceKind.Trait:
@@ -64,7 +64,7 @@ export function getReferenceDisplayName(
     case ReferenceKind.Constant:
       return `<code>${symbol}</code> constant`;
     case ReferenceKind.Macro:
-      return `<code>${symbol}</code>! macro`;
+      return `<code>${symbol}!</code> macro`;
     case ReferenceKind.Enumeration:
       return `<code>${symbol}</code> enumeration`;
     case ReferenceKind.Structure:
