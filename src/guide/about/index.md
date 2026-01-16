@@ -16,4 +16,4 @@ We envision a future where Xila becomes the go-to operating system for embedded 
 
 ## License
 
-Xila is developed by [Alix ANNERAUD](https://alix.anneraud.fr). It is released under the [MIT License](https://opensource.org/licenses/MIT), allowing for free use, modification, and distribution of the software.
+Xila is developed by [Alix ANNERAUD](https://alix.anneraud.fr). It is released under the [GNU General Public License (GPL) v2](https://www.gnu.org/licenses/old-licenses/gpl-2.0.html), allowing users to freely use, modify, and distribute the software while ensuring that derivative works also remain open-source.
