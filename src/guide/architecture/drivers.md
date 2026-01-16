@@ -21,6 +21,12 @@ Additionally, abstract driver interfaces may sometimes incur overhead. To mitiga
 ## References
 
 - <HostReference crate="driver" />: Contains the main driver interface declarations.
+- <CodeReference path="drivers/core" />: Dependency-less implementation for basic drivers (like null device, etc.).
+- <CodeReference path="drivers/std" />: Standard library-based drivers for host environments.
+- <CodeReference path="drivers/espressif" />: Drivers for Espressif microcontrollers (ESP32, ESP8266).
+- <CodeReference path="drivers/native" />: Native drivers for desktop platforms (Linux, Windows, macOS).
+- <CodeReference path="drivers/shared" />: Contains drivers that can be shared across multiple platforms.
+- <CodeReference path="drivers/wasm" />: Drivers for WebAssembly environments.
 
 ## See also
 
