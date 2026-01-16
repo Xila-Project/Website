@@ -72,6 +72,21 @@ sequenceDiagram
     VFS-->>App: Return file handle/data
 ```
 
+### File system structure
+
+- `/`: Root directory
+  - `/binaries`: Executable files
+  - `/configuration`: Configuration files (user space)
+    - `/shared`: Shared configuration files (e.g. )
+  - `/data`: Application data files (user space)
+    - `/shared`: Shared data files (e.g. logs)
+  - `/devices`: Mounted devices
+  - `/logs`: System and application logs
+  - `/system`: System files (kernel space)
+    - `/groups`: Group definitions
+    - `/users`: User definitions
+  - `/temporary`: Temporary files (cleared on reboot)
+
 ## Known limitations
 
 The virtual file system module has the following known limitations:
