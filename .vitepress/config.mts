@@ -123,7 +123,7 @@ const configuration = defineConfig({
   description: "An open-source operating system for embedded world",
   srcDir: "./src",
   sitemap: {
-    hostname: "https://xila.dev",
+    hostname: "https://www.xila.dev",
   },
   vite: {
     plugins: [pagefindPlugin()],
