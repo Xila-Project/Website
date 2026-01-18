@@ -40,7 +40,7 @@ To secure user passwords, the module employs a salt-based hashing strategy:
 
 ### Data Storage
 
-User and group data are serialized into JSON format using the <DocsRsReferecnce crate="miniserde" /> crate.
+User and group data are serialized into JSON format using the <DocsRsReference crate="miniserde" /> crate.
 
 - **Users**: Stored in `/system/users/{username}.json`.
 - **Groups**: Stored in `/system/groups/{groupname}.json`.
@@ -56,7 +56,7 @@ User and group data are serialized into JSON format using the <DocsRsReferecnce 
 
 ### External Dependencies
 
-- **<DocsRsReferecnce crate="miniserde" />**: A lightweight library for serializing and deserializing JSON data.
+- **<DocsRsReference crate="miniserde" />**: A lightweight library for serializing and deserializing JSON data.
 
 ## Limitations
 
