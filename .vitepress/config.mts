@@ -153,9 +153,13 @@ const configuration = defineConfig({
       dark: "/images/logo_dark.svg",
     },
     nav: [
-      { text: "Home", link: "/" },
-      { text: "Guide", link: "/guide" },
-      { text: "Reference", link: "/reference" },
+      { text: "Guide", link: "/guide/" },
+      {
+        text: "Reference",
+        link: "/reference/",
+        // either match /reference or /host-reference or /wasm-reference
+        activeMatch: "^/(reference/|host-reference|wasm-reference)$",
+      },
       {
         text: "Demonstration",
         link: "https://documentation.xila.dev/demonstrations/wasm/en/",
