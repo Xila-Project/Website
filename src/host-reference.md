@@ -19,7 +19,7 @@ onMounted(() => {
 })
 </script>
 
-<div style="height: 100vh; width: 100%;">
+<div style="height: calc(100vh - 64px); width: 100%;">
   <iframe
     :src="iframeSrc"
     style="width: 100%; height: 100%; border: none;">
