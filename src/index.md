@@ -19,6 +19,9 @@ hero:
     - theme: alt
       text: GitHub ⌨️
       link: https://github.com/Xila-Project
+    - theme: alt
+      text: Matrix 💬
+      link: https://matrix.to/#/#xila:anneraud.fr
 
 features:
   - icon: 🪶
