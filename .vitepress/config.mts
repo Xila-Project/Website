@@ -169,7 +169,10 @@ const configuration = defineConfig({
       "/reference": referenceSidebar,
       "/guide": guideSidebar,
     },
-    socialLinks: [{ icon: "github", link: "https://github.com/Xila-Project" }],
+    socialLinks: [
+      { icon: "github", link: "https://github.com/Xila-Project" },
+      { icon: "matrix", link: "https://matrix.to/#/#xila:anneraud.fr" },
+    ],
     search: {
       provider: "local",
     },
