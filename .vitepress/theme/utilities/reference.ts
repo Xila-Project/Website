@@ -25,7 +25,7 @@ export enum ReferenceCrate {
 
 export enum ReferenceArchitecture {
   Host = "host",
-  Wasm = "wasm",
+  Guest = "guest",
 }
 
 export enum ReferenceKind {

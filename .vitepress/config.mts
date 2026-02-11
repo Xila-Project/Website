@@ -7,7 +7,7 @@ const referenceSidebar: DefaultTheme.SidebarItem[] = [
     text: "🌟 Reference",
     items: [
       { text: "Host", link: "/host-reference" },
-      { text: "WASM", link: "/wasm-reference" },
+      { text: "Guest", link: "/guest-reference" },
     ],
   },
 ];
@@ -157,8 +157,8 @@ const configuration = defineConfig({
       {
         text: "Reference",
         link: "/reference/",
-        // either match /reference or /host-reference or /wasm-reference
-        activeMatch: "^/(reference/|host-reference|wasm-reference)$",
+        // either match /reference or /host-reference or /guest-reference
+        activeMatch: "^/(reference/|host-reference|guest-reference)$",
       },
       {
         text: "Demonstration",

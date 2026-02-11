@@ -44,7 +44,7 @@ const href = computed(() => {
   if (props.architecture === ReferenceArchitecture.Host) {
     return `/host-reference?path=${encodeURIComponent(path)}`;
   } else {
-    return `/wasm-reference?path=${encodeURIComponent(path)}`;
+    return `/guest-reference?path=${encodeURIComponent(path)}`;
   }
 });
 

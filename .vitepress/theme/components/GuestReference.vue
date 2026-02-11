@@ -24,7 +24,7 @@ const props = defineProps({
 
 <template>
   <Reference
-    :architecture="ReferenceArchitecture.Host"
+    :architecture="ReferenceArchitecture.Guest"
     :crate="crate"
     :kind="kind"
     :symbol="symbol"

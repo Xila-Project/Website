@@ -6,14 +6,14 @@ footer: false
 <script setup>
 import { ref, onMounted } from 'vue'
 
-const iframeSrc = ref('https://documentation.xila.dev/wasm/xila/index.html')
+const iframeSrc = ref('https://documentation.xila.dev/guest/wasm/index.html')
 
 onMounted(() => {
   if (typeof window !== 'undefined') {
     const params = new URLSearchParams(window.location.search)
     const path = params.get('path')
     if (path) {
-      iframeSrc.value = `https://documentation.xila.dev/wasm/${path}`
+      iframeSrc.value = `https://documentation.xila.dev/guest/${path}`
     }
   }
 })
