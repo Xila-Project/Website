@@ -72,22 +72,3 @@ Contributions are welcome! Please see the guides in `src/guide/get_started/contr
 ## 📄 License
 
 This project is licensed under the terms of the [MIT License](LICENSE).
-
-## Available Commands
-
-The following npm scripts are available for development and maintenance:
-
-| Command        | Description                              |
-| -------------- | ---------------------------------------- |
-| `docs:dev`     | Start VitePress in development mode      |
-| `docs:build`   | Build the static site with VitePress     |
-| `docs:preview` | Preview the built site locally           |
-| `format:fix`   | Format all files using Prettier          |
-| `format:check` | Check formatting with Prettier           |
-| `check`        | Run format check and build documentation |
-
-To run a command, use:
-
-```sh
-npm run <command>
-```
