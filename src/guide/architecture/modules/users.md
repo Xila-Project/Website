@@ -30,21 +30,21 @@ The Users module stores internal user/group maps and exposes async methods to re
 
 ```mermaid
 graph TD
-    Other_crates@{ shape: processes, label: "Other crates" }
-    Executables@{ shape: processes, label: "Executables" }
-    Other_modules@{ shape: processes, label: "Other modules" }
-    Users_module[Users module]
-    Users[Users]
-    Groups[Groups]
+    Clients@{ shape: processes, label: "Modules / executables" }
+    Auth[authentication crate]
+    UsersAPI[users module API]
+    Manager[Users Manager singleton]
+    Lock[RwLock]
+    UsersMap[(users map)]
+    GroupsMap[(groups map)]
 
-    Other_crates -->|Use| Users_module
-    Executables -->|Use| Users_module
-    Other_modules -->|Use| Users_module
-    Users_module -->|Own| Users
-    Users_module -->|Own| Groups
-
-    Users -->|Primary group| Groups
-    Groups -->|Members| Users
+    Clients -->|query / permission checks| UsersAPI
+    Auth -->|create/load accounts| UsersAPI
+    UsersAPI --> Manager
+    Manager --> Lock
+    Lock --> UsersMap
+    Lock --> GroupsMap
+    UsersMap -->|primary_group id| GroupsMap
 
 
 ```

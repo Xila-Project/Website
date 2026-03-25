@@ -39,12 +39,22 @@ The graphics module also relies on the following internal crates:
 
 ```mermaid
 graph TD
-    A[Executables / modules] -->|Use manager API| B[Graphics module]
-    B -->|Initialize + drive| LVGL
-    B -->|Read/write| Input_devices[Input devices]
-    B -->|Render| Display_devices[Display devices]
-    Time_module[Time module] -->|Tick callback| LVGL
-    B -->|Global lock| LVGL
+    Clients@{ shape: processes, label: "Executables / modules" }
+    Init[graphics::initialize(...)]
+    Manager[Graphics Manager singleton]
+    LoopTask[Graphics loop task]
+    LVGL[LVGL runtime]
+    ScreenDev[Screen DirectCharacterDevice]
+    InputDev[Input DirectCharacterDevice(s)]
+    TimeMod[time::get_instance()]
+
+    Clients -->|window/theme/input APIs| Manager
+    Init --> Manager
+    LoopTask -->|Manager::loop()| LVGL
+    Manager -->|display flush| ScreenDev
+    Manager -->|input poll| InputDev
+    TimeMod -->|tick callback| LVGL
+    Manager -->|global lock| LVGL
 ```
 
 ## Initialization flow

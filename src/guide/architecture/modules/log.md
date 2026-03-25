@@ -32,16 +32,17 @@ Unlike many other subsystems, logging is not modeled as a file system device by 
 
 ```mermaid
 graph TD
-    A@{ shape: processes, label: "Other modules/crates" }
-    Log_crate[log crate integration]
-    Log_module[Log module]
-    Driver
+    Clients@{ shape: processes, label: "Modules / executables" }
+    Macros[error!/warning!/information!/debug!/trace!]
+    Bridge[log module bridge]
+    Once[LOGGER_INSTANCE OnceLock]
+    Backend[LoggerTrait backend]
 
-    A -->|Use| Log_module
-    Log_module -->|Bridge| Log_crate
-    Log_crate -->|Log events| Log_module
-
-    Log_module -->|Dispatch to| Driver[Concrete logger backend]
+    Clients --> Macros
+    Macros --> Bridge
+    Bridge --> Once
+    Once --> Backend
+    Backend -->|write/flush| Output[Console / file / platform sink]
 ```
 
 ## Initialization flow

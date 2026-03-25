@@ -50,26 +50,18 @@ It also relies on the following internal crates:
 
 ```mermaid
 graph TB
-    WASM_application[WASM executable]
-    Native_executable[Native executable]
+    GuestWasm[Guest WASM module]
+    HostExec[executables/wasm host runtime]
+    WAMR[WAMR runtime + instance]
+    HostBindings[host bindings]
+    ABI[ABI crates]
+    CoreModules@{ shape: processes, label: "Core modules<br/>Task, Memory, VFS, Time, Graphics" }
 
-    WAMR[Wasm micro runtime]
-
-    subgraph Core
-        Virtual_machine[Virtual machine]
-        Custom_bindings[Custom bindings]
-        ABI[ABI]
-        Other_modules@{ shape: processes, label: "Other modules<br/>Task, Memory, VFS, Time" }
-    end
-
-    WASM_application -.->|Runs on| Virtual_machine
-    Virtual_machine -->|Depends on| WAMR
-
-    WAMR -->|Linked against| ABI
-    WAMR -->|Linked against| Custom_bindings
-    Custom_bindings -->|Depends on| Other_modules
-    ABI -->|Depends on| Other_modules
-    Native_executable -->|Control with| Virtual_machine
+    GuestWasm -->|loaded/executed by| HostExec
+    HostExec -->|creates| WAMR
+    WAMR -->|imports / callbacks| HostBindings
+    HostBindings -->|invoke| CoreModules
+    WAMR -->|WASI / ABI interop| ABI
 ```
 
 Here is a brief explanation of the architecture components:

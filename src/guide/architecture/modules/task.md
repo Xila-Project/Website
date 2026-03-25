@@ -60,18 +60,20 @@ Tasks are created on an executor, which must be registered beforehand. Typically
 
 ```mermaid
 graph TD
-    Other_crates@{ shape: processes, label: "Other crates" }
-    Executables@{ shape: processes, label: "Executables" }
-    Other_modules@{ shape: processes, label: "Other modules" }
-    Task_module[Task module]
-    Tasks[Tasks]
-    Executor[Executor]
+    Executables@{ shape: processes, label: "Executables / modules" }
+    TaskAPI[task module API]
+    Manager[Manager singleton]
+    TasksMap[(tasks metadata map)]
+    SpawnersMap[(registered spawners)]
+    Spawner[embassy executor spawner]
+    AsyncTask[async task futures]
 
-    Other_crates -->|Use| Task_module
-    Executables -->|Use| Task_module
-    Other_modules -->|Use| Task_module
-    Task_module -->|Own| Tasks
-    Executor -->|Runs| Tasks
+    Executables -->|spawn / query / signals| TaskAPI
+    TaskAPI --> Manager
+    Manager --> TasksMap
+    Manager --> SpawnersMap
+    SpawnersMap --> Spawner
+    Spawner -->|runs| AsyncTask
 ```
 
 ## Known limitations

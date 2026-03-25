@@ -70,16 +70,23 @@ Here is the working principle of the virtual file system:
 
 ```mermaid
 sequenceDiagram
-    participant App as Application
+  participant App as Executable/Module
     participant VFS as Virtual File System
-    participant FS as File System
-    participant Dev as Device Driver
+  participant Node as Resolved node (FS or device)
+  participant FS as Mounted file system backend
+  participant Dev as Mounted device endpoint
 
-    App->>VFS: Perform file operation (open, read, write, etc.)
-    VFS->>FS: Resolve path and forward request
-    FS->>Dev: Read/Write data
-    Dev-->>FS: Return data/status
-    FS-->>VFS: Return file handle/data
+  App->>VFS: open/read/write/control(path, flags)
+  VFS->>VFS: resolve path + permissions + task context
+  VFS->>Node: dispatch operation
+  alt Node is file-system item
+    Node->>FS: backend operation
+    FS-->>Node: data/status
+  else Node is mounted device
+    Node->>Dev: device operation
+    Dev-->>Node: data/status
+  end
+  Node-->>VFS: data/status
     VFS-->>App: Return file handle/data
 ```
 

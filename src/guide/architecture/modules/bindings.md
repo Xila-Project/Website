@@ -31,10 +31,16 @@ Bindings code is generated from graphics APIs through build tooling, keeping hos
 
 ```mermaid
 graph TD
-    B[Bindings]
-    B -->|Call| Graphics_module[Graphics Module]
-    B -->|Log Events| Log_module[Log Module]
-    Virtual_machine[Virtual Machine] -->|Register| B
+    Guest[Guest-side generated bindings]
+    HostRuntime[executables/wasm host runtime]
+    HostBindings[host bindings dispatch]
+    Graphics_module[Graphics module]
+    VM[WAMR runtime instance]
+
+    Guest -->|system-call bridge| VM
+    VM -->|dispatch| HostRuntime
+    HostRuntime --> HostBindings
+    HostBindings -->|invoke| Graphics_module
 ```
 
 ### Calling Flow
@@ -43,20 +49,23 @@ The following sequence diagram illustrates the process when a binding function i
 
 ```mermaid
 sequenceDiagram
-    participant W as WASM
+    participant W as Guest WASM module
     participant B as WASM Bindings
-    participant VM as Virtual Machine
+    participant VM as WAMR runtime
+    participant H as host runtime dispatcher
     participant G as Host Bindings
     participant GM as Graphics Module
 
     W->>B: Call binding function
     B->>VM: Forward as system call
-    VM->>G: Call host system call function
+    VM->>H: Forward imported call
+    H->>G: Call host binding function
     G->>G: Prepare call (e.g., validate memory, convert types)
     G->>GM: Dispatch to graphics function
     GM-->>G: Return result
     G->>G: Process result (e.g., validate memory, convert types)
-    G-->>VM: Return result
+    G-->>H: Return result
+    H-->>VM: Return result
     VM-->>B: Return result
     B-->>W: Return result
 ```

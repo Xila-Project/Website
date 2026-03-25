@@ -27,9 +27,15 @@ The module stores a startup timestamp when initialized, then uses the same devic
 
 ```mermaid
 graph TD
-    A@{ shape: processes, label: "Other modules/crates" }
-    A -->|Use| B[Time module]
-    B -->|Call| Underlying_time_driver[Underlying time driver]
+    Clients@{ shape: processes, label: "Other modules / executables" }
+    Init[time::initialize(driver)]
+    Manager[Time Manager singleton]
+    Driver[DirectCharacterDevice time source]
+
+    Clients -->|time::get_instance()| Manager
+    Init --> Manager
+    Manager -->|read Duration bytes| Driver
+    Manager -->|compute uptime from start_time| Manager
 ```
 
 ## Initialization flow
