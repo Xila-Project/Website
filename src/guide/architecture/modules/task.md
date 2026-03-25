@@ -12,7 +12,7 @@ The task module offers the following features:
 
 - **Asynchronous tasks**: Support for async/await syntax for non-blocking operations. No need to manually yield control or context switch penalties.
 - **Creation and deletion**: Create and delete tasks dynamically.
-- **Scheduling**: Preemptive and cooperative multitasking.
+- **Scheduling**: Cooperative async scheduling based on registered executors/spawners.
 - **Synchronization**: Semaphores, mutexes, and other synchronization primitives.
 - **Communication**: Message queues and event flags for inter-task communication.
 
@@ -30,6 +30,18 @@ It also relies on the following modules:
 - [Users](./users.md): Used for task ownership and permissions.
 - [Memory](./memory.md): Used for task stack allocation.
 
+## Core model
+
+The task manager stores task metadata and executor registrations in a synchronized global registry.
+
+Each task tracks:
+
+- identifier and parent relationship,
+- user/group ownership,
+- environment variables,
+- lifecycle and signal state,
+- associated spawner/executor identity.
+
 ## Architecture
 
 Each task is represented by a `Task` struct that contains the following information:
@@ -44,7 +56,7 @@ Each task is represented by a `Task` struct that contains the following informat
 
 Each of these structures can be accessed and modified through module APIs using the `TaskIdentifier`, which is a system-wide unique identifier for each task (unsigned half-register size integer).
 
-Tasks are created on an executor, which must be registered beforehand. Typically, there is one executor per core or thread. These executors are platform-specific (as sleeping and waking the core/thread is platform-dependent) and must be initialized by the final executable.
+Tasks are created on an executor, which must be registered beforehand. Typically, there is one executor per core or host thread. These executors are platform-specific and must be initialized by the final executable.
 
 ```mermaid
 graph TD
@@ -67,6 +79,7 @@ graph TD
 The task module has the following known limitations:
 
 - **Cooperative Multitasking Requirement**: Because the system relies on a cooperative executor, all tasks must yield control periodically. Long-running tasks that do not await or yield will block the executor, preventing other tasks from running.
+- **Executor affinity**: Tasks are bound to the executor context used when spawned.
 
 ## Future improvements
 
