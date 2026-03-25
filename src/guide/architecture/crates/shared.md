@@ -2,8 +2,27 @@
 layout: doc
 ---
 
-# Shared (crate)
+# 📦 Shared
 
-The Shared crate provides common utilities and abstractions that are used across multiple modules within the Xila operating system. It serves as a foundational library that promotes code reuse and consistency throughout the system.
+The `shared` crate contains common utility types and helpers reused across modules, drivers, and executables.
 
-Usually, it contains small portion of code that doesn't fit into a specific module, isn't enough in size to justify its own crate, or is shared between multiple modules.
+It is the place for lightweight cross-cutting code that should not live in a specific subsystem.
+
+## Features
+
+- Common data structures and utility helpers.
+- Small abstractions reused by multiple crates.
+- Reduced duplication across Core packages.
+
+## Dependencies
+
+- Logging integration via the `log` workspace dependency.
+
+## References
+
+- <HostReference crate="shared" />
+- <CodeReference path="modules/shared" />
+
+## See also
+
+- [🔃 Synchronization](./synchronization.md)
