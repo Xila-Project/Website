@@ -48,6 +48,57 @@ cargo make generate-fonts
 cd examples/wasm && trunk serve
 ```
 
-::: info
-For the full list of available commands, refer to the <CodeReference path="Makefile.toml" />.
-:::
+## 🧰 Cargo Make command reference
+
+All commands below are run from the `Core` repository root using `cargo make <task>`.
+
+### Setup and assets
+
+- `install-tools`: Run `npm install` for tooling dependencies.
+- `generate-fonts`: Generate LVGL fonts via `fonts_generator`.
+
+### Formatting
+
+- `format-rust`: Format all Rust code (`cargo fmt --all`).
+- `format-toml`: Format TOML files with `taplo`.
+- `format-json`: Format JSON files with `prettier`.
+- `format`: Run all formatting tasks (`format-rust`, `format-toml`, `format-json`).
+
+### Translations
+
+- `translate-compare`: Compare local translations with Tolgee.
+- `translate-sync`: Sync translations and remove unused keys.
+- `translate-pull`: Pull translations from Tolgee.
+- `translate-push`: Push local translations to Tolgee.
+
+### Checks, docs, and linting
+
+- `check-host`: Run `cargo check` for host target (`x86_64-unknown-linux-gnu`) with host graphics features.
+- `check-guest`: Run `cargo check` for guest target (`wasm32-unknown-unknown`) on package `wasm` with `default_guest`.
+- `check`: Run both host and guest checks.
+- `doc-host`: Build host documentation.
+- `doc-guest`: Build guest documentation.
+- `doc`: Build both host and guest documentation.
+- `clippy-host`: Run clippy for host target and deny warnings.
+- `clippy-guest`: Run clippy for guest target and deny warnings.
+- `clippy`: Run both host and guest clippy checks.
+- `lint`: Run clippy for all targets/features and deny warnings.
+
+### Build, run, test, coverage
+
+- `test`: Run workspace tests.
+- `run`: Wrapper over `cargo run` (accepts forwarded args).
+- `build`: Wrapper over `cargo build` (accepts forwarded args).
+- `coverage`: Run coverage with `cargo llvm-cov`.
+
+### Workflow task
+
+- `before-commit`: Run `format`, `check`, `doc`, and `clippy` before committing.
+
+### Examples
+
+- `cargo make format`
+- `cargo make check`
+- `cargo make run -p native_example`
+- `cargo make generate-fonts`
+- `cargo make before-commit`
