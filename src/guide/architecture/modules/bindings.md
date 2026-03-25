@@ -6,15 +6,15 @@ layout: doc
 
 The Bindings module in Xila provides an interface for interacting with external libraries and systems. While the [ABI](./abi.md) module focuses on standardized POSIX-compliant interfaces, the Bindings module is designed for more specialized or non-standard interactions, such as graphics.
 
+In the current codebase, bindings are implemented as part of the WASM host runtime path and generated code in the WASM executable crate.
+
 ## Dependencies
 
 The Bindings module relies on the following components:
 
 - [Graphics](./graphics.md): Facilitates rendering and graphical operations.
 - [ABI](./abi.md): Provides low-level bindings to external C libraries.
-- Internal crates:
-  - [Synchronization](../crates/synchronization.md): Ensures thread-safe operations within the Bindings module.
-  - [Shared](../crates/shared.md): Supplies common utilities and types used across Xila modules.
+- [Virtual machine](./virtual_machine.md): Executes and dispatches bound calls.
 
 ## Architecture
 
@@ -23,9 +23,9 @@ The Bindings module is divided into two distinct parts:
 1. **Host Bindings**: Implemented on the host side (i.e., the system running the Xila OS). These bindings provide an interface to dispatch calls to various modules, primarily the Graphics module.
 2. **WASM Bindings**: Implemented on the WASM side (i.e., the applications running within Xila). These bindings allow applications to invoke host bindings through system calls.
 
-All WASM function calls are routed through a single function, <HostReference crate="host_bindings" kind="fn" symbol="call" />, which is executed by the virtual machine. The Bindings module is registered as a system call provider, enabling the virtual machine to dispatch calls to the appropriate host binding functions, such as graphics functions.
+All WASM function calls are routed through a single dispatch entrypoint, <HostReference crate="host_bindings" kind="fn" symbol="call" />, which is executed by the virtual machine. The Bindings module is registered as a system call provider, enabling the virtual machine to dispatch calls to the appropriate host binding functions, such as graphics functions.
 
-The Bindings module is automatically generated from the Graphics module using a build script that parses the Graphics module's public API. This ensures that the bindings remain synchronized with the Graphics module's API and minimizes the need for boilerplate code.
+Bindings code is generated from graphics APIs through build tooling, keeping host and guest glue synchronized and minimizing repetitive marshaling code.
 
 ### Host-Side Architecture
 
@@ -72,6 +72,12 @@ sequenceDiagram
 7. The virtual machine returns the result to the WASM binding function.
 8. The WASM binding function delivers the result to the WASM code.
 
+## Current implementation notes
+
+- Host-side binding implementation is located in `Core/executables/wasm/src/host/bindings`.
+- Generation tooling is located in `Core/executables/wasm/build`.
+- Type translation helpers (for pointers, scalars, and structures) are centralized in translation utilities.
+
 ## Known Limitations
 
 The Bindings module currently has the following limitations:
@@ -79,6 +85,7 @@ The Bindings module currently has the following limitations:
 - **Limited Coverage**: Only a subset of Xila's functionalities is exposed through the Bindings module.
 - **Performance Overhead**: Invoking functions through bindings introduces additional overhead compared to direct native Rust calls.
 - **Parameter Type Limitation**: All parameters are currently passed as <HostReference crate="virtual_machine" kind="type" symbol="WasmUsize" />, which is `u32` on the `wasm32` architecture. While `wasm64` is not currently relevant for Xila, this could pose a limitation for supporting future architectures. A potential improvement could involve binding <HostReference crate="virtual_machine" kind="type" symbol="WasmUsize" /> to `usize` in the future. This would allow 32-bit architectures to run only 32-bit WASM code, while 64-bit architectures could support both 32-bit and 64-bit WASM code.
+- **Safety boundary complexity**: Binding code must validate guest pointers and memory ranges at every call boundary.
 
 ## Future Improvements
 
