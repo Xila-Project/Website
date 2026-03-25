@@ -29,6 +29,8 @@ Currently, the ABI exposes the following functionalities:
 - **Time management** (proxies the [Time](./time.md) module): Time retrieval, setting, timers, and delays.
 - **Standard library functions**: Basic C standard library functions such as `memcpy`, `memset`, `strcmp`, etc.
 
+In practice, ABI calls are used by host-side runtime components (notably the WASM runtime integration) to bridge from foreign code into Xila services.
+
 ## Architecture
 
 The ABI module is implemented across three internal crates to ensure modularity and proper linkage:
@@ -41,6 +43,12 @@ The ABI module is implemented across three internal crates to ensure modularity 
   : Manages the context and state required for ABI operations.
 
 The separation of declarations and definitions helps prevent multiple symbol definitions during linking, addressing differences in how Rust handles `#[no_mangle]` symbols compared to standard Rust symbols.
+
+This architecture also keeps header generation and symbol ownership explicit:
+
+- declarations define what is exported;
+- definitions own the concrete exported symbols;
+- context tracks process/task-scoped data needed by ABI entry points.
 
 ```mermaid
 graph TD
@@ -74,10 +82,17 @@ It also relies on the following internal crates:
 - [Synchronization](../crates/synchronization.md): For thread-safe operations within the ABI.
 - [File System](../crates/file_system.md): For file system primitives used by the VFS module.
 
+## Current implementation notes
+
+- ABI crates live under `Core/modules/abi/{declarations,definitions,context}`.
+- Header generation is performed by `cbindgen` from the declarations crate.
+- The ABI surface is intentionally conservative and extended incrementally.
+
 ## Known Limitations
 
 - **Limited Coverage**: Only a subset of Xila's core functionalities is currently exposed through the ABI.
 - **Performance Overhead**: Calling functions through the C ABI introduces overhead compared to native Rust calls. This is due to data conversion, pointer/identifier translation, and calling convention differences.
+- **Versioning discipline required**: ABI evolution requires strict compatibility management for exported signatures and generated headers.
 
 ## Future Improvements
 
