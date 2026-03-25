@@ -10,14 +10,14 @@ Usually, a module is defined as a singleton structure (usually a static `OnceLoc
 
 ## List of modules
 
-- [🔗 ABI](./abi.md)
-- [🔗 Bindings](./bindings.md)
-- [🖼️ Graphics](./graphics.md)
-- [📝 Log](./log.md)
-- [🧠 Memory](./memory.md)
-- [🌐 Network](./network.md)
-- [🏁 Task](./task.md)
-- [🕓 Time](./time.md)
-- [👥 Users](./users.md)
-- [🗃️ Virtual file system](./virtual_file_system.md)
-- [🖥️ Virtual machine](./virtual_machine.md)
+- [🔗 ABI](./abi.md): C-compatible interface layer used by external runtimes and integrations.
+- [🔗 Bindings](./bindings.md): Xila-specific host/guest binding bridge (not limited to POSIX-style ABI calls).
+- [🖼️ Graphics](./graphics.md): Display/input and rendering integration.
+- [📝 Log](./log.md): Global logging facade and backend dispatch.
+- [🧠 Memory](./memory.md): Allocation, capability-aware memory operations, and allocator integration.
+- [🌐 Network](./network.md): Async networking stack and interface/socket orchestration.
+- [🏁 Task](./task.md): Task lifecycle, scheduling, and execution context management.
+- [🕓 Time](./time.md): Time source abstraction and uptime/current-time queries.
+- [👥 Users](./users.md): Runtime user/group database and permission identity model.
+- [🗃️ Virtual file system](./virtual_file_system.md): Unified file/device namespace and mount system.
+- [🖥️ Virtual machine](./virtual_machine.md): WebAssembly runtime integration layer.
