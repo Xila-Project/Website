@@ -4,24 +4,26 @@ layout: doc
 
 # 🕓 Time
 
-The Time module provides functionalities for managing time and date within the Xila operating system. It offers APIs to retrieve, manipulate, and format system time.
+The Time module provides the global time service used by Xila components.
+
+It wraps a platform time device and exposes a singleton manager used to query the current time and uptime since startup.
 
 ## Features
 
 The Time module includes the following features:
 
-- **System and Uptime Management**: Functions to retrieve and set the current date and time (since epoch) and system uptime.
-- **Hardware Abstraction**: Provides a consistent interface irrespective of the underlying hardware timers and clocks.
-- **Time Zones**: Basic support for handling different time zones.
-- **Time Formatting**: Utilities to format time and date into human-readable strings.
+- **Current time retrieval**: Reads current time from the underlying time device.
+- **Uptime computation**: Computes elapsed duration since module initialization.
+- **Hardware abstraction**: Uses a common device interface, independent from platform internals.
+- **Global singleton access**: Centralized manager (`initialize`/`get_instance`) shared across modules.
 
-# Dependencies
+## Dependencies
 
-The Time module relies on a platform-specific time driver to interact with hardware and ensure accurate timekeeping.
+The Time module relies on a platform-specific direct character device that returns a `Duration` payload.
 
 ## Architecture
 
-The Time module utilizes a standard character device to access a monotonic clock source. Upon this foundation, it builds high-level abstractions to manage the system wall clock and date.
+The module stores a startup timestamp when initialized, then uses the same device to read current time and compute `current - startup` for uptime.
 
 ```mermaid
 graph TD
@@ -32,14 +34,16 @@ graph TD
 
 ## Known limitations
 
-There are currently no known limitations.
+- The current API is read-oriented: it does not provide direct time setting.
+- Accuracy and monotonicity depend on the underlying driver implementation.
+- Time zone management is intentionally out of scope at this level.
 
 ## Future improvements
 
 Planned enhancements for the Time module include:
 
-- **Enhanced Time Zone Support**: Implementation of comprehensive time zone handling, including automatic daylight saving time adjustments.
 - **Network Time Protocol (NTP)**: Integration of NTP client support to synchronize system time with external time servers for high precision.
+- **Optional wall-clock source policy**: clearer selection/fallback strategy when multiple time sources are available.
 
 ## References
 
