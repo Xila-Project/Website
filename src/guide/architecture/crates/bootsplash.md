@@ -4,4 +4,24 @@ layout: doc
 
 # ✨ Bootsplash
 
-The bootsplash crate is responsible for displaying a splash screen during the system's boot process. This crate provides functionalities to load and render images, as well as manage the timing and transitions of the splash screen display. The bootsplash crate enhances the user experience by providing visual feedback during system startup, making it more engaging and informative.
+The `bootsplash` crate provides the startup splash animation shown while the system initializes.
+
+It is built on top of the graphics module and drives a lightweight animated logo sequence.
+
+## Features
+
+- Animated startup logo rendering.
+- Integration with the active graphics screen and theme colors.
+- Explicit lifecycle with start/stop behavior.
+
+## Dependencies
+
+- [🖼️ Graphics](../modules/graphics.md)
+
+## References
+
+- <CodeReference path="modules/bootsplash" />
+
+## See also
+
+- [🖼️ Graphics](../modules/graphics.md)
