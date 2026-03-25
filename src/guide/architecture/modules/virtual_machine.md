@@ -10,6 +10,8 @@ To achieve this, Xila integrates a Virtual Machine (VM) module capable of interp
 
 This module provides a runtime environment for WASM applications, enabling them to run on Xila regardless of the underlying hardware architecture. Consequently, applications can be developed for a broad spectrum of devices, ranging from embedded systems to desktop computers.
 
+In the current workspace layout, this runtime is implemented inside the WASM executable crate host path.
+
 ## Features
 
 The virtual machine module offers the following features:
@@ -19,6 +21,7 @@ The virtual machine module offers the following features:
 - **Cross-platform compatibility**: Applications can run on different hardware architectures without modification.
 - **Integration with Xila modules**: Access to Xila's services and functionalities through WASI or custom bindings.
 - **Dynamic loading**: Ability to load and execute WASM modules at runtime.
+- **Host/guest split**: Separate host-runtime and guest-facing integration paths.
 
 ## Dependencies
 
@@ -36,6 +39,12 @@ It also relies on the following internal crates:
 
 - [Synchronization](../crates/synchronization.md): Provides thread-safe operations within the virtual machine module.
 - [Shared](../crates/shared.md): Provides common utilities and types used across Xila modules.
+
+## Current implementation notes
+
+- Runtime and instance management are implemented under `Core/executables/wasm/src/host/virtual_machine`.
+- WAMR integration is provided by `wamr-rust-sdk` in the WASM executable crate.
+- Host bindings are registered to expose Xila services (notably graphics-related calls) to guest modules.
 
 ## Architecture
 
@@ -80,6 +89,7 @@ The virtual machine module has the following known limitations:
 - **Performance overhead**: Running applications in a virtual machine introduces some performance overhead compared to native execution.
 - **Limited access to hardware**: WASM applications have restricted access to hardware resources, which may limit their capabilities.
 - **WASM feature support**: Not all WebAssembly features may be supported by the WAMR runtime.
+- **Integration locality**: VM runtime currently lives in the executable layer rather than a standalone Core module crate.
 
 ## Future improvements
 
