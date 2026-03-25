@@ -6,6 +6,8 @@ layout: doc
 
 Xila provides a file system API that allows to manage files, directories, and devices in a unified way, following the Unix philosophy "everything is a file".
 
+The Virtual File System (VFS) is a central service that routes path-based operations to mounted file systems and devices while enforcing ownership and permission policies.
+
 ## Features
 
 The virtual file system module offers the following features:
@@ -15,6 +17,7 @@ The virtual file system module offers the following features:
 - **Extensible design**: Ability to mount multiple file systems with custom implementations.
 - **Unix-like semantics**: Familiar file operations and permissions model.
 - **Thread-safe operations**: Concurrent access to the file system with proper synchronization.
+- **Blocking/non-blocking behavior**: Supports both polling and blocking operation helpers depending on file flags.
 
 ## Dependencies
 
@@ -27,6 +30,12 @@ The virtual file system module depends on the following modules:
 It also relies on the following crates:
 
 - [alloc](https://doc.rust-lang.org/alloc/): Used for dynamic memory allocation.
+
+## Current implementation notes
+
+- The default hierarchy is created via `create_default_hierarchy`.
+- Standard mount points include `/binaries`, `/configuration`, `/data`, `/devices`, `/logs`, `/system`, `/temporary`, and `/devices/network`.
+- Device cleanup helpers are provided to reset mounted character/block devices during setup.
 
 ## Architecture
 
@@ -52,6 +61,8 @@ Currently, Xila provides the following file systems:
 - [`Little FS`](../crates/little_fs.md): A lightweight file system designed for embedded systems.
 
 Once a file system is implemented, it can be mounted to a specific path.
+
+Device endpoints are also mounted into the same namespace, enabling modules to expose services through file-like APIs.
 
 ### Operation flow
 
@@ -94,6 +105,7 @@ The virtual file system module has the following known limitations:
 - **Limited file system support**: Currently only Little FS is implemented.
 - **No symbolic links**: Symbolic links are not yet supported.
 - **No file locking**: File locking mechanisms are not implemented.
+- **No symbolic link resolution layer**: Path aliasing remains explicit through mounts.
 
 ## Future improvements
 
@@ -113,3 +125,4 @@ Planned future improvements for the virtual file system module include:
 
 - [Little FS official documentation](https://github.com/littlefs-project/littlefs)
 - [POSIX file system standards](https://pubs.opengroup.org/onlinepubs/9699919799/)
+- [Network module](./network.md)
