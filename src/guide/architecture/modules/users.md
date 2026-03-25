@@ -13,16 +13,20 @@ To facilitate architectural modularity and avoid circular dependencies (specific
 The Users module functions as a relational database for users and groups, offering the following features:
 
 - **User and Group Management**: Capabilities to create, delete, and modify users and their associated groups.
+- **Identifier allocation**: Generates non-conflicting user/group identifiers.
+- **Membership queries**: Supports checking group membership and listing user groups.
+- **Name/identifier resolution**: Converts between names and identifiers.
+- **Root bootstrap**: Automatically initializes root user and root group.
 
 ## Dependencies
 
 The Users module relies on the following crates:
 
-- [Synchronization](../crates/synchronization.md): Ensures thread-safe operations within the module.
+- [🔃 Synchronization](../crates/synchronization.md): Ensures thread-safe concurrent access via an internal `RwLock`.
 
 ## Architecture
 
-The Users module maintains an in-memory database of users and groups, along with their associated permissions. It provides an API for other modules to interact with user data.
+The Users module stores internal user/group maps and exposes async methods to read/update them safely.
 
 ```mermaid
 graph TD
@@ -45,7 +49,9 @@ graph TD
 
 ```
 
-Users and Groups are manipulated using unique identifiers. These identifiers are defined as half-register size integers (e.g., on a 32-bit system, they are 16-bit integers).
+Users and Groups are manipulated using typed identifiers (`UserIdentifier`, `GroupIdentifier`).
+
+Both are currently backed by `u16`, with `0` reserved for `root` and non-root allocations starting at `1`.
 
 The identifier `0` is reserved for the **root** user and group, which holds all permissions.
 
@@ -53,11 +59,13 @@ The identifier `0` is reserved for the **root** user and group, which holds all 
 
 The Users module currently has the following limitations:
 
-- **In-memory storage**: All user and group data is stored exclusively in memory. There is no offloading to persistent storage, which may limit scalability on systems with a very large number of users or groups.
+- **In-memory storage**: User and group state is runtime-only unless persisted by higher-level crates.
+- **Credential checks delegated elsewhere**: Authentication/credential persistence are intentionally handled outside this module.
 
 ## Future improvements
 
-Nothing planned at the moment.
+- Incremental APIs for batch/group operations.
+- Optional richer metadata attached to users and groups.
 
 ## References
 
