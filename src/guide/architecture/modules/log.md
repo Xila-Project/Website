@@ -4,49 +4,56 @@ layout: doc
 
 # 📝 Log
 
-The Log module provides logging capabilities for the Xila operating system. It enables other modules to record events, errors, and informational messages, facilitating debugging and system monitoring.
+The Log module centralizes runtime logging across Xila.
+
+It bridges Xila logging calls to a pluggable backend through a `LoggerTrait` implementation and integrates with the underlying `log` ecosystem.
 
 ## Features
 
 The Log module offers the following features:
 
 - **Log Levels**: Support for multiple severity levels (e.g., DEBUG, INFO, WARN, ERROR) to categorize messages.
-- **Backend Abstraction**: A unified interface that supports various underlying implementations (e.g., console output, file logging, remote logging).
-- **Thread Security**: Ensures that concurrent log messages from multiple tasks are handled safely without data corruption.
-- **Configurable Output**: Options to customize log output formats and destinations.
+- **Backend abstraction**: Backends implement `LoggerTrait` (`enabled`, `write`, `flush`).
+- **Single initialization point**: Logger registration is guarded by a global `OnceLock`.
+- **Formatted output helper**: Default log formatting includes level marker and target.
+- **`no_std` friendly API surface**: Suitable for embedded and constrained targets.
 
 ## Dependencies
 
 The Log module depends on the following crates:
 
-- [Synchronization](../crates/synchronization.md): Used to ensure thread-safe logging operations.
+- [🔃 Synchronization](../crates/synchronization.md): Used for one-time global logger initialization.
 
 ## Architecture
 
-The Log module primarily serves as a wrapper around the `log` crate, exposing a unified logging interface for the OS.
-Unlike other hardware components, log backends are not implemented as standard drivers. Instead, they utilize a specific trait that can be implemented by various logging destinations.
+At startup, a concrete backend is registered once through `initialize`. After registration, all module-level log macros route through that backend.
+
+Unlike many other subsystems, logging is not modeled as a file system device by default. Instead, platform crates provide logger implementations directly.
 
 ```mermaid
 graph TD
     A@{ shape: processes, label: "Other modules/crates" }
-    Log_crate[Log crate]
+    Log_crate[log crate integration]
     Log_module[Log module]
     Driver
 
     A -->|Use| Log_module
-    Log_module -->|Call| Log_crate[Underlying log implementation]
+    Log_module -->|Bridge| Log_crate
     Log_crate -->|Log events| Log_module
 
-    Log_module -->|Forward log events| Driver[Log driver implementations]
+    Log_module -->|Dispatch to| Driver[Concrete logger backend]
 ```
 
 ## Known limitations
 
-There are currently no known limitations.
+- The logger is effectively global and should be initialized early.
+- Per-target formatting and transport behavior depends on the backend implementation.
+- Runtime reconfiguration is limited once initialization happened.
 
 ## Future improvements
 
-There are no improvements planned at the moment.
+- Runtime filtering/policy controls per module or target.
+- Additional structured logging options for machine parsing.
 
 ## References
 
