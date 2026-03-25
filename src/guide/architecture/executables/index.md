@@ -14,3 +14,13 @@ The main executables included in Xila are:
 - [File manager](./file_manager.md): A graphical file manager that enables users to browse, organize, and manage files and directories within the Xila operating system. The file manager executable supports various file operations, such as copying, moving, deleting, and renaming files.
 - [Graphical shell](./graphical_shell.md): The main graphical user interface (GUI) shell for Xila, providing a desktop environment for users to interact with the operating system. The graphical shell executable includes features such as window management, application launching, and task switching.
 - [Command line shell](./command_line_shell.md): A command-line interface (CLI) shell that allows users to execute commands and scripts within the Xila operating system. The command line shell executable supports various shell features, such as command history, tab completion, and scripting capabilities.
+
+## Implementation notes
+
+Most executables are implemented as crates exposing an `ExecutableTrait` implementation and are then mounted and launched through the executable runtime.
+
+Some executables also install desktop shortcuts under `/configuration/shared/shortcuts` so graphical environments can discover and launch them.
+
+## See also
+
+- [🏁 Executable runtime crate](../crates/executables.md)
