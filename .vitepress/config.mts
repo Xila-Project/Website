@@ -36,6 +36,8 @@ const guideSidebar: DefaultTheme.SidebarItem[] = [
           { text: "ABI", link: "/guide/architecture/modules/abi" },
           { text: "Bindings", link: "/guide/architecture/modules/bindings" },
           { text: "Graphics", link: "/guide/architecture/modules/graphics" },
+          { text: "Log", link: "/guide/architecture/modules/log" },
+          { text: "Memory", link: "/guide/architecture/modules/memory" },
           { text: "Network", link: "/guide/architecture/modules/network" },
           { text: "Task", link: "/guide/architecture/modules/task" },
           { text: "Time", link: "/guide/architecture/modules/time" },
@@ -62,7 +64,7 @@ const guideSidebar: DefaultTheme.SidebarItem[] = [
           { text: "Bootsplash", link: "/guide/architecture/crates/bootsplash" },
           { text: "Device", link: "/guide/architecture/crates/device" },
           {
-            text: "Executables",
+            text: "Executable",
             link: "/guide/architecture/crates/executables",
           },
           {
@@ -73,10 +75,33 @@ const guideSidebar: DefaultTheme.SidebarItem[] = [
             text: "Internationalization",
             link: "/guide/architecture/crates/internationalization",
           },
+          { text: "Little FS", link: "/guide/architecture/crates/little_fs" },
+          {
+            text: "Peripherals",
+            link: "/guide/architecture/crates/peripherals",
+          },
+          { text: "Shared", link: "/guide/architecture/crates/shared" },
+          {
+            text: "Synchronization",
+            link: "/guide/architecture/crates/synchronization",
+          },
+          { text: "Target", link: "/guide/architecture/crates/target" },
           { text: "Testing", link: "/guide/architecture/crates/testing" },
         ],
       },
-      { text: "Drivers", link: "/guide/architecture/drivers" },
+      {
+        text: "Drivers",
+        link: "/guide/architecture/drivers",
+        collapsed: true,
+        items: [
+          { text: "Core", link: "/guide/architecture/drivers/core" },
+          { text: "Espressif", link: "/guide/architecture/drivers/espressif" },
+          { text: "Native", link: "/guide/architecture/drivers/native" },
+          { text: "Shared", link: "/guide/architecture/drivers/shared" },
+          { text: "Std", link: "/guide/architecture/drivers/std" },
+          { text: "WASM", link: "/guide/architecture/drivers/wasm" },
+        ],
+      },
       {
         text: "Executables",
         link: "/guide/architecture/executables/",
