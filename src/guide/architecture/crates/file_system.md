@@ -4,4 +4,30 @@ layout: doc
 
 # 📁 File system
 
-This crate provides primitives, interfaces and implementations for managing file systems within Xila. It includes support for various file system types, such as FAT, ext4, and others, allowing for flexible storage solutions. The file system crate handles tasks such as file creation, deletion, reading, and writing, as well as directory management and file metadata handling. It also provides mechanisms for mounting and unmounting file systems, ensuring data integrity and consistency across different storage devices. By abstracting the complexities of file system management, this crate enables developers to easily integrate file system functionalities into their applications and modules within the Xila operating system.
+The `file_system` crate defines foundational file system primitives and traits used throughout Xila.
+
+It provides path/types abstractions, metadata and permission handling, file and device related interfaces, and the contracts implemented by concrete file systems.
+
+## Features
+
+- Core traits for file system operations and nodes.
+- POSIX-like metadata and access flags.
+- Character/block device integration points.
+- Shared path and identifier types used by higher-level modules.
+
+## Dependencies
+
+- [🏁 Task](../modules/task.md)
+- [👥 Users](../modules/users.md)
+- [📦 Shared](./shared.md)
+- [🔃 Synchronization](./synchronization.md)
+
+## References
+
+- <HostReference crate="file_system" />
+- <CodeReference path="modules/file_system" />
+
+## See also
+
+- [🗃️ Virtual file system](../modules/virtual_file_system.md)
+- [📁 Little FS](./little_fs.md)
