@@ -105,6 +105,6 @@ It also relies on the following internal crates:
 - <HostReference crate="abi_declarations" />
 - <HostReference crate="abi_definitions" />
 
-## See Also
+## See also
 
 - [Bindings](./bindings.md)

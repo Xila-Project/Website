@@ -2,7 +2,7 @@
 layout: doc
 ---
 
-# File manager (executable)
+# 📂 File manager (executable)
 
 The file manager executable provides a graphical file browsing and management application.
 

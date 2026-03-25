@@ -2,7 +2,7 @@
 layout: doc
 ---
 
-# Graphical shell (executable)
+# 🖼️ Graphical shell (executable)
 
 The graphical shell executable is the desktop-style shell of Xila.
 

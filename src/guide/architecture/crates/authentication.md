@@ -62,7 +62,7 @@ User and group data are serialized into JSON format using the <DocsRsReference c
 
 - **Algorithm Support**: Currently, only **SHA-512** is used by default. While secure, modern best practices often recommend memory-hard functions like Argon2 or bcrypt to resist hardware-accelerated brute-force attacks. Future updates may introduce pluggable hashing algorithms depending on hardware capabilities.
 
-## See Also
+## See also
 
 - [Users Module](../modules/users.md)
 - <HostReference crate="authentication" />

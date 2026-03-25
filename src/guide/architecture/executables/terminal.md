@@ -2,7 +2,7 @@
 layout: doc
 ---
 
-# Terminal (executable)
+# 🖥️ Terminal (executable)
 
 The terminal executable provides a graphical terminal surface and launches the command line shell inside it.
 

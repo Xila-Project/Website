@@ -2,7 +2,7 @@
 layout: doc
 ---
 
-# 🚀 Get started with contributing
+# 🤝 Contribute
 
 This guide will help you get started with contributing to the Xila project by building and running the core examples.
 

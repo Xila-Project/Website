@@ -2,7 +2,7 @@
 layout: doc
 ---
 
-# WASM (executable)
+# 🌍 WASM (executable)
 
 The WASM executable provides host and guest runtime glue for launching WebAssembly workloads in Xila.
 

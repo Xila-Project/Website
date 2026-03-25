@@ -2,7 +2,7 @@
 layout: doc
 ---
 
-# 🚀 Get started to use on WASM
+# 🌐 Use on WASM
 
 This guide explains how to develop applications for Xila using WebAssembly (WASM).
 

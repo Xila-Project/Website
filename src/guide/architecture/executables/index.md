@@ -2,7 +2,7 @@
 layout: doc
 ---
 
-# Executables
+# 🏃 Executables
 
 Xila embeds several executables that provide essential functionalities to the operating system. These executables are designed to be lightweight and efficient, ensuring optimal performance on resource-constrained devices.
 

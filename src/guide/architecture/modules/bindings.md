@@ -100,6 +100,6 @@ Planned enhancements for the Bindings module include:
 - <HostReference crate="wasm_bindings" />
 - <HostReference crate="bindings_utilities" />
 
-## See Also
+## See also
 
 - [ABI](./abi.md)

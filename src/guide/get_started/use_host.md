@@ -2,7 +2,7 @@
 layout: doc
 ---
 
-# 🚀 Get started to use on host
+# 🖥️ Use on Host
 
 This guide explains how to deploy Xila on real hardware or your host machine.
 

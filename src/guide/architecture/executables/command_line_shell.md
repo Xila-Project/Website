@@ -2,7 +2,7 @@
 layout: doc
 ---
 
-# Command line shell (executable)
+# ⌨️ Command line shell (executable)
 
 The command line shell is the interactive text shell used by terminal-oriented workflows.
 
