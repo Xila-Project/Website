@@ -4,17 +4,17 @@ layout: doc
 
 # 🌐 Network
 
-The network module in Xila provides the OS networking stack integration and device orchestration.
+The Network module provides Xila's asynchronous networking stack and interface orchestration.
 
-It is built around smoltcp and exposes file-oriented network interfaces through the virtual file system, allowing user programs and modules to configure interfaces and exchange data using a unified API surface.
+It is built on top of `smoltcp`, wraps each network interface inside a managed stack, and exposes interface control through virtual file system character devices.
 
 ## Features
 
-- Interface registration and mounting.
-- IPv4/IPv6 addressing and route configuration.
-- DNS resolution support.
-- Socket-oriented network operations.
-- Async integration with the task and time modules.
+- Interface lifecycle management (mount/start/stop).
+- Per-interface control commands for state, hardware address, MTU, addresses, routes, DNS, and DHCP.
+- Socket factories for DNS, TCP, UDP, and ICMP.
+- Internal runner task per interface to poll the stack.
+- Optional explicit interface selection when creating sockets.
 
 ## Dependencies
 
@@ -25,6 +25,42 @@ It is built around smoltcp and exposes file-oriented network interfaces through 
 - [👥 Users](./users.md)
 - [🗃️ Virtual file system](./virtual_file_system.md)
 - [📦 Shared](../crates/shared.md)
+
+It also relies on platform drivers for concrete network devices (for example TUN/TAP on host or web transport adapters for WASM targets).
+
+## Architecture
+
+Each mounted interface is represented by a stack entry containing:
+
+- A `smoltcp` interface and socket set.
+- A controller device for platform-specific operations.
+- A wake signal used by the async runner loop.
+
+The interface is mounted under `/devices/network/<name>` and configured through `control` commands.
+
+```mermaid
+graph TD
+	Apps@{ shape: processes, label: "Executables / modules" }
+	VFS[Virtual file system]
+	Net[Network module]
+	Dev[/devices/network/<name>/]
+	Runner[Interface runner task]
+	Stack[smoltcp interface + sockets]
+	Driver[Platform network driver]
+
+	Apps -->|Open + control| Dev
+	Dev -->|Forward control commands| Net
+	Net -->|Configure| Stack
+	Runner -->|Poll| Stack
+	Stack -->|TX/RX| Driver
+	VFS --> Dev
+```
+
+## Known limitations
+
+- Interface polling is cooperative and depends on task scheduling quality.
+- Current interface control is command-oriented (`control`), which is powerful but can be less discoverable than typed high-level APIs.
+- Behavior and capabilities can vary by target depending on the underlying driver backend.
 
 ## References
 
