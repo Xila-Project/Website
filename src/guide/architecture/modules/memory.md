@@ -4,23 +4,26 @@ layout: doc
 
 # 🧠 Memory
 
-The Memory module is responsible for managing the system's memory resources within the Xila operating system. It provides functionalities for memory allocation, deallocation, and tracking of memory usage across different modules and applications.
+The Memory module provides Xila's allocation and memory-management abstraction.
+
+It exposes a manager interface for allocation/deallocation/reallocation, supports capability-aware requests, and acts as the bridge between Xila internals and Rust's global allocation flow.
 
 ## Features
 
 The Memory module offers the following features:
 
-- **Dynamic memory allocation**: Provides functions to allocate and deallocate memory at runtime on memory with capabilities (data, executable, etc.). It either supports layout or layout-less allocations (C-style).
-- **Manage cache**: Allow to flush and control caches.
-- **Memory tracking**: Monitors memory usage to prevent leaks and optimize performance.
-- **`alloc`** integration: Implements the Rust `alloc` crate functionalities for heap memory management.
+- **Dynamic allocation primitives**: Allocate, deallocate, and reallocate blocks with Rust layout semantics.
+- **Capability flags**: Request memory with specific properties (for example executable or DMA-related capabilities).
+- **Cache control hooks**: Flush data/instruction cache when required by a platform.
+- **Statistics surface**: Exposes used/free/total memory metrics through manager APIs.
+- **Global allocator integration**: Adapter layer implementing `GlobalAlloc` for Rust runtime allocations.
 
 ## Dependencies
 
 The memory module depends on the following crates:
 
-- [Synchronization](../crates/synchronization.md): Used for thread-safe operations within the Memory module.
-- [Shared](../crates/shared.md): Provides common utilities and types used across Xila modules.
+- [🔃 Synchronization](../crates/synchronization.md): Used by concrete manager implementations.
+- [📦 Shared](../crates/shared.md): Provides common flags/utilities used by memory abstractions.
 
 The Memory module also relies on the following modules:
 
@@ -28,26 +31,30 @@ The Memory module also relies on the following modules:
 
 ## Architecture
 
-The Memory module is structured around a `MemoryManager` struct that encapsulates the core functionalities of memory management. It provides methods for allocating and deallocating memory blocks, as well as tracking memory usage.
+The module defines a `ManagerTrait` contract and exposes a wrapper used by both explicit memory calls and Rust's global allocator path.
 
 ```mermaid
 graph TD
-    A[Other modules/crates] -->|Use| B[Memory module]
-    B -->|Call| Underlying_memory_driver[Underlying memory driver]
-    B -->|Log events| Log_module[Log module]
+    A[Other modules/crates] -->|Allocate/Free| B[Memory module API]
+    B -->|Delegate| C[ManagerTrait implementation]
+    C -->|Backed by| D[Platform allocator / memory backend]
+    B -->|GlobalAlloc adapter| E[Rust allocation path]
+    B -->|Log events| F[Log module]
 ```
 
 ## Known limitations
 
 The Memory module has the following known limitations:
 
-- **Fragmentation**: Over time, memory fragmentation may occur, leading to inefficient memory usage. Future improvements could include defragmentation strategies.
+- **Fragmentation risk**: Long-lived mixed-size allocation patterns can reduce effective free space.
+- **Backend-specific behavior**: Cache flushing and capability semantics depend on the concrete allocator implementation.
 
 ## Future improvements
 
 Planned future improvements for the Memory module include:
 
-- **Advanced allocation strategies**: Implement more sophisticated memory allocation algorithms/methods like slab allocation or buddy system to optimize memory usage and reduce fragmentation.
+- **Advanced allocation strategies**: Slab/buddy-style strategies for better fragmentation control.
+- **Richer telemetry**: More detailed allocation diagnostics for debugging target-specific memory pressure.
 
 ## References
 
@@ -55,4 +62,5 @@ Planned future improvements for the Memory module include:
 
 ## See also
 
-- [Drivers](../drivers)
+- [Drivers](../drivers.md)
+- [🔃 Synchronization](../crates/synchronization.md)
