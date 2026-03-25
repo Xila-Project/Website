@@ -4,7 +4,7 @@ layout: doc
 
 # 🏃 Executables
 
-The `executables` crate provides a set of utilities to define and launch native executables within the system.
+The `executable` crate provides a set of utilities to define and launch native executables within the system.
 
 Xila has two types of executables:
 
@@ -51,15 +51,15 @@ The <HostReference crate="executable" kind="fn" symbol="execute" /> performs the
 
 ## Known limitations
 
-Currently, the `executables` crate doesn't have any known limitations except those inherited from the underlying modules it depends on.
+Currently, the `executable` crate doesn't have any known limitations except those inherited from the underlying modules it depends on.
 
 ## Future improvements
 
-No specific future improvements are planned for the `executables` crate at this time. However, general enhancements to the underlying modules may indirectly benefit this crate.
+No specific future improvements are planned for the `executable` crate at this time. However, general enhancements to the underlying modules may indirectly benefit this crate.
 
 ## References
 
-- <HostReference crate="executables" />
+- <HostReference crate="executable" />
 
 ## See also
 
