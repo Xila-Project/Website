@@ -32,6 +32,19 @@ graph TD
     B -->|Call| Underlying_time_driver[Underlying time driver]
 ```
 
+## Initialization flow
+
+1. Provide a platform implementation of `DirectCharacterDevice` that returns a `Duration` payload on read.
+2. Call `time::initialize(driver)` once during system startup.
+3. Access the singleton with `time::get_instance()`.
+
+## API snapshot
+
+- `time::initialize(...)`: Registers the global manager.
+- `time::get_instance()`: Returns the initialized singleton manager.
+- `Manager::get_current_time()`: Returns current time from the underlying device.
+- `Manager::get_current_time_since_startup()`: Returns elapsed duration since initialization.
+
 ## Known limitations
 
 - The current API is read-oriented: it does not provide direct time setting.

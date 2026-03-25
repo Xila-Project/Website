@@ -44,6 +44,19 @@ graph TD
     Log_module -->|Dispatch to| Driver[Concrete logger backend]
 ```
 
+## Initialization flow
+
+1. Implement `LoggerTrait` in a platform logger backend.
+2. Register it once through `log::initialize(&your_logger)`.
+3. Use logging macros from modules/executables (`error!`, `warning!`, `information!`, `debug!`, `trace!`).
+
+## API snapshot
+
+- `log::initialize(...)`: Initializes global logger bridge.
+- `log::is_initialized()`: Indicates whether logger has been initialized.
+- `LoggerTrait::enabled(...)`: Per-level filtering hook.
+- `LoggerTrait::write(...)` and `LoggerTrait::flush(...)`: Output and flush hooks.
+
 ## Known limitations
 
 - The logger is effectively global and should be initialized early.

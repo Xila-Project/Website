@@ -55,6 +55,20 @@ Both are currently backed by `u16`, with `0` reserved for `root` and non-root al
 
 The identifier `0` is reserved for the **root** user and group, which holds all permissions.
 
+## Initialization flow
+
+1. Call `users::initialize()` once at startup.
+2. Retrieve the singleton with `users::get_instance()`.
+3. Add users/groups and relationships before launching user-facing executables.
+
+## API snapshot
+
+- `Manager::get_new_user_identifier()` / `Manager::get_new_group_identifier()`: Allocate identifiers.
+- `Manager::add_user(...)` / `Manager::add_group(...)`: Create records.
+- `Manager::add_to_group(...)` / `Manager::is_in_group(...)`: Manage memberships.
+- `Manager::get_user_name(...)`, `Manager::get_user_identifier(...)`: Resolve names and identifiers.
+- `Manager::get_user_groups(...)`, `Manager::get_group_users(...)`: Query membership sets.
+
 ## Known limitations
 
 The Users module currently has the following limitations:

@@ -47,6 +47,22 @@ graph TD
     B -->|Global lock| LVGL
 ```
 
+## Initialization flow
+
+1. Initialize Time first (Graphics uses it as LVGL tick source).
+2. Provide a screen device and at least one input device (`DirectCharacterDevice`).
+3. Call `graphics::initialize(screen, input, input_kind, buffer_size, double_buffered)`.
+4. Spawn the graphics event loop via `Manager::loop(...)` from a task executor.
+
+## API snapshot
+
+- `graphics::initialize(...)` / `graphics::get_instance()`: Singleton lifecycle.
+- `Manager::create_window()`: Create a new application window.
+- `Manager::add_input_device(...)`: Register additional input sources at runtime.
+- `Manager::get_window_count()`, `Manager::get_window_icon(...)`, `Manager::maximize_window(...)`: Window management operations.
+- `Manager::update_theme(...)`: Runtime theme updates.
+- `Manager::lock()` / `Manager::try_lock()`: Explicit synchronization for LVGL-sensitive operations.
+
 ## Known limitations
 
 The Graphics module has the following known limitations:
