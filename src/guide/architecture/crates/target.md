@@ -4,44 +4,54 @@ layout: doc
 
 # 🎯 Target
 
-The `target` crate provides compile-target introspection helpers used by Core and executables.
+The `target` crate provides typed build-target introspection from Cargo-provided environment variables.
 
-It exposes architecture, operating system, family, and vendor abstractions from Cargo target environment variables, allowing target-dependent behavior to stay centralized and explicit.
+## Role
 
-## Features
+- Converts raw target metadata strings into typed enums (`Architecture`, `OperatingSystem`, `Family`, `Vendor`).
+- Centralizes target decoding used by build tooling and target-conditional runtime glue.
 
-- Architecture detection (`x86_64`, `arm`, `xtensa`, `wasm32`, ...)
-- Operating system detection (`linux`, `windows`, `macos`, `espidf`, `wasi`)
-- Family and vendor helpers
-- Unified `Target` structure for current build target metadata
+## Boundaries
 
-## API snapshot
+- In scope: compile/build target detection.
+- Out of scope: runtime hardware probing or dynamic platform discovery.
 
-- `Target::get_current()`: Builds target metadata from Cargo environment variables.
-- `Architecture::get()`, `OperatingSystem::get()`, `Family::get()`, `Vendor::get()`: Per-dimension helpers.
-- Conversion from raw Cargo values to typed enums (`From<String>` mappings).
+## Internal structure
 
-## Dependencies
+- `architecture.rs`, `operating_system.rs`, `family.rs`, `vendor.rs`: per-dimension enum + conversion logic.
+- `lib.rs`: `Target` aggregate type and `Target::get_current()`.
 
-This crate is intentionally dependency-light and uses standard environment variables provided by Cargo.
+## Runtime interaction
 
-It reads:
+- Usually consumed during build scripts or initialization code paths where target-specific decisions are required.
+- Reads `CARGO_CFG_TARGET_*` values from process environment.
 
-- `CARGO_CFG_TARGET_ARCH`
-- `CARGO_CFG_TARGET_OS`
-- `CARGO_CFG_TARGET_FAMILY`
-- `CARGO_CFG_TARGET_VENDOR`
+## Dependency model
 
-## Known limitations
+- No external crate dependencies.
+- Depends only on standard library environment access.
 
-- Unknown/unsupported raw values can cause panics in strict enum conversions.
-- This crate represents compile/build target metadata, not runtime hardware detection.
+## Failure semantics
+
+- Unknown architecture/os/family values panic in strict `From<String>` mappings.
+- Vendor mapping is partially tolerant (`Unknown` fallback for non-espressif vendor strings).
+
+## Extension points
+
+- Add new enum variants as additional Rust targets are supported.
+- Relax strict conversions if non-panicking behavior is required by callers.
+
+## Contract vs implementation
+
+- **Contract**: typed target metadata accessors (`Target::get_current`, `Architecture::get`, ...).
+- **Current implementation**: direct `std::env::var(...)` reads with mostly strict string-to-enum conversion.
+
+## Limitations and trade-offs
+
+- Strict mappings catch unsupported targets early, but panic rather than returning recoverable errors.
+- Designed for compile target identity, not runtime device capability negotiation.
 
 ## References
 
 - <CodeReference path="modules/target" />
-
-## See also
-
-- [🏃 Executables](./executables.md)
-- [🪛 Drivers](../drivers.md)
+- [🏁 Executable crate](./executables.md)
