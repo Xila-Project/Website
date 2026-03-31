@@ -4,28 +4,43 @@ layout: doc
 
 # 🔗 Bindings
 
-The Bindings module in Xila provides an interface for interacting with external libraries and systems. While the [ABI](./abi.md) module focuses on standardized POSIX-compliant interfaces, the Bindings module is designed for more specialized or non-standard interactions, such as graphics.
+Bindings provide runtime-specific host-call bridges for APIs that are not modeled as generic ABI exports.
 
-In the current codebase, bindings are implemented as part of the WASM host runtime path and generated code in the WASM executable crate.
+In the current codebase this layer lives in the WASM executable host path and is primarily graphics-focused.
 
-## Dependencies
+## Role in system
 
-The Bindings module relies on the following components:
+- Connects WASM guest calls to host-side Xila module functions.
+- Handles guest/host pointer translation and ownership-domain translation.
+- Provides a generated dispatch surface to avoid handwritten call-by-call glue.
 
-- [Graphics](./graphics.md): Facilitates rendering and graphical operations.
-- [ABI](./abi.md): Provides low-level bindings to external C libraries.
-- [Virtual machine](./virtual_machine.md): Executes and dispatches bound calls.
+## Responsibilities and boundaries
 
-## Architecture
+**In scope**
 
-The Bindings module is divided into two distinct parts:
+- Host-call entrypoints (`xila_graphics_call` and generated sub-dispatch).
+- Argument/result translation (`WasmUsize` values, pointer mapping, object identity map).
+- Locking around host module interactions that require global serialization (graphics/LVGL path).
 
-1. **Host Bindings**: Implemented on the host side (i.e., the system running the Xila OS). These bindings provide an interface to dispatch calls to various modules, primarily the Graphics module.
-2. **WASM Bindings**: Implemented on the WASM side (i.e., the applications running within Xila). These bindings allow applications to invoke host bindings through system calls.
+**Out of scope**
 
-All WASM function calls are routed through a single dispatch entrypoint, <HostReference crate="host_bindings" kind="fn" symbol="call" />, which is executed by the virtual machine. The Bindings module is registered as a system call provider, enabling the virtual machine to dispatch calls to the appropriate host binding functions, such as graphics functions.
+- General C ABI compatibility contract (owned by [ABI](./abi.md)).
+- WASM runtime instantiation lifecycle (owned by [Virtual machine](./virtual_machine.md)).
 
-Bindings code is generated from graphics APIs through build tooling, keeping host and guest glue synchronized and minimizing repetitive marshaling code.
+## Internal architecture
+
+- `Core/executables/wasm/src/host/bindings/mod.rs` currently exports `graphics` bindings only.
+- Graphics bindings are split into:
+  - generated call tables (`include!(.../bindings.rs)`),
+  - translation helpers (`translate.rs`),
+  - additional handwritten adapters (`additionnal.rs`),
+  - error mapping and dispatch wrapper (`call`/`call_inner`).
+- `GraphicsBindings` implements VM `Registrable`, exposing function descriptors used at runtime registration.
+
+**Contract vs implementation**
+
+- **Contract**: function names/signatures visible to guest imports (for example `xila_graphics_call`).
+- **Implementation**: translator internals, object map policy, and exact lock sequencing on host side.
 
 ### Host-Side Architecture
 
@@ -43,9 +58,16 @@ graph TD
     HostBindings -->|invoke| Graphics_module
 ```
 
-### Calling Flow
+## Lifecycle and execution model
 
-The following sequence diagram illustrates the process when a binding function is invoked from the WASM side:
+1. VM runtime registers binding functions from `Registrable` providers.
+2. Guest invokes imported binding function.
+3. Host dispatch enters `call`, translates arguments, acquires required locks, and invokes module API.
+4. Result/error is translated to ABI-compatible return representation.
+
+## Data/control flow
+
+The sequence below reflects the current call chain:
 
 ```mermaid
 sequenceDiagram
@@ -70,45 +92,39 @@ sequenceDiagram
     B-->>W: Return result
 ```
 
-### Summary of the Calling Flow
+## Concurrency and synchronization model
 
-1. The WASM code invokes a client binding function, which acts as a simple wrapper around a single function call (e.g., <HostReference crate="host_bindings" kind="fn" symbol="call" />).
-2. The client binding function forwards the call as a system call to the virtual machine.
-3. The virtual machine invokes the host system call function registered by the Bindings module.
-4. The host binding function validates the call (e.g., checks memory addresses, converts data types) and dispatches it to the appropriate Graphics module function.
-5. The Graphics module function executes the requested operation and returns the result to the host binding function.
-6. The host binding function processes the result (e.g., validates memory, converts data types) and sends it back to the virtual machine.
-7. The virtual machine returns the result to the WASM binding function.
-8. The WASM binding function delivers the result to the WASM code.
+- Binding execution is serialized where required by downstream module invariants (graphics path acquires manager lock before dispatch).
+- Translator state is tied to VM execution environment custom data.
+- Pointer translation distinguishes guest-owned memory from host-owned object references.
 
-## Current implementation notes
+## Dependency model
 
-- Host-side binding implementation is located in `Core/executables/wasm/src/host/bindings`.
-- Generation tooling is located in `Core/executables/wasm/build`.
-- Type translation helpers (for pointers, scalars, and structures) are centralized in translation utilities.
+- Depends on [Virtual machine](./virtual_machine.md) registration and execution callbacks.
+- Depends on [Graphics](./graphics.md) for current exported functional surface.
+- Complements [ABI](./abi.md) rather than replacing it.
 
-## Known Limitations
+## Failure semantics and recovery behavior
 
-The Bindings module currently has the following limitations:
+- Dispatch returns `0` on success and negative/enum-backed error values on failure.
+- Translation failures (invalid pointer/object mapping) short-circuit call execution.
+- Host logs include function id and raw arguments for failure diagnosis.
 
-- **Limited Coverage**: Only a subset of Xila's functionalities is exposed through the Bindings module.
-- **Performance Overhead**: Invoking functions through bindings introduces additional overhead compared to direct native Rust calls.
-- **Parameter Type Limitation**: All parameters are currently passed as <HostReference crate="virtual_machine" kind="type" symbol="WasmUsize" />, which is `u32` on the `wasm32` architecture. While `wasm64` is not currently relevant for Xila, this could pose a limitation for supporting future architectures. A potential improvement could involve binding <HostReference crate="virtual_machine" kind="type" symbol="WasmUsize" /> to `usize` in the future. This would allow 32-bit architectures to run only 32-bit WASM code, while 64-bit architectures could support both 32-bit and 64-bit WASM code.
-- **Safety boundary complexity**: Binding code must validate guest pointers and memory ranges at every call boundary.
+## Extension points
 
-## Future Improvements
+- Add new binding families under `host/bindings/<domain>` and register via `Registrable`.
+- Extend codegen to include additional APIs while keeping guest/host call tables aligned.
+- Expand translation adapters for new opaque object classes.
 
-Planned enhancements for the Bindings module include:
+## Known limitations and trade-offs
 
-- **Expanded Coverage**: Gradually exposing more Xila functionalities to provide a comprehensive interface.
-- **Performance Optimization**: Reducing overhead by minimizing data conversions and improving calling conventions.
+- Current coverage is intentionally narrow (graphics-centric).
+- `WasmUsize`-based argument passing constrains ABI shape to current wasm target width expectations.
+- Manual safety boundary validation remains mandatory at each call edge.
 
-## References
+## References / See also
 
 - <HostReference crate="host_bindings" />
 - <HostReference crate="wasm_bindings" />
 - <HostReference crate="bindings_utilities" />
-
-## See also
-
 - [ABI](./abi.md)
