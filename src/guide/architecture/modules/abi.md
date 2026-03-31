@@ -4,51 +4,41 @@ layout: doc
 
 # 🔗 ABI
 
-Although Xila is written in Rust, it provides a C-compatible Application Binary Interface (ABI) to enable interoperability with C and other languages that can interface with C.
-This facilitates integrating Xila with existing C libraries and developing applications in languages without direct Rust support.
+The ABI module defines Xila's stable C-callable surface for foreign runtimes and C-compatible consumers.
 
-The ABI is utilized by:
+## Role in system
 
-- The [Virtual machine](./virtual_machine.md) module to expose the system interface.
-- The [Graphics](./graphics.md) module to provide the C-style interface expected by LVGL.
+- Exposes a C ABI facade over core services (file, memory, task, time, user-related types).
+- Provides symbol and type ownership needed for static/dynamic linkage across Rust and non-Rust components.
+- Supplies per-task file-context indirection used by runtime integrations.
 
-## Motivation
+## Responsibilities and boundaries
 
-The primary reasons for providing a C-compatible ABI are:
+**In scope**
 
-- **Interoperability**: Given C's widespread use, a C-compatible ABI allows Xila to interface with a vast ecosystem of existing libraries and applications.
-- **Stability**: Unlike Rust's ABI, the C ABI is stable and does not change between compiler versions. This ensures that applications built against a specific version of Xila remain compatible with future versions (provided the ABI definition itself remains compatible).
+- Exported C symbols and C-representable data layouts.
+- Conversion between C-level identifiers/pointers and internal Rust APIs.
+- ABI-local context for open file/directory handles.
 
-## Capabilities
+**Out of scope**
 
-Currently, the ABI exposes the following functionalities:
+- Runtime-specific host-call dispatch mechanics (handled by [Bindings](./bindings.md)).
+- Full parity with every internal Rust API (ABI coverage is intentionally incremental).
 
-- **Task management** (proxies the [Task](./task.md) module): Creation, deletion, synchronization primitives (semaphores, mutexes, etc.), and scheduling.
-- **File operations** (proxies the [Virtual File System](./virtual_file_system.md) module): File manipulation and file system management.
-- **Memory management** (proxies the [Memory](./memory.md) module): Memory allocation and deallocation.
-- **Time management** (proxies the [Time](./time.md) module): Time retrieval, setting, timers, and delays.
-- **Standard library functions**: Basic C standard library functions such as `memcpy`, `memset`, `strcmp`, etc.
+## Internal architecture
 
-In practice, ABI calls are used by host-side runtime components (notably the WASM runtime integration) to bridge from foreign code into Xila services.
+The ABI is split into three crates with explicit roles:
 
-## Architecture
+- <HostReference crate="abi_declarations" />: declaration/header surface (`cbindgen`-driven output).
+- <HostReference crate="abi_definitions" />: concrete `#[unsafe(no_mangle)] extern "C"` symbols and ABI structs.
+- <HostReference crate="abi_context" />: process/task context (task-local file/directory tables and path resolution helpers).
 
-The ABI module is implemented across three internal crates to ensure modularity and proper linkage:
+This separation prevents duplicate-symbol/linkage ambiguity and keeps contract vs implementation boundaries explicit.
 
-- <HostReference crate="abi_declarations" />
-  : Declares the functions and methods exposed through the ABI. It uses [cbindgen](https://github.com/eqrion/cbindgen) to generate the C header file `xila.generated.h`.
-- <HostReference crate="abi_definitions" />
-  : Defines the C-compatible data structures and types used in the ABI.
-- <HostReference crate="abi_context" />
-  : Manages the context and state required for ABI operations.
+**Contract vs implementation**
 
-The separation of declarations and definitions helps prevent multiple symbol definitions during linking, addressing differences in how Rust handles `#[no_mangle]` symbols compared to standard Rust symbols.
-
-This architecture also keeps header generation and symbol ownership explicit:
-
-- declarations define what is exported;
-- definitions own the concrete exported symbols;
-- context tracks process/task-scoped data needed by ABI entry points.
+- **Contract**: exported C signatures/types and numeric error/result conventions.
+- **Implementation**: how ABI functions call into VFS/task/memory internals, including lock strategy and helper abstractions.
 
 ```mermaid
 graph TD
@@ -69,42 +59,51 @@ graph TD
     ABI_definitions -->|Depends on| Other_modules
 ```
 
-## Dependencies
+## Lifecycle and execution model
 
-The ABI module depends on the following Xila modules:
+1. Runtime enters ABI call path.
+2. `abi_context::Context::call_abi(...)` captures current `TaskIdentifier`.
+3. ABI symbol executes, uses context tables (`FileIdentifier`, `UniqueFileIdentifier`) and proxies to module APIs.
+4. Context task binding is cleared after call.
 
-- [Virtual File System](./virtual_file_system.md): For file operations.
-- [Task](./task.md): For task metadata retrieval.
-- [Log](./log.md): For logging ABI-related events and errors.
+## Data/control flow
 
-It also relies on the following internal crates:
+- File ABI calls convert C inputs -> `FileIdentifier` -> synchronous VFS wrappers via ABI context maps.
+- Memory ABI calls adapt raw C pointers/sizes to memory manager functions and metadata wrappers.
+- Task/time ABI calls route to module managers with ABI-compatible result codes.
 
-- [Synchronization](../crates/synchronization.md): For thread-safe operations within the ABI.
-- [File System](../crates/file_system.md): For file system primitives used by the VFS module.
+## Concurrency and synchronization model
 
-## Current implementation notes
+- ABI context uses internal `RwLock` to guard file/directory maps and active task marker.
+- Some ABI subsystems (notably memory allocation entry points) serialize specific operations with explicit mutexes.
+- Most exported functions are synchronous at the C boundary, with async internals bridged via `task::block_on` where required.
 
-- ABI crates live under `Core/modules/abi/{declarations,definitions,context}`.
-- Header generation is performed by `cbindgen` from the declarations crate.
-- The ABI surface is intentionally conservative and extended incrementally.
+## Dependency model
 
-## Known Limitations
+- Depends heavily on [Virtual file system](./virtual_file_system.md), [Task](./task.md), [Memory](./memory.md), [Time](./time.md), and [Log](./log.md).
+- Consumed by runtimes such as [Virtual machine](./virtual_machine.md) integration paths.
 
-- **Limited Coverage**: Only a subset of Xila's core functionalities is currently exposed through the ABI.
-- **Performance Overhead**: Calling functions through the C ABI introduces overhead compared to native Rust calls. This is due to data conversion, pointer/identifier translation, and calling convention differences.
-- **Versioning discipline required**: ABI evolution requires strict compatibility management for exported signatures and generated headers.
+## Failure semantics and recovery behavior
 
-## Future Improvements
+- ABI functions typically return numeric result codes (`0` success, non-zero mapped from module errors).
+- Errors are logged at boundary points for diagnosability.
+- Invalid pointers/identifiers are rejected early where conversion helpers exist.
 
-- **Expand Coverage**: Gradually expose more Xila functionalities to provide a comprehensive C interface.
-- **Optimize Performance**: Implement optimizations to minimize overhead, such as reducing data conversions and improving calling conventions.
+## Extension points
 
-## References
+- Add new exported functions/types in definitions and declarations, then regenerate headers.
+- Extend ABI context identifier ranges or table behavior as new handle classes are introduced.
+- Incrementally expose additional module capabilities through stable C signatures.
+
+## Known limitations and trade-offs
+
+- Coverage is partial by design; several exported subsystems include `todo!()` placeholders in current implementation.
+- C boundary introduces conversion and safety-check overhead versus native Rust calls.
+- ABI stability requires strict versioning discipline for signatures, constants, and generated headers.
+
+## References / See also
 
 - <HostReference crate="abi_context" />
 - <HostReference crate="abi_declarations" />
 - <HostReference crate="abi_definitions" />
-
-## See also
-
 - [Bindings](./bindings.md)
