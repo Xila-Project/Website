@@ -4,37 +4,57 @@ layout: doc
 
 # 🔃 Synchronization
 
-The Synchronization crate provides synchronization primitives and utilities to ensure thread-safe operations within the Xila operating system. It offers mechanisms for managing concurrent access to shared resources, preventing race conditions, and coordinating tasks.
+The `synchronization` crate standardizes synchronization primitives used across Core.
 
-## Features
+## Role
 
-The Synchronization crate offers the following features:
+- Re-exports `embassy_sync` primitives through one crate-local entry point.
+- Provides portable `Arc`/`Weak` support, including a custom fallback for targets without atomic pointer support.
 
-- **Mutexes**: Mutual exclusion locks to protect shared data.
-- **Read-Write locks**: Locks that allow multiple readers or a single writer.
-- **Once initialization primitives**: Used by singleton module patterns.
-- **Reference-counted shared ownership**: `Arc` support for cross-task sharing.
-- **Signal/channel primitives**: Event-driven synchronization for async workflows.
+## Boundaries
 
-## Dependencies
+- In scope: synchronization primitives and ownership wrappers.
+- Out of scope: scheduler/executor implementation and task lifecycle policy.
 
-- Built on top of `embassy-sync`.
+## Internal structure
 
-## Architecture
+- `lib.rs`: top-level re-exports.
+- `arc/mod.rs`: target-gated arc selection.
+  - With `target_has_atomic = "ptr"`: uses `alloc::sync::Arc`/`Weak`.
+  - Without pointer atomics: uses `arc/arc_lock.rs` mutex-backed Arc implementation.
 
-This crate mostly re-exports and wraps synchronization primitives for consistent usage across Xila crates, keeping synchronization semantics unified between modules and targets.
+## Runtime interaction
 
-## Known limitations
+- Modules and executables import mutex/rwlock/once/channel primitives from this crate.
+- Fallback Arc implementation uses `CriticalSectionRawMutex` + `RefCell` counters for no-atomic targets.
 
-- Behavior depends on underlying executor/runtime assumptions (cooperative async model).
-- Blocking semantics should be used carefully in performance-sensitive paths.
+## Dependency model
+
+- Primary dependency: `embassy-sync` (std feature enabled on host targets).
+- Broadly consumed by file-system backends, graphics, and other concurrent modules.
+
+## Failure semantics
+
+- Most primitives are infallible at API level; contention manifests as wait/lock behavior.
+- Fallback Arc enforces overflow checks on reference counters and may panic on overflow.
+
+## Extension points
+
+- Additional wrappers/adapters can be added to normalize synchronization semantics across targets.
+- Arc fallback can evolve independently while preserving exported `Arc`/`Weak` contract.
+
+## Contract vs implementation
+
+- **Contract**: one consistent synchronization import surface across platforms.
+- **Current implementation**: direct `embassy_sync` re-export plus conditional Arc fallback implementation.
+
+## Limitations and trade-offs
+
+- Behavior still inherits cooperative runtime assumptions from executor usage patterns.
+- Fallback Arc prioritizes portability over lock-free performance.
 
 ## References
 
 - <HostReference crate="synchronization" />
 - <CodeReference path="modules/synchronization" />
-
-## See also
-
 - [🏁 Task](../modules/task.md)
-- [🧠 Memory](../modules/memory.md)
