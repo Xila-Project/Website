@@ -4,80 +4,62 @@ layout: doc
 
 # 🗃️ Virtual file system
 
-Xila provides a file system API that allows to manage files, directories, and devices in a unified way, following the Unix philosophy "everything is a file".
+The Virtual File System (VFS) is Xila's path router and policy gate for file systems, devices, and pipes. It maps absolute paths to mounted backends, applies ownership/permission checks, and returns typed handles (`File`, `Directory`) for subsequent operations.
 
-The Virtual File System (VFS) is a central service that routes path-based operations to mounted file systems and devices while enforcing ownership and permission policies.
+## Role in system
 
-## Features
+- Provides the global namespace used by modules and executables (`/`, `/devices`, `/system`, `/data`, ...).
+- Normalizes access to heterogeneous backends: regular file systems, character devices, block devices, and named/unnamed pipes.
+- Bridges module concerns: task identity (`task`), user/group policy (`users`), and timestamps (`time`).
 
-The virtual file system module offers the following features:
+## Responsibilities and boundaries
 
-- **Unified API**: Manage files, directories, and devices through a consistent interface.
-- **Multiple file types**: Support for regular files, directories, block devices, character devices, and pipes.
-- **Extensible design**: Ability to mount multiple file systems with custom implementations.
-- **Unix-like semantics**: Familiar file operations and permissions model.
-- **Thread-safe operations**: Concurrent access to the file system with proper synchronization.
-- **Blocking/non-blocking behavior**: Supports both polling and blocking operation helpers depending on file flags.
+**In scope**
 
-## Dependencies
+- Path-to-mount resolution (longest-prefix mount selection).
+- Permission and ownership enforcement before backend calls.
+- Mount/unmount lifecycle for file systems and devices.
+- Handle-level dispatch for file, directory, and pipe operations.
 
-The virtual file system module depends on the following modules:
+**Out of scope**
 
-- [Time](./time.md): Used for file timestamps.
-- [Users](./users.md): Used for file ownership and permissions.
-- [Task](./task.md): Used to get the current task context for file operations.
+- Concrete on-disk layout semantics (owned by mounted file-system implementations).
+- Authentication/session policies (owned by higher-level components).
+- Link semantics and advisory locking APIs (not implemented in this module).
 
-It also relies on the following crates:
+## Internal architecture
 
-- [alloc](https://doc.rust-lang.org/alloc/): Used for dynamic memory allocation.
+- Singleton manager: `virtual_file_system::initialize(...)` stores one `VirtualFileSystem` in `OnceLock`.
+- Core state (`RwLock`-protected):
+  - `file_systems: Vec<InternalFileSystem>` (mount point + backend pointer + reference count),
+  - `character_device: BTreeMap<Inode, InternalCharacterDevice>`,
+  - `block_device: BTreeMap<Inode, InternalBlockDevice>`,
+  - `pipes: BTreeMap<Inode, InternalPipe>`.
+- Mount targets are represented as `ItemStatic` and materialized as `File`/`Directory` wrappers around synchronous primitives.
+- Default hierarchy helper (`create_default_hierarchy`) creates and sets permissions on standard paths, including `/devices/network`.
 
-## Current implementation notes
+## Lifecycle and execution model
 
-- The default hierarchy is created via `create_default_hierarchy`.
-- Standard mount points include `/binaries`, `/configuration`, `/data`, `/devices`, `/logs`, `/system`, `/temporary`, and `/devices/network`.
-- Device cleanup helpers are provided to reset mounted character/block devices during setup.
+1. Initialize `task`, `users`, and `time` managers.
+2. Initialize VFS with root backend (`initialize(..., root_file_system)`).
+3. Create the default hierarchy (`create_default_hierarchy`).
+4. Mount optional file systems/devices (`mount_file_system`, `mount_character_device`, `mount_block_device`, `create_named_pipe`).
+5. Use async APIs (`open`, `open_directory`, `create_directory`, `remove`, `rename`, ...).
+6. Optionally unmount (`unmount`, `unmount_all`) and uninitialize backend ownership.
 
-## Architecture
-
-The virtual file system acts as an abstraction layer between applications and concrete file system implementations, allowing multiple file systems to be mounted at different paths.
-
-### File types
-
-Xila supports the following file types:
-
-- **File**: A file is a sequence of bytes that can be read and written in an underlying file system.
-- **Directory**: A directory is a file that contains a list of files and directories inside it in an underlying file system.
-- **Block device**: A block device is a file that allows reading and writing of data in blocks in an underlying file system.
-- **Character device**: A character device is a file that allows reading and writing of data one character at a time in an underlying file system.
-- **Pipe**: A pipe is a file that allows inter-process communication.
-
-### File system implementation
-
-Xila virtual file system is designed to be extensible and mount multiple file systems.
-A file system can be implemented through the <HostReference crate="file_system" kind="trait" symbol="FileSystemOperations" />.
-
-Currently, Xila provides the following file systems:
-
-- [`Little FS`](../crates/little_fs.md): A lightweight file system designed for embedded systems.
-
-Once a file system is implemented, it can be mounted to a specific path.
-
-Device endpoints are also mounted into the same namespace, enabling modules to expose services through file-like APIs.
-
-### Operation flow
-
-Here is the working principle of the virtual file system:
+## Data/control flow
 
 ```mermaid
 sequenceDiagram
   participant App as Executable/Module
-    participant VFS as Virtual File System
+  participant VFS as Virtual File System
   participant Node as Resolved node (FS or device)
   participant FS as Mounted file system backend
   participant Dev as Mounted device endpoint
 
   App->>VFS: open/read/write/control(path, flags)
-  VFS->>VFS: resolve path + permissions + task context
+  VFS->>VFS: resolve mount + load task/user/time context
+  VFS->>VFS: check owner/group/other permissions
   VFS->>Node: dispatch operation
   alt Node is file-system item
     Node->>FS: backend operation
@@ -87,15 +69,56 @@ sequenceDiagram
     Dev-->>Node: data/status
   end
   Node-->>VFS: data/status
-    VFS-->>App: Return file handle/data
+  VFS-->>App: Return handle/data/status
 ```
 
-### File system structure
+## Concurrency and synchronization model
+
+- Global state uses `RwLock<CriticalSectionRawMutex, ...>`.
+- Open/close paths update per-mount or per-device reference counters to protect unmount semantics.
+- Busy resources are surfaced as `RessourceBusy`/`file_system::Error::RessourceBusy`.
+- `poll(...)` retries busy operations with `task::yield_now().await`.
+- `blocking_operation(...)` enforces non-blocking file-state behavior by returning busy errors directly when `StateFlags::NonBlocking` is set.
+
+## Dependency model
+
+- `task`: current task identifier and owner metadata lookup.
+- `users`: group membership checks for permission evaluation.
+- `time`: timestamp stamping for create/access/modify/status updates.
+- `file_system` traits: backend contracts (`FileSystemOperations`, `CharacterDevice`, `BlockDevice`).
+
+## Failure semantics and recovery behavior
+
+- Invalid path/mount conditions return `Error::InvalidPath`.
+- Missing metadata fields (`kind`, `inode`, `permissions`, ...) return `Error::MissingAttribute`.
+- Permission failures return `Error::PermissionDenied` before backend execution.
+- Unmount with live references returns `Error::RessourceBusy` unless `force` is requested.
+- Device cleanup helpers (`clean_devices*`) tolerate expected stale references (`InvalidIdentifier`) to make startup idempotent.
+
+## Extension points
+
+- New file systems: implement <HostReference crate="file_system" kind="trait" symbol="FileSystemOperations" /> and mount them.
+- New devices: implement direct character/block traits and mount into namespace paths.
+- Named/unnamed pipes: provided as built-in in-memory FIFO endpoints.
+
+## Known limitations and trade-offs
+
+- Symbolic link and file-locking APIs are not implemented in the current surface.
+- Several ABI-level filesystem calls are still `todo!()` (for example symlink/time-setting/truncate paths), so C surface completeness is lower than internal Rust API completeness.
+- Shared global manager simplifies integration but centralizes contention on VFS metadata locks.
+
+## Contract vs implementation
+
+- **Stable module contract:** A global path namespace with mount-based dispatch, ownership/permission checks, and typed file/directory/pipe operations surfaced through the module API.
+- **Current implementation details:** A singleton manager backed by `OnceLock` + `RwLock`, in-memory mount/device registries, helper-generated default hierarchy, and specific lock/reference-count strategies used to enforce unmount safety.
+- **Compatibility note:** Consumers should depend on API semantics and error behavior, not on concrete internal collections, locking structure, or initialization helper internals, which can evolve without changing the public contract.
+
+## Reference namespace layout
 
 - `/`: Root directory
   - `/binaries`: Executable files
   - `/configuration`: Configuration files (user space)
-    - `/shared`: Shared configuration files (e.g. )
+    - `/shared`: Shared configuration files (e.g. network profiles)
   - `/data`: Application data files (user space)
     - `/shared`: Shared data files (e.g. logs)
   - `/devices`: Mounted devices
@@ -105,31 +128,9 @@ sequenceDiagram
     - `/users`: User definitions
   - `/temporary`: Temporary files (cleared on reboot)
 
-## Known limitations
-
-The virtual file system module has the following known limitations:
-
-- **Limited file system support**: Currently only Little FS is implemented.
-- **No symbolic links**: Symbolic links are not yet supported.
-- **No file locking**: File locking mechanisms are not implemented.
-- **No symbolic link resolution layer**: Path aliasing remains explicit through mounts.
-
-## Future improvements
-
-Planned future improvements for the virtual file system module include:
-
-- **Additional file systems**: Support for FAT32, ext4, and other common file systems.
-- **Symbolic links**: Add support for soft and hard links.
-- **File locking**: Implement advisory and mandatory file locking.
-- **Extended attributes**: Support for extended file attributes and metadata.
-- **File watching**: Notification system for file system changes.
-
-## References
+## References / See also
 
 - <HostReference crate="virtual_file_system" />
-
-## See also
-
-- [Little FS official documentation](https://github.com/littlefs-project/littlefs)
-- [POSIX file system standards](https://pubs.opengroup.org/onlinepubs/9699919799/)
 - [Network module](./network.md)
+- [Task](./task.md)
+- [Users](./users.md)
