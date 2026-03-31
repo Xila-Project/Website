@@ -4,55 +4,62 @@ layout: doc
 
 # 📁 File system
 
-The `file_system` crate defines foundational file system primitives and traits used throughout Xila.
+The `file_system` crate is the architectural contract layer for storage nodes, files, directories, and device endpoints.
 
-It provides path/types abstractions, metadata and permission handling, file and device related interfaces, and the contracts implemented by concrete file systems.
+## Role
 
-## Features
+- Defines fundamental types (`Path`, flags, permissions, metadata, errors, identifiers).
+- Defines operation traits consumed by VFS and implemented by concrete backends/devices.
+- Provides reusable helpers for memory devices, partitions, and MBR handling.
 
-- Core traits for file system operations and nodes.
-- POSIX-like metadata and access flags.
-- Character/block device integration points.
-- Shared path and identifier types used by higher-level modules.
-- Partition and MBR utilities for block-device layouts.
-- In-memory device helpers useful for tests and bootstrapping.
+## Boundaries
 
-## Dependencies
+- In scope: trait contracts and shared semantics for file/device operations.
+- Out of scope: global namespace mounting/orchestration (handled by [Virtual file system](../modules/virtual_file_system.md)).
 
-- [🏁 Task](../modules/task.md)
-- [👥 Users](../modules/users.md)
-- [📦 Shared](./shared.md)
-- [🔃 Synchronization](./synchronization.md)
+## Internal structure
 
-## API snapshot
+- `fundamentals/`: path, identifiers, permissions, statistics, flags, entry/type primitives.
+- `operations/`: core trait families (`FileSystemOperations`, `BaseOperations`, `DirectoryOperations`, ...).
+- `devices/`: character/block device abstractions and direct operations.
+- `mbr/` and `partition/`: partition table and partition-device helpers.
+- `memory_device.rs`: in-memory block device implementation.
 
-- `FileSystemOperations`: Core trait implemented by concrete file system backends.
-- `DirectCharacterDevice` / `DirectBlockDevice`: Context-free device interfaces.
-- `MemoryDevice`: In-memory block device used by tests and examples.
-- `mbr::Mbr` and partition helpers: Tools to define/read partition maps.
-- Fundamental types: `Path`, `Flags`, `Permissions`, `Error`, and timestamp utilities.
+## Runtime interaction
 
-## Architecture
+- VFS calls file-system and device traits through dynamic dispatch.
+- Device nodes expose `control` commands and read/write operations via the same contract surface.
+- Backends like [Little FS](./little_fs.md) map these traits to concrete storage engines.
 
-The crate is intentionally split between:
+## Dependency model
 
-1. generic operation traits and types,
-2. device abstractions,
-3. optional concrete helpers (for example memory-backed devices and MBR tools).
+- Depends on [Task](../modules/task.md), [Users](../modules/users.md), [Shared](./shared.md), [Synchronization](./synchronization.md), and [Internationalization](./internationalization.md).
+- Upstream consumers include virtual_file_system, executable, authentication, and drivers.
 
-Higher-level services (notably VFS) depend on these abstractions and stay decoupled from specific storage backends.
+## Failure semantics
 
-## Known limitations
+- Uniform `file_system::Error` result model across traits.
+- Unsupported operations are explicit (`UnsupportedOperation`), allowing capability probing by callers.
+- Backend-specific failures are expected to be translated into this crate's error domain.
 
-- This crate defines abstractions and helpers, not a full mountable namespace manager by itself.
-- Semantics such as blocking behavior and path resolution are finalized at VFS/backend integration layers.
+## Extension points
+
+- Add new backend crates by implementing the operation traits.
+- Extend control-command families while preserving command identifiers for compatibility.
+- Add helper devices/partition utilities without changing core trait contracts.
+
+## Contract vs implementation
+
+- **Contract**: typed trait and data-model surface for file and device operations.
+- **Current implementation**: includes reusable helpers (`MemoryDevice`, MBR/partition utilities) but delegates namespace-level behavior to VFS.
+
+## Limitations and trade-offs
+
+- Intentionally broad contract surface increases flexibility, but requires careful implementer conformance.
+- Policy decisions (mount precedence, path traversal context, async scheduling) live outside this crate.
 
 ## References
 
 - <HostReference crate="file_system" />
 - <CodeReference path="modules/file_system" />
-
-## See also
-
-- [🗃️ Virtual file system](../modules/virtual_file_system.md)
 - [📁 Little FS](./little_fs.md)
