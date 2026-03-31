@@ -4,49 +4,39 @@ layout: doc
 
 # 🖥️ Virtual machine
 
-One of Xila's core capabilities is executing applications on systems with restricted or read-only program memory.
+Xila's WebAssembly runtime integration is implemented in the WASM executable host path and built on WAMR.
 
-To achieve this, Xila integrates a Virtual Machine (VM) module capable of interpreting and executing WebAssembly (WASM) bytecode.
+## Role in system
 
-This module provides a runtime environment for WASM applications, enabling them to run on Xila regardless of the underlying hardware architecture. Consequently, applications can be developed for a broad spectrum of devices, ranging from embedded systems to desktop computers.
+- Loads and executes guest WASM modules under host-managed runtime instances.
+- Connects guest imports to host callbacks via registrable binding providers.
+- Bridges guest stdio and file-context state into Xila ABI/VFS services.
 
-In the current workspace layout, this runtime is implemented inside the WASM executable crate host path.
+## Responsibilities and boundaries
 
-## Features
+**In scope**
 
-The virtual machine module offers the following features:
+- Runtime creation and host function registration.
+- Module loading from byte buffers and WASI argument setup.
+- Instance creation and exported function invocation.
+- Execution-time ABI context setup for task/file identifiers.
 
-- **WASM support**: Ability to execute WebAssembly bytecode.
-- **Sandboxed environment**: Applications run in a secure and isolated environment.
-- **Cross-platform compatibility**: Applications can run on different hardware architectures without modification.
-- **Integration with Xila modules**: Access to Xila's services and functionalities through WASI or custom bindings.
-- **Dynamic loading**: Ability to load and execute WASM modules at runtime.
-- **Host/guest split**: Separate host-runtime and guest-facing integration paths.
+**Out of scope**
 
-## Dependencies
+- Defining all host API contracts (split across [ABI](./abi.md) and [Bindings](./bindings.md)).
+- Generic process supervision outside the WASM execution path.
 
-The virtual machine is powered by the [WebAssembly Micro Runtime (WAMR)](https://github.com/bytecodealliance/wasm-micro-runtime), a lightweight runtime optimized for embedded systems. Integration is achieved via the [wamr-rust-sdk](https://github.com/AlixANNERAUD/wamr-rust-sdk), which provides the necessary Rust bindings for WAMR.
+## Internal architecture
 
-The virtual machine module depends on the following modules:
+- Runtime layer (`runtime.rs`): WAMR runtime builder + registration of `Registrable` host function descriptors.
+- Module layer (`module.rs`): converts WASM bytes to WAMR module, injects WASI args/env/stdin/out/err.
+- Instance layer (`instance.rs`): creates callable module instance and manages custom-data lifecycle.
+- Environment/translation layers (`environment.rs`, `translation.rs`, `custom_data.rs`): pointer translation and host-object mapping.
 
-- [Task](./task.md): Used to manage the execution context of WASM applications.
-- [Memory](./memory.md): Used to handle memory allocation for WASM applications.
-- [Virtual file system](./virtual_file_system.md): Used to provide file system access to WASM applications.
-- [Time](./time.md): Used to provide time-related functionalities to WASM applications.
-- [ABI](./abi.md): Used to define the interface between WASM applications and Xila modules.
+**Contract vs implementation**
 
-It also relies on the following internal crates:
-
-- [Synchronization](../crates/synchronization.md): Provides thread-safe operations within the virtual machine module.
-- [Shared](../crates/shared.md): Provides common utilities and types used across Xila modules.
-
-## Current implementation notes
-
-- Runtime and instance management are implemented under `Core/executables/wasm/src/host/virtual_machine`.
-- WAMR integration is provided by `wamr-rust-sdk` in the WASM executable crate.
-- Host bindings are registered to expose Xila services (notably graphics-related calls) to guest modules.
-
-## Architecture
+- **Contract**: `Runtime::execute(...)` and guest import signatures/types (`WasmPointer`, `WasmUsize`).
+- **Implementation**: WAMR-specific setup calls, custom data map mechanics, and exact WASI argument plumbing.
 
 ```mermaid
 graph TB
@@ -64,36 +54,53 @@ graph TB
     WAMR -->|WASI / ABI interop| ABI
 ```
 
-Here is a brief explanation of the architecture components:
+## Lifecycle and execution model
 
-1. **WASM executable**: An application compiled into WebAssembly bytecode (targeting `wasm32-unknown-unknown` or `wasm32-wasi`).
-2. **Native executable**: A native application that loads from the virtual file system and orchestrates the virtual machine to execute WASM applications.
-3. **Virtual machine**: The core module that manages the execution lifecycle of WASM applications using WAMR.
-4. **WebAssembly Micro Runtime (WAMR)**: The lightweight runtime engine responsible for executing the WASM bytecode.
-5. **ABI**: The Application Binary Interface layer which ensures compatibility for standard WASI calls when the WASM application invokes system services.
-6. **Custom bindings**: Interfaces for Xila-specific functionalities not covered by WASI, allowing WASM applications to access services such as graphics and networking.
-7. **Other modules**: Both the ABI and custom bindings act as secure proxies (performing necessary translation and enforcing sandboxing, such as restricting direct memory access) to interact with other Xila modules like Task, Memory, Virtual File System, and Time.
+1. Build runtime with selected registrables.
+2. Resolve task/environment and register stdio files in ABI context.
+3. Load module from bytes and set WASI args/env.
+4. Instantiate module with configured stack size.
+5. Invoke exported function and collect return values.
+6. Drop instance/module and clear temporary custom/context state.
 
-## Known limitations
+## Data/control flow
 
-The virtual machine module has the following known limitations:
+- `Runtime::execute` orchestrates ABI context binding, module creation, instance invocation, and result propagation.
+- Host callbacks use VM environment translation APIs to map guest addresses to host pointers or host-object ids.
+- Bindings/ABI calls re-enter core services through controlled boundaries.
 
-- **Performance overhead**: Running applications in a virtual machine introduces some performance overhead compared to native execution.
-- **Limited access to hardware**: WASM applications have restricted access to hardware resources, which may limit their capabilities.
-- **WASM feature support**: Not all WebAssembly features may be supported by the WAMR runtime.
-- **Integration locality**: VM runtime currently lives in the executable layer rather than a standalone Core module crate.
+## Concurrency and synchronization model
 
-## Future improvements
+- `Runtime` and `Instance` are marked `Send`/`Sync` in this integration layer.
+- ABI context task binding around calls is explicit (`call_abi`) to keep per-call task association coherent.
+- Downstream synchronization is delegated to called modules (graphics lock, VFS locks, task manager locks).
 
-Planned future improvements for the virtual machine module include:
+## Dependency model
 
-- **Extended WASI Support**: Currently, only `wasi_snapshot_preview1` is supported, it would be beneficial to implement add support for `wasi_snapshot_preview2` which would offer out-of-the-box networking capabilities.
+- Depends on WAMR runtime crate and generated/handwritten host bindings.
+- Depends on [ABI](./abi.md) for WASI-like/system-level calls and file descriptor context.
+- Depends on [Task](./task.md), [Virtual file system](./virtual_file_system.md), and other core modules through bindings.
 
-## References
+## Failure semantics and recovery behavior
+
+- Runtime/module/instance creation failures are surfaced as VM `Error` variants.
+- File-context registration failures abort execution before guest call.
+- Translation failures in host callbacks return binding/VM errors back to guest boundary.
+
+## Extension points
+
+- Register additional `Registrable` providers for new host import families.
+- Add new translation adapters for custom guest-host object types.
+- Extend execution wrappers for additional runtime policies (quotas, tracing, profiling).
+
+## Known limitations and trade-offs
+
+- Runtime integration currently lives in executable layer, not as a standalone Core module crate.
+- Supported WASI surface is constrained by current integration choices.
+- Guest execution overhead and hardware access constraints are intrinsic to sandbox model.
+
+## References / See also
 
 - <HostReference crate="virtual_machine" />
-
-## See also
-
 - [ABI](./abi.md)
 - [Bindings](./bindings.md)
