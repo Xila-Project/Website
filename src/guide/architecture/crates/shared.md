@@ -4,36 +4,55 @@ layout: doc
 
 # 📦 Shared
 
-The `shared` crate contains common utility types and helpers reused across modules, drivers, and executables.
+The `shared` crate is the low-level cross-cutting utility layer used by modules, drivers, and executables.
 
-It is the place for lightweight cross-cutting code that should not live in a specific subsystem.
+## Role
 
-## Features
+- Centralizes reusable primitives that do not belong to one domain subsystem.
+- Reduces duplication of utility code and shared type definitions across the workspace.
 
-- Common data structures and utility helpers.
-- Small abstractions reused by multiple crates.
-- Reduced duplication across Core packages.
+## Boundaries
 
-In practice, the crate groups low-level reusable building blocks such as:
+- In scope: generic helpers and value types (`flags`, `size`, `time`, HTTP/unit/UTF-8/slice helpers, layout-based any wrappers).
+- Out of scope: module orchestration, stateful managers, backend-specific logic.
 
-- generic data wrappers and conversion helpers,
-- flags/utilities used by multiple subsystem APIs,
-- shared error/value representations,
-- common protocol/value helpers (for example HTTP/time/units).
+## Internal structure
 
-## Architecture
+- Utility modules include `any`, `bijective_map`, `flags`, `http`, `size`, `slice`, `task`, `time`, `unit`, `utf8`.
+- `error.rs` provides shared error representation utilities.
 
-`shared` acts as a foundational utility layer and should stay dependency-light so it can be imported by modules, drivers, and executables without creating heavy dependency chains.
+## Runtime interaction
 
-## Dependencies
+- Typically used as pure library calls/value containers.
+- Frequently appears at crate boundaries where generic data conversion is needed (for example control payload casting and UTF-8 chunk iteration).
 
-- Logging integration via the `log` workspace dependency.
+## Dependency model
+
+- Dependency-light by design (`num`, workspace `log`).
+- Sits near the bottom of the dependency graph and is imported by many crates.
+
+## Failure semantics
+
+- Errors are mostly local utility conversion/validation errors (for example slice/layout checks).
+- Crates consuming shared utilities usually remap these errors into their own domains.
+
+## Extension points
+
+- Add new generic helpers when used by multiple subsystems.
+- Keep module additions cohesion-focused to avoid this crate becoming a catch-all for domain logic.
+
+## Contract vs implementation
+
+- **Contract**: stable, dependency-light utility API surface safe for broad workspace reuse.
+- **Current implementation**: collection of no-std-friendly helper modules with selective logging integration.
+
+## Limitations and trade-offs
+
+- Broad reuse increases API stability pressure.
+- Keeping scope strictly "shared only" avoids coupling but may require small wrappers in consumer crates.
 
 ## References
 
 - <HostReference crate="shared" />
 - <CodeReference path="modules/shared" />
-
-## See also
-
 - [🔃 Synchronization](./synchronization.md)
