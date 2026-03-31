@@ -4,66 +4,62 @@ layout: doc
 
 # 🏃 Executables
 
-The `executable` crate provides a set of utilities to define and launch native executables within the system.
+The `executable` crate defines the native executable contract and the launcher used across Core.
 
-Xila has two types of executables:
+## Role
 
-- **Native executables**: These are compiled directly for the target architecture, statically linked against Xila's binary.
-- **WASM executables**: These are WebAssembly modules that run within a WASM runtime environment, providing portability across different architectures. These are handled by the [WASM](../executables/wasm.md) native executable.
+- Defines `ExecutableTrait` and typed `GET_MAIN_FUNCTION` command contract.
+- Provides `execute(...)` orchestration: permission checks, task spawn, and standard stream propagation.
 
-## Features
+## Boundaries
 
-Key features include:
+- In scope: executable ABI contract, launch permission logic, standard stream helper type.
+- Out of scope: executable UI/business logic and shell-specific command parsing.
 
-- **Executable definition**: Easily define native executables and their properties.
+## Internal structure
 
-## Dependencies
+- `traits.rs`: `ExecutableTrait`, `ExecutableWrapper`, `mount_executables!`, command definition.
+- `lib.rs`: launch path (`execute`) + execution permission helpers.
+- `standard.rs`: `Standard` abstraction (`open`, `duplicate`, `read_line`, `close`).
+- `arguments_parser.rs`: argument helper support for executable crates.
+- `error.rs`: launcher-level error type.
 
-This crate relies on several core modules:
+## Runtime interaction
 
-- [Virtual file system](../modules/virtual_file_system.md): Access and manage executable files.
-- [Task](../modules/task.md): Create and manage tasks for running executables.
-- [Users](../modules/users.md): Handle permissions and ownership.
-- [Log](../modules/log.md): Log launch events and errors.
-- [Shared](../crates/shared.md): Common utilities and types used across Xila.
+1. Executables are mounted as character devices exposing `GET_MAIN_FUNCTION`.
+2. `execute(path, args, standard, spawner)` fetches VFS statistics and checks execute permissions.
+3. It opens executable file and requests main function via control command.
+4. It spawns a task and calls main with provided `Standard` and argument vector.
+5. It returns `task::JoinHandle<isize>` to allow join/wait by caller.
 
-## Architecture
+## Dependency model
 
-To launch a native executable, follow these steps:
+- Core dependencies: [File System](./file_system.md), [Virtual file system](../modules/virtual_file_system.md), [Task](../modules/task.md), [Users](../modules/users.md), [Shared](./shared.md), [Log](../modules/log.md), [Internationalization](./internationalization.md).
 
-1. **Define the Executable**: Implement the executable either as a raw <HostReference crate="file_system" kind="trait" symbol="CharacterDevice" /> or by using the <HostReference crate="executable" kind="trait" symbol="ExecutableTrait" />.
-2. **Mount the Executable**: Attach the executable to the [virtual file system](../modules/virtual_file_system.md) as a character device.
-3. **Launch the Executable**: Call the <HostReference crate="executable" kind="fn" symbol="execute" /> with the following parameters:
-   - Path to the executable in the virtual file system
-   - Arguments to pass (as an owned slice of strings)
-   - Standard input, output, and error files (opened and wrapped in <HostReference crate="executable" kind="struct" symbol="Standard" />; file duplicates can be used for redirection)
-   - (Optional) Executable spawner identifier
+## Failure semantics
 
-The <HostReference crate="executable" kind="fn" symbol="execute" /> performs these steps:
+- Permission denial is explicit (`Error::PermissionDenied`).
+- Missing main entrypoint yields `FailedToGetMainFunction`.
+- Task spawn or VFS failures are mapped into crate error variants.
+- Executable runtime errors are converted to negative `isize` task return values in spawned task closure.
 
-1. Retrieves task metadata (owner, group, etc.).
-2. Obtains the executable file's metadata from the [virtual file system](../modules/virtual_file_system.md).
-3. Checks permissions for the executable file.
-4. Locates the executable entry point (`main` function) using <HostReference crate="executable" kind="struct" symbol="GET_MAIN_FUNCTION" />.
-5. Creates a new task to run the executable.
-6. Invokes the executable's `main` function with the provided arguments and standard streams in the new task context.
-7. Returns a <HostReference crate="task" kind="struct" symbol="JoinHandle" /> for the created task.
+## Extension points
 
-## Known limitations
+- New executable crates implement `ExecutableTrait` and mount through `ExecutableWrapper` or `mount_executables!`.
+- `building` feature gates additional build-time support without changing runtime core path.
 
-Currently, the `executable` crate doesn't have any known limitations except those inherited from the underlying modules it depends on.
+## Contract vs implementation
 
-## Future improvements
+- **Contract**: executable = mounted character device that answers `GET_MAIN_FUNCTION` and receives `Standard + Vec<String>`.
+- **Current implementation**: launcher uses VFS metadata + users/group checks and task spawn under current task context.
 
-No specific future improvements are planned for the `executable` crate at this time. However, general enhancements to the underlying modules may indirectly benefit this crate.
+## Limitations and trade-offs
+
+- Contract is intentionally narrow (`main` only), simplifying dispatch but leaving richer lifecycle hooks to higher layers.
+- `setuid`-style override logic is constrained and permission-checked at launch time.
 
 ## References
 
 - <HostReference crate="executable" />
-
-## See also
-
-- [Virtual file system](../modules/virtual_file_system.md)
-- [Task](../modules/task.md)
-- [Users](../modules/users.md)
-- [Log](../modules/log.md)
+- <CodeReference path="modules/executable" />
+- [Executables architecture pages](../executables/index.md)
