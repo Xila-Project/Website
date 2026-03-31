@@ -8,32 +8,48 @@ The `peripherals` crate defines shared data types used to configure and interact
 
 It currently focuses on pin modeling primitives (direction, level, pull mode, and compact data representation) that can be exchanged safely between layers.
 
-## Features
+## Boundaries
 
-- `Direction`, `Level`, and `Pull` enums for portable pin state modeling.
-- `PinData` structure to bundle optional pin attributes in one payload.
-- Byte-slice conversion helpers for device-facing buffers.
-- Compact C-compatible representation (`repr(C)` / `repr(u8)`), useful for control payloads.
+- In scope: pin-level enums and packed payload conversions.
+- Out of scope: driver access, pin mux configuration engines, board-specific behavior.
 
-## API snapshot
+## Internal structure
 
-- `PinData::new(...)` and setter/getter methods.
-- `TryFrom<&[u8]>` / `TryFrom<&mut [u8]>` for validated binary view conversion.
-- `AsMut<[u8]>` for writing structured pin data into control buffers.
+- `lib.rs`: exports peripheral primitives.
+- `pin.rs`: enums, `PinData`, and byte-slice conversion implementations.
 
-## Dependencies
+## Runtime interaction
 
-This crate is intentionally dependency-light.
+- Control paths can serialize/deserialize `PinData` as mutable byte slices.
+- Consumers validate incoming byte buffers via `TryFrom<&[u8]>` / `TryFrom<&mut [u8]>` before interpreting as typed data.
 
-## Known limitations
+## Dependency model
 
-- Current scope is focused on pin modeling; broader peripheral abstractions are intentionally out of this crate for now.
+- No external runtime dependencies.
+- Consumed by driver layers and any crate requiring shared pin payload contracts.
+
+## Failure semantics
+
+- Conversion methods return `Err(())` on size/alignment mismatch or invalid enum discriminants.
+- No I/O side effects are performed by this crate itself.
+
+## Extension points
+
+- Additional peripheral payload types can be added in separate modules while preserving `PinData` layout.
+- Existing enums can be extended carefully with ABI/backward-compatibility considerations.
+
+## Contract vs implementation
+
+- **Contract**: `repr(u8)` enums and `repr(C)` `PinData` with conversion helpers.
+- **Current implementation**: low-level transmute-based conversions with explicit length/alignment validation.
+
+## Limitations and trade-offs
+
+- Minimal scope keeps coupling low but pushes richer peripheral semantics to drivers/modules.
+- Raw layout conversion is efficient but requires strict buffer discipline by callers.
 
 ## References
 
 - <CodeReference path="modules/peripherals" />
-
-## See also
-
 - [🔌 Device](./device.md)
 - [🪛 Drivers](../drivers.md)
