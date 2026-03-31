@@ -4,34 +4,38 @@ layout: doc
 
 # 🧠 Memory
 
-The Memory module provides Xila's allocation and memory-management abstraction.
+The Memory module defines allocation contracts and the runtime bridge to the active allocator implementation.
 
-It exposes a manager interface for allocation/deallocation/reallocation, supports capability-aware requests, and acts as the bridge between Xila internals and Rust's global allocation flow.
+## Role in system
 
-## Features
+- Provides the system allocation API (`allocate`, `deallocate`, `reallocate`) with explicit `Layout` semantics.
+- Exposes capability-aware allocation requests (`Executable`, `DirectMemoryAccess`).
+- Serves as the source for Rust global allocator integration through `GlobalAlloc` wrapper.
 
-The Memory module offers the following features:
+## Responsibilities and boundaries
 
-- **Dynamic allocation primitives**: Allocate, deallocate, and reallocate blocks with Rust layout semantics.
-- **Capability flags**: Request memory with specific properties (for example executable or DMA-related capabilities).
-- **Cache control hooks**: Flush data/instruction cache when required by a platform.
-- **Statistics surface**: Exposes used/free/total memory metrics through manager APIs.
-- **Global allocator integration**: Adapter layer implementing `GlobalAlloc` for Rust runtime allocations.
+**In scope**
 
-## Dependencies
+- `ManagerTrait` contract for allocation/backing allocator implementations.
+- `Manager` wrapper adapting trait object to safe/unsafe call sites and `GlobalAlloc`.
+- Cache and page-size helper surface.
 
-The memory module depends on the following crates:
+**Out of scope**
 
-- [🔃 Synchronization](../crates/synchronization.md): Used by concrete manager implementations.
-- [📦 Shared](../crates/shared.md): Provides common flags/utilities used by memory abstractions.
+- Choosing one universal allocator strategy for all targets.
+- Owning platform-specific heap region setup (performed by platform crates/linking symbols).
 
-The Memory module also relies on the following modules:
+## Internal architecture
 
-- [Log](./log.md): Used for logging memory-related events and errors.
+- Core abstraction: `ManagerTrait` (unsafe allocation primitives + usage stats + cache hooks).
+- Runtime wrapper: `memory::Manager<'a>(&'a dyn ManagerTrait)`.
+- Global accessor: `memory::get_instance()` returns `__XILA_MEMORY_MANAGER` symbol provided by final runtime.
+- Capability flags are bitflags (`Executable`, `DirectMemoryAccess`) used as hints/requirements for backend allocators.
 
-## Architecture
+**Contract vs implementation**
 
-The module defines a `ManagerTrait` contract and exposes a wrapper used by both explicit memory calls and Rust's global allocator path.
+- **Contract**: `ManagerTrait` methods and expected safety invariants.
+- **Implementation**: backend-specific allocation algorithms, region policies, and capability interpretation.
 
 ```mermaid
 graph TD
@@ -42,25 +46,50 @@ graph TD
     B -->|Log events| F[Log module]
 ```
 
-## Known limitations
+## Lifecycle and execution model
 
-The Memory module has the following known limitations:
+1. Platform/runtime defines concrete manager and exports `__XILA_MEMORY_MANAGER`.
+2. Consumers call memory APIs directly or through Rust allocation path.
+3. Optional cache/page helpers are invoked for architecture-specific coherency needs.
+4. ABI entrypoints may wrap operations with additional metadata and synchronization.
 
-- **Fragmentation risk**: Long-lived mixed-size allocation patterns can reduce effective free space.
-- **Backend-specific behavior**: Cache flushing and capability semantics depend on the concrete allocator implementation.
+## Data/control flow
 
-## Future improvements
+- Direct path: caller -> `Manager` -> trait object allocator backend.
+- Rust alloc path: allocator trait implementation -> same `Manager` wrapper -> backend.
+- ABI path: C ABI wrappers -> memory manager + allocation metadata helpers.
 
-Planned future improvements for the Memory module include:
+## Concurrency and synchronization model
 
-- **Advanced allocation strategies**: Slab/buddy-style strategies for better fragmentation control.
-- **Richer telemetry**: More detailed allocation diagnostics for debugging target-specific memory pressure.
+- Thread-safety guarantee is part of `ManagerTrait: Send + Sync` contract.
+- Synchronization strategy is backend-defined.
+- ABI allocation wrappers currently serialize operations with a global mutex in their implementation layer.
 
-## References
+## Dependency model
+
+- Core depends on trait-based allocator implementation supplied externally.
+- Used by virtually all modules via Rust allocation flow; additionally consumed explicitly in VM/ABI flows.
+
+## Failure semantics and recovery behavior
+
+- Allocation/reallocation returns null on failure at C-facing boundary and `None` at trait level.
+- Deallocating null pointers is treated as no-op in wrapper behavior.
+- Reallocate default implementation allocates-copy-deallocates, so failure can occur before ownership transfer.
+
+## Extension points
+
+- Provide new `ManagerTrait` implementations (region allocators, platform allocators, debug allocators).
+- Extend capability semantics with additional flags when required by targets.
+- Override cache/page methods for architecture-specific behavior.
+
+## Known limitations and trade-offs
+
+- Fragmentation and allocation behavior are backend-specific.
+- Cache and capability guarantees are only as strong as backend implementation support.
+- Cross-platform consistency requires disciplined backend conformance to trait contracts.
+
+## References / See also
 
 - <HostReference crate="memory" />
-
-## See also
-
 - [Drivers](../drivers.md)
 - [🔃 Synchronization](../crates/synchronization.md)
