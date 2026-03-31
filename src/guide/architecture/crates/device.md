@@ -4,48 +4,57 @@ layout: doc
 
 # 🔌 Device
 
-The `device` crate provides typed device command definitions and primitives shared by drivers and modules.
+The `device` crate defines typed control-command contracts for device files.
 
-It builds on file system control-command abstractions so device capabilities can be exposed through stable, typed interfaces.
+## Role
 
-## Features
+- Provides shared command identifiers/payload types that callers and drivers both understand.
+- Keeps command ABI definitions centralized instead of duplicating command numbers in each consumer.
 
-- Typed device command definitions using `define_command!`.
-- Shared enums/types for hardware-accelerated operations.
-- Compatibility with character/block device endpoints mounted in VFS.
+## Boundaries
 
-## API snapshot
+- In scope: command typing, payload enums, `define_command!` declarations.
+- Out of scope: any actual device behavior, state, or runtime mounting logic.
 
-- `HashAlgorithm`: Enumerates supported hash algorithms (MD5, SHA family variants).
-- `RESET` and `SET_ALGORITHM`: Typed control commands for hash-capable devices.
+## Internal structure
 
-## Dependencies
+- `lib.rs`: exports command families.
+- `hash.rs`: hash-specific types and commands.
+  - `HashAlgorithm` enum.
+  - `RESET` and `SET_ALGORITHM` command definitions.
 
-The device crate depends on the following crates:
+## Runtime interaction
 
-- [File system](../crates/file_system.md): For file system primitives used by the VFS module.
+- Callers issue `File::control(...)` on mounted device nodes (for example `/devices/hasher`).
+- Drivers decode the same command identifiers to execute implementation-specific behavior.
 
-## Architecture
+## Dependency model
 
-This crate intentionally keeps a small surface and delegates execution to concrete driver implementations:
+- Depends on [File system](./file_system.md) for `ControlCommand` abstractions and macro support.
+- Consumed by higher-level crates such as [Authentication](./authentication.md) and driver implementations.
 
-1. the crate defines command identifiers and payload types,
-2. drivers implement command handling,
-3. callers invoke commands through VFS file/device control paths.
+## Failure semantics
 
-## Known limitations
+- This crate does not execute I/O; operational failures occur in driver or VFS layers.
+- Type/identifier mismatches are surfaced when commands are cast/handled at runtime boundaries.
 
-- Scope is intentionally narrow; it defines primitives and command contracts rather than full device driver implementations.
+## Extension points
 
-## Future improvements
+- Add new command families as separate modules (mirroring `hash.rs`).
+- Preserve existing command IDs to keep backward-compatible control ABI.
 
-- Extend typed command families beyond hashing-related operations as more reusable device interfaces are stabilized.
+## Contract vs implementation
+
+- **Contract**: stable typed command IDs + payload schemas.
+- **Current implementation**: only hash-device contract family is defined in-tree.
+
+## Limitations and trade-offs
+
+- Narrow scope means low coupling, but functionality depends on external driver support.
+- Command evolution requires ABI discipline once IDs are consumed by executables/modules.
 
 ## References
 
 - <HostReference crate="device" />
-
-## See also
-
-- [File system](../crates/file_system.md)
+- <CodeReference path="modules/device" />
 - [Drivers](../drivers.md)
