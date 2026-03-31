@@ -4,20 +4,48 @@ layout: doc
 
 # 📦 Modules
 
-Each subsystem of Xila is implemented as a module. Modules are designed to be as independent as possible, allowing for easier maintenance and development. Each module is responsible for a specific task, such as managing the filesystem, handling the user interface, or managing tasks.
+Xila is organized as composable modules with explicit contracts and concrete implementations. Most core modules expose a singleton manager (`OnceLock` + lock-protected state), then publish a typed API consumed by other modules and executables.
 
-Usually, a module is defined as a singleton structure (usually a static `OnceLock` with a `Mutex` or `RwLock` inside) that exposes methods to interact with the module. They need to be initialized before use, typically during the system startup.
+This section is an architecture map, grouped by system role.
 
-## List of modules
+## Recommended reading order
 
-- [🔗 ABI](./abi.md): C-compatible interface layer used by external runtimes and integrations.
-- [🔗 Bindings](./bindings.md): Xila-specific host/guest binding bridge (not limited to POSIX-style ABI calls).
-- [🖼️ Graphics](./graphics.md): Display/input and rendering integration.
-- [📝 Log](./log.md): Global logging facade and backend dispatch.
-- [🧠 Memory](./memory.md): Allocation, capability-aware memory operations, and allocator integration.
-- [🌐 Network](./network.md): Async networking stack and interface/socket orchestration.
-- [🏁 Task](./task.md): Task lifecycle, scheduling, and execution context management.
-- [🕓 Time](./time.md): Time source abstraction and uptime/current-time queries.
-- [👥 Users](./users.md): Runtime user/group database and permission identity model.
-- [🗃️ Virtual file system](./virtual_file_system.md): Unified file/device namespace and mount system.
-- [🖥️ Virtual machine](./virtual_machine.md): WebAssembly runtime integration layer.
+1. [🗃️ Virtual file system](./virtual_file_system.md)
+2. [🏁 Task](./task.md)
+3. [🌐 Network](./network.md)
+4. [🔗 ABI](./abi.md)
+5. [🔗 Bindings](./bindings.md) (runtime integration path)
+6. Remaining modules and integrations: [🧠 Memory](./memory.md), [👥 Users](./users.md), [🕓 Time](./time.md), [📝 Log](./log.md), [🖼️ Graphics](./graphics.md), [🖥️ Virtual machine](./virtual_machine.md)
+
+## Foundation modules
+
+- [🧠 Memory](./memory.md): Allocation contract (`ManagerTrait`), global allocator bridge, capability flags, and cache/page helpers.
+- [🏁 Task](./task.md): Global task registry, executor/spawner integration, metadata inheritance, and signal delivery.
+- [👥 Users](./users.md): In-memory user/group database and identifier/membership resolution.
+- [🕓 Time](./time.md): Global time source abstraction over a direct character device.
+- [📝 Log](./log.md): Global logging bridge (`LoggerTrait`) on top of `log` ecosystem integration.
+
+## Runtime modules
+
+- [🗃️ Virtual file system](./virtual_file_system.md): Path namespace, mount dispatch (file systems/devices/pipes), ownership/permission checks.
+- [🌐 Network](./network.md): `smoltcp` interface stacks, runner tasks, control-device surface under `/devices/network/*`.
+- [🖼️ Graphics](./graphics.md): LVGL runtime management, display/input plumbing, window/event services.
+
+## Interop and runtime-integration pages
+
+- [🔗 ABI](./abi.md): C ABI surface split across declarations, symbol definitions, and per-task ABI context.
+- [🔗 Bindings](./bindings.md): Module-adjacent runtime integration implemented in executable/WASM host paths for host-call dispatch and guest/host pointer translation.
+- [🖥️ Virtual machine](./virtual_machine.md): Module-adjacent runtime integration implemented in executable/WASM host paths for WAMR execution, instantiation, and host callback wiring.
+
+## Cross-module wiring (high level)
+
+```mermaid
+graph TD
+    Foundation[Foundation modules] --> Runtime[Runtime modules]
+    Foundation --> Interop[Interop + execution modules]
+    Runtime --> Interop
+
+    Foundation --- F1[Memory / Task / Users / Time / Log]
+    Runtime --- R1[VFS / Network / Graphics]
+    Interop --- I1[ABI / Bindings / Virtual machine]
+```
