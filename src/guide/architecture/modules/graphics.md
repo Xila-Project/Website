@@ -4,38 +4,36 @@ layout: doc
 
 # 🖼️ Graphics
 
-The Graphics module provides the UI/runtime layer used by graphical executables in Xila.
+The Graphics module hosts the LVGL runtime integration and exposes window/display/input services to executables.
 
-It wraps LVGL initialization, display/input device plumbing, window management, and event-loop integration behind a singleton manager.
+## Role in system
 
-## Features
+- Owns LVGL initialization and timer handler loop integration.
+- Bridges platform screen/input character devices into LVGL display/input objects.
+- Provides window lifecycle APIs and event retrieval for application runtimes.
 
-The Graphics module includes the following features:
+## Responsibilities and boundaries
 
-- **LVGL lifecycle management**: Initializes LVGL and sets tick callback integration with the Time module.
-- **Display and input abstraction**: Connects character devices to LVGL display/input drivers.
-- **Window services**: Create, enumerate, and focus windows via manager APIs.
-- **Theme services**: Centralized theme initialization and runtime update.
-- **Global lock API**: Explicit lock helpers for safe interaction with LVGL state.
+**In scope**
 
-## Dependencies
+- Manager singleton setup and LVGL runtime lifecycle.
+- Display/input device registration and runtime polling.
+- Window creation, enumeration, focus/maximize operations, and close requests.
+- Theme initialization and updates.
 
-The Graphics module is built on top of [LVGL](https://lvgl.io/), a popular open-source graphics library for embedded systems.
+**Out of scope**
 
-The graphics module depends on the following modules:
+- Full safe Rust wrapper coverage for all LVGL symbols.
+- Application-level UI architecture decisions.
 
-- [Memory](./memory.md): Used for dynamic memory allocation for graphical elements.
-- [Task](./task.md): Used to manage rendering and event handling tasks.
-- [ABI](./abi.md): Since LVGL is written in C, the ABI module is used to provide Rust bindings to the LVGL library (like allocation functions, etc.).
-- [Time](./time.md): Used as LVGL tick/time source.
+## Internal architecture
 
-The graphics module also relies on the following internal crates:
-
-- [Synchronization](../crates/synchronization.md): Provides thread-safe operations within the Graphics module.
-- [Shared](../crates/shared.md): Provides common utilities and types used across Xila
-- [Internationalization](../crates/internationalization.md): Provides support for multiple languages and character sets.
-
-## Architecture
+- Singleton `Manager` (`OnceLock`) with:
+  - `inner: RwLock<Inner>` storing display/input vectors and window parent object,
+  - `global_lock: Mutex<()>` used to serialize LVGL-critical sections.
+- Initialization sequence calls `lv_init`, sets LVGL tick callback to `time::get_instance()`.
+- `Manager::loop` drives `lv_timer_handler()` and periodic display resize checks.
+- `Window` wraps `lv_obj_t*`, stores user data queue, and maps LVGL events into Xila event types.
 
 ```mermaid
 graph TD
@@ -57,41 +55,57 @@ graph TD
     Manager -->|global lock| LVGL
 ```
 
-## Initialization flow
+## Lifecycle and execution model
 
-1. Initialize Time first (Graphics uses it as LVGL tick source).
-2. Provide a screen device and at least one input device (`DirectCharacterDevice`).
-3. Call `graphics::initialize(screen, input, input_kind, buffer_size, double_buffered)`.
-4. Spawn the graphics event loop via `Manager::loop(...)` from a task executor.
+1. Initialize [Time](./time.md) first.
+2. Initialize graphics manager with screen/input devices and buffer configuration.
+3. Spawn graphics loop task calling `Manager::loop(...)`.
+4. Applications create windows and process queued events.
+5. Optional runtime updates: add inputs, update theme, close/maximize windows.
 
-## API snapshot
+## Data/control flow
 
-- `graphics::initialize(...)` / `graphics::get_instance()`: Singleton lifecycle.
-- `Manager::create_window()`: Create a new application window.
-- `Manager::add_input_device(...)`: Register additional input sources at runtime.
-- `Manager::get_window_count()`, `Manager::get_window_icon(...)`, `Manager::maximize_window(...)`: Window management operations.
-- `Manager::update_theme(...)`: Runtime theme updates.
-- `Manager::lock()` / `Manager::try_lock()`: Explicit synchronization for LVGL-sensitive operations.
+- Input devices -> LVGL event callbacks -> per-window event queues.
+- Manager loop polls LVGL timers and triggers display maintenance.
+- Host bindings may call graphics APIs under manager lock (WASM path).
 
-## Known limitations
+## Concurrency and synchronization model
 
-The Graphics module has the following known limitations:
+- LVGL-sensitive operations are protected by manager-level mutex lock.
+- Metadata collections use `RwLock` for async read/write access.
+- Window/user-data pointers rely on explicit ownership conventions and `from_raw`/`into_raw` usage discipline.
 
-- **C style API boundary**: Not all LVGL features are wrapped in safe high-level Rust APIs yet.
-- **Manual lock discipline**: Complex operations may require explicit manager locking to avoid concurrent LVGL state access.
-- **Display model constraints**: Current initialization path assumes one primary display at startup (with extensibility for additional input devices).
+## Dependency model
 
-## Future improvements
+- Depends on [Time](./time.md) for tick callback.
+- Interacts with [Bindings](./bindings.md) and VM runtime in WASM host path.
+- Uses platform `DirectCharacterDevice` implementations for concrete display/input IO.
 
-Planned future improvements for the Graphics module include:
+## Failure semantics and recovery behavior
 
-- **Safe Rust wrapper for LVGL**: Develop a safe and ergonomic Rust wrapper around the LVGL C API to simplify graphical operations and ensure memory safety. This should be auto-generated with build script or procedural macros to cover all of LVGL features.
-- **Broader safe API coverage**: Extend native Rust abstractions for common widgets and composition patterns.
+- Initialization failures panic in current manager construction path.
+- Runtime operations return typed `graphics::Error` for invalid window identifiers and object failures.
+- Event queue and object pointer misuse can surface as runtime failures if ownership rules are violated.
 
-## References
+## Extension points
+
+- Add additional input devices at runtime.
+- Extend window/theme APIs and higher-level widget wrappers.
+- Expand bindings/codegen coverage for broader LVGL surface.
+
+## Known limitations and trade-offs
+
+- Significant portions remain close to LVGL C-style pointer semantics.
+- Global lock simplifies safety but can become a bottleneck under heavy UI call contention.
+- Current startup path assumes one primary display initialization flow.
+
+## Contract vs implementation
+
+- **Stable module contract:** Graphics provides a global service surface for display/input lifecycle, window management, and event delivery to executables through typed APIs.
+- **Current implementation details:** A singleton manager (`OnceLock`) coordinates LVGL state, protects critical sections with a global mutex, and stores runtime collections in `RwLock`-protected metadata.
+- **Compatibility note:** Consumers should rely on API behavior and documented error semantics, not on internal lock composition, pointer wrapping strategy, or exact LVGL wiring details.
+
+## References / See also
 
 - <HostReference crate="graphics" />
-
-## See also
-
 - [File system](../crates/file_system.md)
