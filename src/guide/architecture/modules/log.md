@@ -4,31 +4,38 @@ layout: doc
 
 # 📝 Log
 
-The Log module centralizes runtime logging across Xila.
+The Log module is the global bridge between Xila logging calls and a concrete backend implementation.
 
-It bridges Xila logging calls to a pluggable backend through a `LoggerTrait` implementation and integrates with the underlying `log` ecosystem.
+## Role in system
 
-## Features
+- Provides uniform log macros (`error!`, `warning!`, `information!`, `debug!`, `trace!`) across modules.
+- Adapts Xila-specific `LoggerTrait` to the external `log` crate runtime.
+- Centralizes level filtering and formatted record emission policy.
 
-The Log module offers the following features:
+## Responsibilities and boundaries
 
-- **Log Levels**: Support for multiple severity levels (e.g., DEBUG, INFO, WARN, ERROR) to categorize messages.
-- **Backend abstraction**: Backends implement `LoggerTrait` (`enabled`, `write`, `flush`).
-- **Single initialization point**: Logger registration is guarded by a global `OnceLock`.
-- **Formatted output helper**: Default log formatting includes level marker and target.
-- **`no_std` friendly API surface**: Suitable for embedded and constrained targets.
+**In scope**
 
-## Dependencies
+- Global logger initialization and registration.
+- Severity-level mapping and default formatting.
+- Backend trait abstraction (`enabled`, `write`, optional `flush`).
 
-The Log module depends on the following crates:
+**Out of scope**
 
-- [🔃 Synchronization](../crates/synchronization.md): Used for one-time global logger initialization.
+- Transport/storage mechanics (console, serial, file, remote).
+- Advanced aggregation/query infrastructure.
 
-## Architecture
+## Internal architecture
 
-At startup, a concrete backend is registered once through `initialize`. After registration, all module-level log macros route through that backend.
+- `LOGGER_INSTANCE: OnceLock<Logger>` stores single logger adapter.
+- `LoggerTrait` is backend contract; `Logger` adapter implements `log_external::Log`.
+- `Record` structure captures normalized level/target/arguments.
+- Default `LoggerTrait::log` formatting decorates lines with level tag and ANSI color tokens.
 
-Unlike many other subsystems, logging is not modeled as a file system device by default. Instead, platform crates provide logger implementations directly.
+**Contract vs implementation**
+
+- **Contract**: backend `LoggerTrait` methods and macro-level behavior.
+- **Implementation**: concrete formatting/color tokens and `set_max_level` policy.
 
 ```mermaid
 graph TD
@@ -45,35 +52,46 @@ graph TD
     Backend -->|write/flush| Output[Console / file / platform sink]
 ```
 
-## Initialization flow
+## Lifecycle and execution model
 
-1. Implement `LoggerTrait` in a platform logger backend.
-2. Register it once through `log::initialize(&your_logger)`.
-3. Use logging macros from modules/executables (`error!`, `warning!`, `information!`, `debug!`, `trace!`).
+1. Platform creates backend implementing `LoggerTrait`.
+2. Runtime calls `log::initialize(...)` once.
+3. Module macros emit through `log` ecosystem into adapter and backend sink.
 
-## API snapshot
+## Data/control flow
 
-- `log::initialize(...)`: Initializes global logger bridge.
-- `log::is_initialized()`: Indicates whether logger has been initialized.
-- `LoggerTrait::enabled(...)`: Per-level filtering hook.
-- `LoggerTrait::write(...)` and `LoggerTrait::flush(...)`: Output and flush hooks.
+- Macro invocation -> `log_external` -> `Logger` adapter -> `LoggerTrait::enabled/log/write`.
+- Initialization attempts after first registration do not replace logger; they emit an error log.
 
-## Known limitations
+## Concurrency and synchronization model
 
-- The logger is effectively global and should be initialized early.
-- Per-target formatting and transport behavior depends on the backend implementation.
-- Runtime reconfiguration is limited once initialization happened.
+- Singleton registration guarded by `OnceLock`.
+- Thread-safety at runtime relies on backend `LoggerTrait: Send + Sync` and backend internals.
 
-## Future improvements
+## Dependency model
 
-- Runtime filtering/policy controls per module or target.
-- Additional structured logging options for machine parsing.
+- Depends on `log` ecosystem crate for macro/runtime integration.
+- Consumed by nearly all core modules for diagnostics.
 
-## References
+## Failure semantics and recovery behavior
+
+- `initialize` returns `Ok(())` even if logger was already set in `log` runtime; duplicate init is reported via error record.
+- Backend write/flush behavior is backend-defined; module itself does not buffer/retry.
+
+## Extension points
+
+- Provide alternative backend implementations for each platform.
+- Override `LoggerTrait::log` for custom formatting or structured payload conventions.
+- Add runtime filtering policy in backend or wrapper layer.
+
+## Known limitations and trade-offs
+
+- Single global logger; dynamic replacement/reconfiguration is limited.
+- Formatting includes ANSI control sequences by default, which may be undesirable in non-terminal sinks unless backend adapts.
+- Reliability guarantees (buffering, durability) are sink-specific.
+
+## References / See also
 
 - <HostReference crate="log" />
-
-## See also
-
 - [Drivers](../drivers.md)
 - [Synchronization](../crates/synchronization.md)
