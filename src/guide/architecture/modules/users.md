@@ -4,29 +4,41 @@ layout: doc
 
 # 🧑 Users
 
-The **Users** module manages user accounts and permissions within the Xila operating system, providing core functionality for creating, deleting, and managing users and groups.
+The Users module is Xila's in-memory identity and group membership registry.
 
-To facilitate architectural modularity and avoid circular dependencies (specifically with the virtual file system), this module does not handle authentication or user sessions directly. These higher-level functionalities are implemented in the [Authentication](../crates/authentication.md) wrapper.
+## Role in system
 
-## Features
+- Supplies user/group identity data for permission checks and ownership metadata.
+- Allocates and resolves typed identifiers used by task and VFS layers.
+- Guarantees root account/group bootstrap at manager initialization.
 
-The Users module functions as a relational database for users and groups, offering the following features:
+## Responsibilities and boundaries
 
-- **User and Group Management**: Capabilities to create, delete, and modify users and their associated groups.
-- **Identifier allocation**: Generates non-conflicting user/group identifiers.
-- **Membership queries**: Supports checking group membership and listing user groups.
-- **Name/identifier resolution**: Converts between names and identifiers.
-- **Root bootstrap**: Automatically initializes root user and root group.
+**In scope**
 
-## Dependencies
+- User/group insertion and lookup.
+- Membership tracking (`add_to_group`, `is_in_group`, `get_user_groups`).
+- Identifier and name resolution APIs.
 
-The Users module relies on the following crates:
+**Out of scope**
 
-- [🔃 Synchronization](../crates/synchronization.md): Ensures thread-safe concurrent access via an internal `RwLock`.
+- Credential verification policy (current `check_credentials` is placeholder-like).
+- Authentication/session/token management.
+- Persistent storage (state is runtime memory only).
 
-## Architecture
+## Internal architecture
 
-The Users module stores internal user/group maps and exposes async methods to read/update them safely.
+- Singleton manager via `initialize()` and `get_instance()`.
+- Internal `RwLock` protects:
+  - `users: BTreeMap<UserIdentifier, InternalUser>`,
+  - `groups: BTreeMap<GroupIdentifier, InternalGroup>`.
+- `InternalUser` stores name + primary group.
+- `InternalGroup` stores group name + membership set (`BTreeSet<UserIdentifier>`).
+
+**Contract vs implementation**
+
+- **Contract**: typed identifier APIs and membership/name lookup behavior.
+- **Implementation**: exact map/set layout, root bootstrap details, allocation scan strategy.
 
 ```mermaid
 graph TD
@@ -45,46 +57,51 @@ graph TD
     Lock --> UsersMap
     Lock --> GroupsMap
     UsersMap -->|primary_group id| GroupsMap
-
-
 ```
 
-Users and Groups are manipulated using typed identifiers (`UserIdentifier`, `GroupIdentifier`).
+## Lifecycle and execution model
 
-Both are currently backed by `u16`, with `0` reserved for `root` and non-root allocations starting at `1`.
+1. Initialize manager once; root user/group are inserted immediately.
+2. Allocate identifiers for additional users/groups.
+3. Register users/groups and membership before launching constrained workloads.
+4. Query identity/membership during runtime from task/VFS policy paths.
 
-The identifier `0` is reserved for the **root** user and group, which holds all permissions.
+## Data/control flow
 
-## Initialization flow
+- Task metadata uses user/group identifiers from this module.
+- VFS permission checks call `users::is_in_group(...)` during access control.
+- Name-based resolution provides bridge between human-readable config and typed runtime ids.
 
-1. Call `users::initialize()` once at startup.
-2. Retrieve the singleton with `users::get_instance()`.
-3. Add users/groups and relationships before launching user-facing executables.
+## Concurrency and synchronization model
 
-## API snapshot
+- Single `RwLock` guards all user/group data.
+- Read operations scale concurrently.
+- Mutating operations (add user/group/member) take write lock and enforce duplicate checks.
 
-- `Manager::get_new_user_identifier()` / `Manager::get_new_group_identifier()`: Allocate identifiers.
-- `Manager::add_user(...)` / `Manager::add_group(...)`: Create records.
-- `Manager::add_to_group(...)` / `Manager::is_in_group(...)`: Manage memberships.
-- `Manager::get_user_name(...)`, `Manager::get_user_identifier(...)`: Resolve names and identifiers.
-- `Manager::get_user_groups(...)`, `Manager::get_group_users(...)`: Query membership sets.
+## Dependency model
 
-## Known limitations
+- Used directly by [Task](./task.md) and [Virtual file system](./virtual_file_system.md).
+- Higher-level authentication crate composes over this module rather than embedding inside it.
 
-The Users module currently has the following limitations:
+## Failure semantics and recovery behavior
 
-- **In-memory storage**: User and group state is runtime-only unless persisted by higher-level crates.
-- **Credential checks delegated elsewhere**: Authentication/credential persistence are intentionally handled outside this module.
+- Duplicate identifiers/names return explicit duplicate errors.
+- Invalid user/group references return typed invalid-identifier errors.
+- Identifier allocation fails with `TooManyUsers` / `TooManyGroups` on range exhaustion.
 
-## Future improvements
+## Extension points
 
-- Incremental APIs for batch/group operations.
-- Optional richer metadata attached to users and groups.
+- Add richer metadata per user/group while preserving typed id model.
+- Add batch APIs for provisioning workflows.
+- Add persistent snapshot/load layers in higher-level components.
 
-## References
+## Known limitations and trade-offs
+
+- Runtime-only storage; no built-in persistence.
+- Current credential-check method is not a complete authentication implementation.
+- Simplicity of global manager trades off horizontal sharding/partitioning.
+
+## References / See also
 
 - <HostReference crate="users" />
-
-## See also
-
 - [Authentication (crate)](../crates/authentication.md)
