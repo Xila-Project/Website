@@ -4,48 +4,59 @@ layout: doc
 
 # 🧪 Testing
 
-The `testing` crate provides test-oriented runtime initialization for Xila components.
+The `testing` crate assembles a host integration runtime so tests can run against near-real Core wiring.
 
-It exposes helpers that assemble realistic host environments (task system, users, time, virtual file system, optional graphics, optional networking, and mounted test devices) so integration tests can run with near-production wiring.
+## Role
 
-## Features
+- Provides one high-level initializer that wires task/users/time, storage, optional graphics, optional networking, and standard streams.
+- Reduces per-test boilerplate by mounting known-good baseline devices and hierarchy.
 
-- Initializes core singleton modules in the expected order.
-- Creates and mounts a default virtual file system hierarchy.
-- Supports graphics-enabled and headless test execution.
-- Supports optional network setup for protocol and socket tests.
+## Boundaries
 
-## Initialization flow
+- In scope: integration-runtime bootstrap for tests.
+- Out of scope: unit-test micro scaffolding and production startup orchestration.
 
-The main helper initializes test runtime in this sequence:
+## Internal structure
 
-1. logging,
-2. task/users/time singletons,
-3. optional graphics stack and event-loop tasks,
-4. LittleFS root file system + VFS,
-5. default hierarchy and core mounted devices,
-6. optional network interface setup and base routes/DNS,
-7. default standard streams + test user setup.
+- `lib.rs` exposes `initialize(graphics_enabled, network_enabled) -> executable::Standard`.
+- Setup logic is sequential and explicit: logging, managers, VFS root, device mounts, optional subsystems, seed user/account.
 
-## Output contract
+## Runtime interaction
 
-`testing::initialize(graphics_enabled, network_enabled)` returns an `executable::Standard` structure ready to run executables/tests with configured stdin/stdout/stderr.
+1. Initializes core managers (`task`, `users`, `time`, `log`).
+2. Optionally starts graphics manager and host window runner tasks.
+3. Creates memory-backed LittleFS and initializes VFS + default hierarchy.
+4. Mounts standard devices (`/devices/random`, `/devices/hasher`, stdio, time, null).
+5. Optionally mounts/configures a tuntap network interface and applies IP/routes/DNS.
+6. Seeds administrator group/user and environment variables (`Paths`, `Host`).
+7. Returns opened `Standard` streams for test/executable launch.
 
-## Dependencies
+## Dependency model
 
-- Core modules: [🏁 Task](../modules/task.md), [👥 Users](../modules/users.md), [🕓 Time](../modules/time.md), [🗃️ Virtual file system](../modules/virtual_file_system.md), [🖼️ Graphics](../modules/graphics.md), [🌐 Network](../modules/network.md), [📝 Log](../modules/log.md)
-- Crates: [📁 File system](./file_system.md), [📁 Little FS](./little_fs.md), [🏁 Executable](./executables.md)
-- Drivers: [🧱 Core](../drivers/core.md), [🔗 Shared](../drivers/shared.md), [🧰 Std](../drivers/std.md), [🖥️ Native](../drivers/native.md)
+- Depends on broad Core surface: file_system, little_fs, authentication, executable, network, graphics, task/users/time/log, plus host drivers.
 
-## Known limitations
+## Failure semantics
 
-- It targets integration-style setup, not lightweight unit-test-only scaffolding.
-- Some behavior depends on host driver/runtime availability (graphics/network enabled paths).
+- Initialization is intentionally strict and uses `unwrap`/`expect` in many places to fail fast in test setup.
+- Optional branches still fail the initializer if enabled and setup cannot complete.
+
+## Extension points
+
+- Additional device mounts can be added to the bootstrap sequence for new integration domains.
+- Feature toggles can extend the initializer signature if more optional subsystems are needed.
+
+## Contract vs implementation
+
+- **Contract**: one async initializer returning ready-to-use `Standard` for executing test binaries/workflows.
+- **Current implementation**: host-first initialization with memory-backed LittleFS, optional window/tuntap integration, and seeded administrator account.
+
+## Limitations and trade-offs
+
+- Fast-fail setup simplifies test diagnosis but is less granular than layered setup APIs.
+- Integration realism increases coverage while making initialization heavier than unit-test stubs.
 
 ## References
 
 - <CodeReference path="modules/testing" />
-
-## See also
-
+- [🏁 Executable crate](./executables.md)
 - [🏗️ Architecture](../index.md)
