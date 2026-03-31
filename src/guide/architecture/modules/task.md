@@ -4,59 +4,42 @@ layout: doc
 
 # 🏁 Task
 
-Xila is a multitasking operating system designed to run multiple tasks simultaneously. Each task operates as a separate thread, running independently. Tasks can communicate with one another using messages and events.
+The Task module owns runtime task identity and metadata, and delegates execution to registered `embassy_executor` spawners.
 
-## Features
+## Role in system
 
-The task module offers the following features:
+- Provides globally unique `TaskIdentifier` values and task metadata lookup.
+- Connects task creation requests to executor-specific `Spawner` instances.
+- Supplies cross-module identity context (for VFS, ABI context, users, signal handling).
 
-- **Asynchronous tasks**: Support for async/await syntax for non-blocking operations. No need to manually yield control or context switch penalties.
-- **Creation and deletion**: Create and delete tasks dynamically.
-- **Scheduling**: Cooperative async scheduling based on registered executors/spawners.
-- **Synchronization**: Semaphores, mutexes, and other synchronization primitives.
-- **Communication**: Message queues and event flags for inter-task communication.
+## Responsibilities and boundaries
 
-## Dependencies
+**In scope**
 
-The task module is built upon [embassy](https://github.com/embassy-rs/embassy) and utilizes the following crates:
+- Register/unregister tasks and maintain parent-child relationships.
+- Track per-task metadata: name, user/group, environment variables, signals, spawner affinity.
+- Spawn async futures on registered spawners and return `JoinHandle`.
 
-- `embassy-executor`: Provides the executor for running asynchronous tasks.
-- `embassy-sync`: Provides synchronization primitives like mutexes and semaphores.
-- `embassy-time`: Provides time-related functionalities like delays and timeouts.
+**Out of scope**
 
-It also relies on the following modules:
+- Preemptive scheduling policy (handled by underlying async executors).
+- Authentication and credential persistence (handled outside this module).
+- Kernel-like process address-space isolation (not modeled here).
 
-- [Time](./time.md): Used for task delays and timeouts.
-- [Users](./users.md): Used for task ownership and permissions.
-- [Memory](./memory.md): Used for task stack allocation.
+## Internal architecture
 
-## Core model
-
-The task manager stores task metadata and executor registrations in a synchronized global registry.
-
-Each task tracks:
-
-- identifier and parent relationship,
-- user/group ownership,
-- environment variables,
-- lifecycle and signal state,
-- associated spawner/executor identity.
-
-## Architecture
-
-Each task is represented by a `Task` struct that contains the following information:
-
-- Name.
-- Parent task identifier.
-- Environment variables: Automatically inherited from the parent task (deduplicated using Copy-on-Write).
-- User: The user that owns the task.
-- Group: The group that owns the task.
-- Signals: The signals associated with the task (e.g., termination, kill).
-- Spawner identifier: A reference to the executor that spawned the task.
-
-Each of these structures can be accessed and modified through module APIs using the `TaskIdentifier`, which is a system-wide unique identifier for each task (unsigned half-register size integer).
-
-Tasks are created on an executor, which must be registered beforehand. Typically, there is one executor per core or host thread. These executors are platform-specific and must be initialized by the final executable.
+- Singleton manager: `task::initialize()` + `task::get_instance()`.
+- Core state is `RwLock`-guarded `Inner`:
+  - `tasks: BTreeMap<TaskIdentifier, Metadata>`,
+  - `identifiers: BTreeMap<usize, TaskIdentifier>` mapping executor-internal identity to task id,
+  - `spawners: BTreeMap<usize, embassy_executor::Spawner>`.
+- `Metadata` stores:
+  - truncated task name (current code truncates to 23 chars during registration),
+  - parent task id,
+  - user/group,
+  - cloned environment variable vector,
+  - signal accumulator bitset,
+  - spawner identifier + internal identifier.
 
 ```mermaid
 graph TD
@@ -76,25 +59,61 @@ graph TD
     Spawner -->|runs| AsyncTask
 ```
 
-## Known limitations
+## Lifecycle and execution model
 
-The task module has the following known limitations:
+1. Initialize manager once.
+2. Register one or more spawners from platform executors.
+3. Spawn task: register metadata, pick explicit or best-load spawner, spawn future, bind internal identifier.
+4. Task completion: signal join handle and unregister metadata.
+5. Unregistering a task reparents its children to root task.
 
-- **Cooperative Multitasking Requirement**: Because the system relies on a cooperative executor, all tasks must yield control periodically. Long-running tasks that do not await or yield will block the executor, preventing other tasks from running.
-- **Executor affinity**: Tasks are bound to the executor context used when spawned.
+## Data/control flow
 
-## Future improvements
+- `spawn(...)` -> `register(...)` -> spawner selection (`select_best_spawner`) -> `embassy` spawn token dispatch.
+- Running task resolves its internal executor identity and updates `identifiers` map for reverse lookup.
+- Cross-module callers query `get_current_task_identifier()` to recover logical task context.
 
-Planned future improvements for the task module include:
+## Concurrency and synchronization model
 
-- **Executor Migration**: Currently, tasks are bound to the executor they were created on. Future updates aims to allow tasks to be dynamically moved between executors to improve load balancing and resource utilization.
+- Manager state is protected by a global async `RwLock`.
+- Read-heavy queries (`get_user`, `get_group`, `peek_signal`, relationship queries) use read lock.
+- Mutations (`register`, `unregister`, env updates, signal send/pop) use write lock.
+- Scheduling is cooperative: forward progress requires tasks to await/yield.
 
-## References
+## Dependency model
+
+- `embassy_executor` / `embassy_futures` / `embassy_time` for execution and timing primitives.
+- `users` typed identifiers are embedded in metadata.
+- Consumers: VFS, ABI context, network runner spawning, and application runtimes.
+
+## Failure semantics and recovery behavior
+
+- Spawn fails with `NoSpawnerAvailable` / `InvalidSpawnerIdentifier` when spawner topology is invalid.
+- Task table exhaustion yields `TooManyTasks`.
+- Invalid identifiers return `InvalidTaskIdentifier` for metadata operations.
+- On normal task completion, metadata cleanup is automatic via task wrapper closure.
+
+## Extension points
+
+- Additional spawner registration enables multi-executor deployment.
+- Higher-level runtime code can build policy around parent selection, naming, and user/group assignments.
+- Signal model supports POSIX-like enumerated events via `SignalAccumulator`.
+
+## Known limitations and trade-offs
+
+- Cooperative runtime: non-yielding futures can starve other tasks on the same executor.
+- Spawner load balancing is task-count based and does not account for CPU or IO cost.
+- ABI thread API coverage is partial (multiple `xila_thread_*` symbols are still `todo!()`).
+- Name truncation in current registration path is fixed-width.
+
+## Contract vs implementation
+
+- **Stable module contract:** Global task identity, metadata access, signal operations, and async spawn/join behavior through module APIs independent of concrete executor internals.
+- **Current implementation details:** Singleton manager lifecycle, `BTreeMap`-backed metadata/spawner tables, current spawner selection heuristic, and fixed-width task-name truncation policy.
+- **Compatibility note:** Callers should rely on identifier, metadata, and spawn semantics rather than internal map layout or selection mechanics, which are implementation choices and may change.
+
+## References / See also
 
 - <HostReference crate="task" />
-
-## See also
-
 - [Time](./time.md)
 - [Users](./users.md)
-- [Memory](./memory.md)
