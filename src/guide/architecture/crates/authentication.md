@@ -1,68 +1,66 @@
 ---
-doc: layout
+layout: doc
 ---
 
 # 🔒 Authentication
 
-The **Authentication** crate provides user authentication and management functionalities for Xila. It enables secure access control mechanisms, ensuring that only authorized users can access sensitive data or perform privileged actions.
+This crate implements persistent account/group data handling and password verification flows used by the host runtime.
 
-## Features
+## Role
 
-- **User Management**: Handles creation, modification, and deletion of user accounts and groups. Unlike the [Users](../modules/users.md) module which manages runtime user sessions, this crate handles the persistent storage of user data.
-- **Secure Authentication**: Verification of user credentials using salted password hashing.
-- **Data Persistence**: Serialization and storage of user and group information on the file system.
+- Owns persistence and transformation logic for users/groups (`/system/users`, `/system/groups`).
+- Bridges runtime managers (`users`) with persistent storage (`virtual_file_system`) and device-backed entropy/hash operations.
 
-## Architecture
+## Boundaries
 
-The Authentication crate serves as the bridge between the system's security requirements and the underlying storage and hardware capabilities.
+- In scope: reading/writing JSON user and group records, salted password hashing, authentication checks.
+- Out of scope: session/task identity ownership (handled by [Users](../modules/users.md) + [Task](../modules/task.md)).
+- In scope: coordinating with `/devices/random` and `/devices/hasher`; out of scope: implementing those devices.
 
-```mermaid
-graph TD
-    Client@{ shape: processes, label: "Other modules / Applications" }
-    Client -->|Request Auth| Auth[Authentication]
+## Internal structure
 
-    subgraph "Core"
-        Auth -.->|Updates| Users[Users]
+- `lib.rs`: crate entry points (`load_all_users_and_groups`) and canonical paths.
+- `user.rs`: `User` model + account operations (`authenticate_user`, `create_user`, password/name mutation).
+- `group.rs`: `Group` model + group creation and file loading helpers.
+- `hash.rs`: salt generation and hash-device command sequence.
+- `error.rs`: typed error mapping across file-system, users, and task flows.
 
-        VFS -->|Generate Salt| Rng[Random Device]
-        VFS -->|Hash Password| Hash[Hasher Device]
-        Auth -->|Read/Write Data to file and devices| VFS[Virtual File System]
-    end
-```
+## Runtime interaction
 
-### Password Hashing
+1. Caller resolves current task identifier via `task::get_instance()`.
+2. File reads/writes occur through `virtual_file_system::File` / `Directory`.
+3. Salt bytes are read from `/devices/random`.
+4. Password+salt bytes are written to `/devices/hasher` after `SET_ALGORITHM(HashAlgorithm::Sha512)`.
+5. Results are propagated into `users::get_instance()` when loading persistent records.
 
-To secure user passwords, the module employs a salt-based hashing strategy:
+## Dependency model
 
-1.  **Salt Generation**: A random salt is generated using the [Device](./device.md) crate's interface to the random number generator.
-2.  **Hashing**: The plaintext password is combined with the salt and processed by the SHA-512 algorithm via the hashing device.
-3.  **Verification**: During login, the stored salt is retrieved and combined with the input password. The result is hashed and compared against the stored hash.
+- Internal: [File System](./file_system.md), [Device](./device.md), [Virtual file system](../modules/virtual_file_system.md), [Users](../modules/users.md), [Task](../modules/task.md).
+- External: `miniserde` for JSON serialization/deserialization.
 
-### Data Storage
+## Failure semantics
 
-User and group data are serialized into JSON format using the <DocsRsReference crate="miniserde" /> crate.
+- Distinguishes open/read/parse/write failures for user/group files.
+- Authentication mismatch returns `InvalidPassword` (not file or parse failure).
+- During bulk load, malformed entries are skipped while iteration continues.
 
-- **Users**: Stored in `/system/users/{username}.json`.
-- **Groups**: Stored in `/system/groups/{groupname}.json`.
+## Extension points
 
-## Dependencies
+- Alternate hash strategies can be introduced by extending device commands and `hash.rs` flow.
+- File schema can evolve through `User`/`Group` structs while keeping public function contracts stable.
 
-### Internal Crates & Modules
+## Contract vs implementation
 
-- [File System](./file_system.md): Provides the underlying storage driver interfaces.
-- [Device](./device.md): Provides access to hardware accelerators for hashing (`/devices/hasher`) and random number generation (`/devices/random`).
-- [Users](../modules/users.md): The runtime representation of users and groups. The Authentication crate loads persistent data into the Users module.
-- [Virtual File System](../modules/virtual_file_system.md): Used to perform file operations for storing and retrieving account data.
+- **Contract**: async user/group creation, authentication, and persistence APIs returning typed `authentication::Error`.
+- **Current implementation**: JSON files under `/system/*`, salt from `/devices/random`, hashing through `/devices/hasher` with SHA-512 selection.
 
-### External Dependencies
+## Limitations and trade-offs
 
-- **<DocsRsReference crate="miniserde" />**: A lightweight library for serializing and deserializing JSON data.
+- Hash algorithm selection is currently hardwired to SHA-512 device command path.
+- Storage format is file-per-user/group JSON; this is simple and inspectable but not optimized for large account sets.
 
-## Limitations
+## References
 
-- **Algorithm Support**: Currently, only **SHA-512** is used by default. While secure, modern best practices often recommend memory-hard functions like Argon2 or bcrypt to resist hardware-accelerated brute-force attacks. Future updates may introduce pluggable hashing algorithms depending on hardware capabilities.
-
-## See also
-
-- [Users Module](../modules/users.md)
 - <HostReference crate="authentication" />
+- <CodeReference path="modules/authentication" />
+- [Users Module](../modules/users.md)
