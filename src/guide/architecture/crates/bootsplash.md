@@ -4,41 +4,57 @@ layout: doc
 
 # ✨ Bootsplash
 
-The `bootsplash` crate provides the startup splash animation shown while the system initializes.
+The `bootsplash` crate provides a focused startup animation layer around the graphics manager and LVGL objects.
 
-It is built on top of the graphics module and drives a lightweight animated logo sequence.
+## Role
 
-## Features
+- Owns creation and teardown of the boot logo animation sequence.
+- Encapsulates the startup-only animation policy so initialization code does not manipulate LVGL animation internals directly.
 
-- Animated startup logo rendering.
-- Integration with the active graphics screen and theme colors.
-- Explicit lifecycle with start/stop behavior.
+## Boundaries
 
-## Initialization flow
+- In scope: logo object setup, animation callback wiring, animation lifetime management.
+- Out of scope: window/session management, general UI composition, or reusable animation framework APIs.
 
-1. Acquire the graphics manager lock.
-2. Build logo elements on the current screen.
-3. Configure LVGL animation callbacks and timing.
-4. Start animation loop until explicitly stopped.
+## Internal structure
 
-## API snapshot
+- `lib.rs`: `Bootsplash` state (`lv_anim_t` + `Logo`) and lifecycle methods.
+- `error.rs`: crate-local error type mapped from graphics failures.
+- One `unsafe extern "C"` callback (`load_animation_callback`) updates part opacity across logo children.
 
-- `Bootsplash::new(graphics_manager)`: Creates and starts the animation.
-- `Bootsplash::stop(graphics_manager)`: Stops and cleans animation resources.
+## Runtime interaction
 
-## Dependencies
+1. `Bootsplash::new` acquires `graphics::Manager` lock.
+2. It uses current screen geometry to compute `Logo::get_factor(...)` and instantiate logo.
+3. It initializes `lv_anim_t` (`duration`, reverse timing, repeat count) and registers callback.
+4. `Bootsplash::stop` deletes the animation via `lv_anim_delete` under manager lock.
 
-- [🖼️ Graphics](../modules/graphics.md)
+## Dependency model
 
-## Known limitations
+- Internal runtime dependency: [🖼️ Graphics](../modules/graphics.md) only.
+- Uses LVGL symbols re-exported through graphics (`lv_anim_*`, `lv_obj_*`).
 
-- Behavior is tightly coupled to LVGL animation primitives and current theme integration.
-- Intended for startup/splash flows rather than general-purpose animation composition.
+## Failure semantics
+
+- Setup failures propagate as crate `Error` during `new`.
+- `stop` can fail through graphics lock/manager-level error propagation.
+
+## Extension points
+
+- Animation timing/profile can be changed centrally in `Bootsplash::new`.
+- Alternate startup visuals can reuse the same lifecycle contract (`new`/`stop`) while changing object composition.
+
+## Contract vs implementation
+
+- **Contract**: construct bootsplash with `Bootsplash::new(...)`, stop it with `Bootsplash::stop(...)`.
+- **Current implementation**: LVGL opacity animation over 4 logo parts using theme primary color and ease-in-out path.
+
+## Limitations and trade-offs
+
+- Uses `std::os::raw::c_void` and LVGL callback ABI, so the implementation is intentionally low-level.
+- Animation is tightly tied to current logo part layout and not exposed as a generic animation graph.
 
 ## References
 
 - <CodeReference path="modules/bootsplash" />
-
-## See also
-
 - [🖼️ Graphics](../modules/graphics.md)
