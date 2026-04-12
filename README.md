@@ -71,4 +71,4 @@ Contributions are welcome! Please see the guides in `src/guide/get_started/contr
 
 ## 📄 License
 
-This project is licensed under the terms of the [MIT License](LICENSE).
+This project is under the [GNU General Public License v2.0](LICENSE.md).
