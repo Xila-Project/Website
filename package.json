@@ -14,7 +14,7 @@
     "vitepress-plugin-mermaid": "^2.0.17"
   },
   "dependencies": {
-    "pagefind": "^1.5.0",
+    "pagefind": "^1.5.2",
     "vitepress-plugin-pagefind": "^0.4.19",
     "vue": "^3.5.32"
   }
