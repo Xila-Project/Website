@@ -1,6 +1,7 @@
 import { defineConfig, DefaultTheme } from "vitepress";
 import { withMermaid } from "vitepress-plugin-mermaid";
 import { pagefindPlugin } from "vitepress-plugin-pagefind";
+import fs from "node:fs";
 
 const referenceSidebar: DefaultTheme.SidebarItem[] = [
   {
@@ -158,6 +159,21 @@ const configuration = defineConfig({
   srcDir: "./src",
   sitemap: {
     hostname: "https://www.xila.dev",
+  },
+  vue: {
+    script: {
+      fs: {
+        fileExists(file: string) {
+          return fs.existsSync(file);
+        },
+        readFile(file: string) {
+          return fs.readFileSync(file, "utf-8");
+        },
+        realpath(file: string) {
+          return fs.realpathSync(file);
+        },
+      },
+    },
   },
   vite: {
     plugins: [pagefindPlugin()],
