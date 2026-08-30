@@ -8,7 +8,7 @@
     "check": "npm run format:check && npm run docs:build"
   },
   "devDependencies": {
-    "mermaid": "^11.17.0",
+    "mermaid": "^11.17.2",
     "prettier": "3.9.6",
     "typescript": "^7.0.2",
     "vitepress": "^1.6.4",
