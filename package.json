@@ -9,7 +9,7 @@
   },
   "devDependencies": {
     "mermaid": "^11.17.2",
-    "prettier": "3.9.6",
+    "prettier": "3.9.7",
     "typescript": "^7.0.2",
     "vitepress": "^1.6.4",
     "vitepress-plugin-mermaid": "^2.0.17"
