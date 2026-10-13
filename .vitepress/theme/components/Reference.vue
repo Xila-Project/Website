@@ -42,9 +42,9 @@ const href = computed(() => {
   const path = `${props.crate}/${file}`;
 
   if (props.architecture === ReferenceArchitecture.Host) {
-    return `/host-reference?path=${encodeURIComponent(path)}`;
+    return `/reference/host?path=${encodeURIComponent(path)}`;
   } else {
-    return `/guest-reference?path=${encodeURIComponent(path)}`;
+    return `/reference/guest?path=${encodeURIComponent(path)}`;
   }
 });
 

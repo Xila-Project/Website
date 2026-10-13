@@ -11,11 +11,11 @@ hero:
       text: Try it ! ✨
       link: https://documentation.xila.dev/demonstrations/wasm/en/
     - theme: alt
-      text: Guide 📖
-      link: /guide
+      text: Documentation 📖
+      link: /docs/
     - theme: alt
       text: Reference 🧰
-      link: /reference
+      link: /reference/
     - theme: alt
       text: GitHub ⌨️
       link: https://github.com/Xila-Project
