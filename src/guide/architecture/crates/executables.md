@@ -27,9 +27,9 @@ The `executable` crate defines the native executable contract and the launcher u
 ## Runtime interaction
 
 1. Executables are mounted as character devices exposing `GET_MAIN_FUNCTION`.
-2. `execute(path, args, standard, spawner)` fetches VFS statistics and checks execute permissions.
+2. `execute(context, path, args, standard, spawner)` uses the context's VFS/users/task managers to fetch statistics and check execute permissions.
 3. It opens executable file and requests main function via control command.
-4. It spawns a task and calls main with provided `Standard` and argument vector.
+4. It spawns a task and calls main with `Standard` carrying the same context and the argument vector.
 5. It returns `task::JoinHandle<isize>` to allow join/wait by caller.
 
 ## Dependency model
@@ -50,10 +50,12 @@ The `executable` crate defines the native executable contract and the launcher u
 
 ## Contract vs implementation
 
-- **Contract**: executable = mounted character device that answers `GET_MAIN_FUNCTION` and receives `Standard + Vec<String>`.
+- **Contract**: executable = mounted character device that answers `GET_MAIN_FUNCTION` and receives `Standard + Vec<String>`; `Standard::context` supplies explicit capabilities.
 - **Current implementation**: launcher uses VFS metadata + users/group checks and task spawn under current task context.
 
 ## Limitations and trade-offs
+
+`ExecutableContext` carries task/users/time managers, VFS, optional networking, and optional graphics when the graphics feature is enabled. `ExecutableWrapper::new(executable, context)` and `mount_executables!(context, virtual_file_system, task, ...)` bind executables to that context. `Standard::open(..., task, virtual_file_system, context)` opens streams with the same capability set. Required references are `'static`; final binaries own their storage/lifetimes.
 
 - Contract is intentionally narrow (`main` only), simplifying dispatch but leaving richer lifecycle hooks to higher layers.
 - `setuid`-style override logic is constrained and permission-checked at launch time.

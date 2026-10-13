@@ -27,11 +27,13 @@ This crate implements persistent account/group data handling and password verifi
 
 ## Runtime interaction
 
-1. Caller resolves current task identifier via `task::get_instance()`.
-2. File reads/writes occur through `virtual_file_system::File` / `Directory`.
+1. Caller builds `authentication::Context { virtual_file_system, task_manager, users_manager, task }` and passes a reference to authentication functions.
+2. File reads/writes occur through `virtual_file_system::File` / `Directory` using the supplied VFS and task.
 3. Salt bytes are read from `/devices/random`.
 4. Password+salt bytes are written to `/devices/hasher` after `SET_ALGORITHM(HashAlgorithm::Sha512)`.
-5. Results are propagated into `users::get_instance()` when loading persistent records.
+5. Results are propagated into `context.users_manager` when loading persistent records. Groups are loaded before users; restored primary-group membership is accepted.
+
+For example, startup calls `authentication::load_all_users_and_groups(&context).await`. The browser example does this for an existing OPFS disk and creates the default administrator only for a fresh disk.
 
 ## Dependency model
 

@@ -21,8 +21,8 @@ The graphical shell executable is the session shell that transitions from login 
 ## Runtime integration points
 
 - `ExecutableTrait` for launcher integration.
-- `users::get_instance()` to map logged user ID to user name.
-- `task::set_environment_variable` to publish session user into task context.
+- Context-provided users manager to map the logged user ID to a user name.
+- Context-provided task manager to publish the session user into the task environment.
 - Graphics manager/LVGL wrappers for UI object/event handling.
 
 ## Data and control flow / VFS touchpoints

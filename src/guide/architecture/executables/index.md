@@ -24,7 +24,7 @@ This section maps the native executable crates that run on top of the [🏁 Exec
 ## Shared executable model
 
 - Most executable crates implement `ExecutableTrait` and are mounted as `/binaries/*` character devices.
-- Launch is performed through `executable::execute(...)`, which handles permission checks and task spawn.
+- Launch is performed through `executable::execute(context, ...)`, which handles permission checks and task spawn using explicit managers. Mounted wrappers and `Standard` carry the same `ExecutableContext`.
 - Several UI executables install launcher shortcuts under `/configuration/shared/shortcuts/*.json`.
 
 ## Contract vs implementation

@@ -18,18 +18,18 @@ The `testing` crate assembles a host integration runtime so tests can run agains
 
 ## Internal structure
 
-- `lib.rs` exposes `initialize(graphics_enabled, network_enabled) -> executable::Standard`.
+- `lib.rs` exposes `initialize(graphics_enabled, network_enabled) -> executable::Standard<'static>`; the result carries an `ExecutableContext` with the assembled managers.
 - Setup logic is sequential and explicit: logging, managers, VFS root, device mounts, optional subsystems, seed user/account.
 
 ## Runtime interaction
 
-1. Initializes core managers (`task`, `users`, `time`, `log`).
+1. Uses the task test-harness manager and constructs users/time managers; registers the logger.
 2. Optionally starts graphics manager and host window runner tasks.
 3. Creates memory-backed LittleFS and initializes VFS + default hierarchy.
 4. Mounts standard devices (`/devices/random`, `/devices/hasher`, stdio, time, null).
 5. Optionally mounts/configures a tuntap network interface and applies IP/routes/DNS.
 6. Seeds administrator group/user and environment variables (`Paths`, `Host`).
-7. Returns opened `Standard` streams for test/executable launch.
+7. Builds an `ExecutableContext` and returns opened `Standard` streams carrying those references for test/executable launch.
 
 ## Dependency model
 
