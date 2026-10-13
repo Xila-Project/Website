@@ -4,7 +4,7 @@ layout: doc
 
 # 📦 Modules
 
-Xila is organized as composable modules with explicit contracts and concrete implementations. Most core modules expose a singleton manager (`OnceLock` + lock-protected state), then publish a typed API consumed by other modules and executables.
+Xila is organized as composable modules with explicit contracts and concrete implementations. The final binary constructs stateful managers and passes references to other modules and executables. Lock-protected state belongs to those managers; allocator, logging, C ABI, and LVGL callback boundaries retain process-wide registration.
 
 This section is an architecture map, grouped by system role.
 
@@ -20,9 +20,9 @@ This section is an architecture map, grouped by system role.
 ## Foundation modules
 
 - [🧠 Memory](./memory.md): Allocation contract (`ManagerTrait`), global allocator bridge, capability flags, and cache/page helpers.
-- [🏁 Task](./task.md): Global task registry, executor/spawner integration, metadata inheritance, and signal delivery.
+- [🏁 Task](./task.md): Manager-owned task registry, executor/spawner integration, metadata inheritance, and signal delivery.
 - [👥 Users](./users.md): In-memory user/group database and identifier/membership resolution.
-- [🕓 Time](./time.md): Global time source abstraction over a direct character device.
+- [🕓 Time](./time.md): Explicit time source abstraction over a direct character device.
 - [📝 Log](./log.md): Global logging bridge (`LoggerTrait`) on top of `log` ecosystem integration.
 
 ## Runtime modules
@@ -33,9 +33,9 @@ This section is an architecture map, grouped by system role.
 
 ## Interop and runtime-integration pages
 
-- [🔗 ABI](./abi.md): C ABI surface split across declarations, symbol definitions, and per-task ABI context.
+- [🔗 ABI](./abi.md): C ABI declarations and definitions, with an explicitly installed runtime context.
 - [🔗 Bindings](./bindings.md): Module-adjacent runtime integration implemented in executable/WASM host paths for host-call dispatch and guest/host pointer translation.
-- [🖥️ Virtual machine](./virtual_machine.md): Module-adjacent runtime integration implemented in executable/WASM host paths for WAMR execution, instantiation, and host callback wiring.
+- [🖥️ Virtual machine](./virtual_machine.md): Module-adjacent Wasmi integration in the WASM executable, with per-execution stores, WASI imports, and cooperative execution.
 
 ## Cross-module wiring (high level)
 

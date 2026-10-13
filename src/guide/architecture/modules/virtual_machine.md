@@ -4,103 +4,63 @@ layout: doc
 
 # 🖥️ Virtual machine
 
-Xila's WebAssembly runtime integration is implemented in the WASM executable host path and built on WAMR.
-
-## Role in system
-
-- Loads and executes guest WASM modules under host-managed runtime instances.
-- Connects guest imports to host callbacks via registrable binding providers.
-- Bridges guest stdio and file-context state into Xila ABI/VFS services.
+Xila's WebAssembly runtime lives in `executables/wasm` and uses the Wasmi interpreter. The `host` feature means Xila hosts guest programs; it also works when Xila itself runs in a browser. The previous WAMR integration and `Runtime::execute` API have been removed.
 
 ## Responsibilities and boundaries
 
-**In scope**
+- Load a regular file from Xila's VFS and validate its WebAssembly module.
+- Create a Wasmi engine, linker, module, and store for each execution.
+- Register WASI Preview 1 imports and optional Xila graphics imports.
+- Invoke `_start: () -> ()`, or `__install: () -> ()` with `--install`.
+- Cooperatively yield, suspend, and resume the guest without holding guest-memory borrows across an await.
 
-- Runtime creation and host function registration.
-- Module loading from byte buffers and WASI argument setup.
-- Instance creation and exported function invocation.
-- Execution-time ABI context setup for task/file identifiers.
-
-**Out of scope**
-
-- Defining all host API contracts (split across [ABI](./abi.md) and [Bindings](./bindings.md)).
-- Generic process supervision outside the WASM execution path.
+This layer does not provide full WASI coverage or direct hardware access. Its capabilities come from the caller's `ExecutableContext`.
 
 ## Internal architecture
 
-- Runtime layer (`runtime.rs`): WAMR runtime builder + registration of `Registrable` host function descriptors.
-- Module layer (`module.rs`): converts WASM bytes to WAMR module, injects WASI args/env/stdin/out/err.
-- Instance layer (`instance.rs`): creates callable module instance and manages custom-data lifecycle.
-- Environment/translation layers (`environment.rs`, `translation.rs`, `custom_data.rs`): pointer translation and host-object mapping.
-
-**Contract vs implementation**
-
-- **Contract**: `Runtime::execute(...)` and guest import signatures/types (`WasmPointer`, `WasmUsize`).
-- **Implementation**: WAMR-specific setup calls, custom data map mechanics, and exact WASI argument plumbing.
+- `host/main.rs`: argument parsing, VFS loading, engine/linker construction, and entrypoint selection.
+- `host/store.rs`: per-execution `GlobalStore` holding the executable context, pending suspension, WASI state, and optional graphics state.
+- `host/execution.rs`: resumable Wasmi calls, fuel replenishment, yield handling, clock waits, and exit/error propagation.
+- `host/wasi/`: file/directory descriptors, environment and arguments, clocks, random data, process exit, and supported polling imports.
+- `host/translation/`: checked borrowed guest-memory access and pointer/word-width conversion.
+- `host/graphics/`: runtime-independent dispatch, object handles, and marshalling, plus a thin Wasmi adapter.
 
 ```mermaid
-graph TB
-    GuestWasm[Guest WASM module]
-    HostExec[executables/wasm host runtime]
-    WAMR[WAMR runtime + instance]
-    HostBindings[host bindings]
-    ABI[ABI crates]
-    CoreModules@{ shape: processes, label: "Core modules<br/>Task, Memory, VFS, Time, Graphics" }
-
-    GuestWasm -->|loaded/executed by| HostExec
-    HostExec -->|creates| WAMR
-    WAMR -->|imports / callbacks| HostBindings
-    HostBindings -->|invoke| CoreModules
-    WAMR -->|WASI / ABI interop| ABI
+graph TD
+    Launcher[Executable launcher] --> Context[ExecutableContext]
+    Launcher --> Runtime[WASM executable]
+    Runtime --> VFS[VFS module bytes]
+    Runtime --> VM[Wasmi engine and per-execution store]
+    Context --> VM
+    VM --> WASI[WASI Preview 1 imports]
+    VM --> Graphics[Xila graphics adapter]
+    WASI --> Services[VFS / Task / Time / devices]
+    Graphics --> LVGL[Context graphics manager / LVGL]
 ```
 
 ## Lifecycle and execution model
 
-1. Build runtime with selected registrables.
-2. Resolve task/environment and register stdio files in ABI context.
-3. Load module from bytes and set WASI args/env.
-4. Instantiate module with configured stack size.
-5. Invoke exported function and collect return values.
-6. Drop instance/module and clear temporary custom/context state.
+1. Read guest bytes and create a fuel-enabled engine and module.
+2. Build a store from `Standard::context`; install stdin/stdout/stderr as descriptors 0/1/2 and preopen `/` if available.
+3. Copy the task environment and use the module path as the guest argument.
+4. Register WASI and optional graphics imports, instantiate the module, then select a typed entrypoint.
+5. Execute resumably; on fuel exhaustion, yield and replenish fuel. `sched_yield` suspends locally; supported `poll_oneoff` clock calls wait asynchronously before resuming.
+6. Propagate exit status or traps and tear down execution state, including owned graphics windows.
 
-## Data/control flow
+## Scheduling and limits
 
-- `Runtime::execute` orchestrates ABI context binding, module creation, instance invocation, and result propagation.
-- Host callbacks use VM environment translation APIs to map guest addresses to host pointers or host-object ids.
-- Bindings/ABI calls re-enter core services through controlled boundaries.
-
-## Concurrency and synchronization model
-
-- `Runtime` and `Instance` are marked `Send`/`Sync` in this integration layer.
-- ABI context task binding around calls is explicit (`call_abi`) to keep per-call task association coherent.
-- Downstream synchronization is delegated to called modules (graphics lock, VFS locks, task manager locks).
-
-## Dependency model
-
-- Depends on WAMR runtime crate and generated/handwritten host bindings.
-- Depends on [ABI](./abi.md) for WASI-like/system-level calls and file descriptor context.
-- Depends on [Task](./task.md), [Virtual file system](./virtual_file_system.md), and other core modules through bindings.
-
-## Failure semantics and recovery behavior
-
-- Runtime/module/instance creation failures are surfaced as VM `Error` variants.
-- File-context registration failures abort execution before guest call.
-- Translation failures in host callbacks return binding/VM errors back to guest boundary.
-
-## Extension points
-
-- Register additional `Registrable` providers for new host import families.
-- Add new translation adapters for custom guest-host object types.
-- Extend execution wrappers for additional runtime policies (quotas, tracing, profiling).
-
-## Known limitations and trade-offs
-
-- Runtime integration currently lives in executable layer, not as a standalone Core module crate.
-- Supported WASI surface is constrained by current integration choices.
-- Guest execution overhead and hardware access constraints are intrinsic to sandbox model.
+- `--instruction-limit` selects a nonzero fuel quantum (default 100,000), not a total lifetime instruction budget.
+- Clock polling supports up to 64 realtime/startup-clock subscriptions with relative or absolute deadlines. File-descriptor polling and unsupported clocks return errors.
+- Startup-clock behavior follows Xila's time manager and its driver; it is not a separate hardware monotonic source.
+- Suspension in a WebAssembly start section is unsupported. WASI command guests should use exported `_start`.
+- `--stack-size` is parsed (default 4096) but is not applied by the runtime.
+- `memory_32` is the default guest-word width; `memory_64` selects the alternate translation configuration. Calculator remains a wasm32 guest.
+- Graphics capabilities cover the supported subset documented in [Bindings](./bindings.md); enabling graphics does not provide every LVGL API.
 
 ## References / See also
 
-- <HostReference crate="virtual_machine" />
-- [ABI](./abi.md)
+- <CodeReference path="executables/wasm" />
+- <HostReference crate="wasm" />
+- [WASM executable](../executables/wasm.md)
 - [Bindings](./bindings.md)
+- [ABI](./abi.md)

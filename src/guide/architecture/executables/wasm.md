@@ -4,60 +4,57 @@ layout: doc
 
 # 🌍 WASM (executable)
 
-The WASM executable bridges mounted Xila executables with WAMR-based module execution.
+The WASM executable loads guest programs from Xila's VFS and runs them using Wasmi. Both the native and browser examples mount it at `/binaries/wasm`.
 
-## Role
+## Role and feature selection
 
-- Host side (`feature = "host"`): validates WASM file path, loads bytes, builds runtime, executes `_start` or `__install`.
-- Guest side (`feature = "guest"`): exposes guest-facing helper APIs (including optional graphics bindings).
+- `host`: Wasmi runtime and Xila executable integration; also used by the browser-hosted Xila runtime.
+- `guest`: guest helper APIs without the interpreter. Disable default features for guest-only consumers.
+- `graphics`: optional generated guest wrappers and supported host graphics imports.
+- `default_guest`: `guest`, `graphics`, `c_bindings`, and `memory_32`; emits `xila_graphics.h` in the build output.
+- `memory_32` / `memory_64`: guest-word translation width. Default runtime features are `host,memory_32`.
+
+## Launching a guest
+
+Run these commands in Xila's terminal, using files already in the VFS:
+
+```text
+/binaries/wasm /binaries/calculator
+/binaries/wasm --install /binaries/calculator
+```
+
+Normal execution requires `_start: () -> ()`. `--install` selects `__install: () -> ()`; missing or incorrectly typed exports fail. The path must identify a regular file. The loader uses the supplied VFS path directly; it does not implement the old `Current_directory` path-resolution step.
 
 ## Startup and lifecycle
 
-1. `WasmExecutable::main` parses arguments (`path`, `--install`, `--stack-size`).
-2. Resolves absolute/relative path using `Current_directory` environment variable.
-3. Reads module bytes through VFS and chooses function (`_start`/`__install`).
-4. Gets/initializes static runtime (`OnceLock<Runtime>`).
-5. Executes module either inline or via spawned task (when custom thread executor is configured).
+1. Parse the guest path, `--install`, `--stack-size`, and `--instruction-limit`.
+2. Read bytes through the context-provided VFS and current task identifier.
+3. Create a fresh engine, module, linker, and store; there is no globally cached runtime.
+4. Bind standard streams, task environment, and the root directory preopen to the per-execution WASI context.
+5. Register WASI and optional graphics imports, instantiate, and call the selected entrypoint resumably.
+6. Yield on fuel exhaustion or supported suspension calls; report exit/trap errors and release VM-owned graphics objects.
 
 ## Runtime integration points
 
-- `xila::executable::ExecutableTrait` for mount-and-launch contract.
-- `virtual_file_system` for wasm bytecode retrieval.
-- `task` for optional detached execution path.
-- `abi_context` file registration for stdio transfer into runtime.
-- `wamr-rust-sdk` for runtime/module/instance/function invocation.
+- `ExecutableTrait`, `ExecutableContext`, and `Standard::context` for launch capabilities.
+- VFS `get_statistics` and `File::read_from_path` for module loading.
+- Wasmi `Engine`, `Module`, `Linker`, and `Store<GlobalStore>` for guest execution.
+- Local WASI descriptor tables for stdio and paths; guest imports do not use the removed `abi_context` crate.
 
-## Data and control flow / VFS touchpoints
+## Failure semantics and limits
 
-- Input: `path` argument + optional install flag.
-- VFS touchpoint: `get_statistics` + `File::read_from_path`.
-- Control flow: argument parse -> module load -> runtime execute -> optional task join.
-- Standard streams are split and passed to runtime as ABI context file identifiers.
+- Argument, file-kind, compilation, instantiation, missing-export, and execution failures are reported on stderr and return a nonzero executable result.
+- WASI `proc_exit(0)` succeeds; nonzero exit codes become runtime errors.
+- `--instruction-limit` defaults to 100,000 fuel per quantum. Execution remains cooperative; this is not a total instruction cap.
+- `--stack-size` defaults to 4096 but is currently unused.
+- WASI coverage is partial; `poll_oneoff` supports clocks, not file-descriptor readiness. Start-section suspension is unsupported.
+- Graphical guests need bindings compatible with the host's LVGL revision/configuration and supported call subset.
 
-## Concurrency and event-loop model
-
-- No GUI event loop in host executable path.
-- Execution can run in current task or spawned task (`SpawnerIdentifier`) depending on configured executor.
-- Runtime instance state is cached globally via `OnceLock`.
-
-## Failure semantics
-
-- Path/arguments validation errors are typed (`InvalidPath`, `InvalidOption`, missing arguments).
-- Runtime failures are mapped from `wamr_rust_sdk::RuntimeError` into crate error variants (`Compilation`, `InstantiationFailure`, `Execution`, ...).
-- Errors are written to duplicated stderr stream before returning non-zero code.
-
-## Contract vs implementation
-
-- **Contract**: executable accepts wasm path + options and runs specified entrypoint through executable runtime contract.
-- **Current implementation**: WAMR backend with static runtime registration, optional graphics host bindings, and ABI-context stdio mapping.
-
-## Operational limitations
-
-- Requires mounted file path to point to regular file; non-file nodes are rejected.
-- Runtime capabilities depend on enabled feature set (`host`, `guest`, `graphics`, `c_bindings`).
-- Stack size defaults to 4096 unless overridden.
+The browser example embeds Calculator at build time, installs its shortcut at startup, and persists its VFS disk in OPFS. See [Use on WASM](../../get_started/use_wasm.md) for building, launching, and storage behavior.
 
 ## References
 
 - <CodeReference path="executables/wasm" />
-- [🏁 Executable runtime crate](../crates/executables.md)
+- [Virtual machine](../modules/virtual_machine.md)
+- [Bindings](../modules/bindings.md)
+- [Executable runtime crate](../crates/executables.md)
