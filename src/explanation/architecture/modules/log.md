@@ -1,5 +1,7 @@
 ---
 layout: doc
+docType: explanation
+description: "The Log module is the global bridge between Xila logging calls and a concrete backend implementation."
 ---
 
 # 📝 Log
@@ -93,5 +95,5 @@ graph TD
 ## References / See also
 
 - <HostReference crate="log" />
-- [Drivers](../drivers.md)
-- [Synchronization](../crates/synchronization.md)
+- [Drivers](/explanation/architecture/drivers)
+- [Synchronization](/explanation/architecture/crates/synchronization)

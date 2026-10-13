@@ -1,5 +1,7 @@
 ---
 layout: doc
+docType: explanation
+description: "The Network module provides Xila's asynchronous network runtime around smoltcp."
 ---
 
 # 🌐 Network
@@ -79,9 +81,9 @@ graph TD
 
 ## Dependency model
 
-- Depends on [Task](./task.md) for spawning interface runners.
-- Depends on [Virtual file system](./virtual_file_system.md) for control-device mounting.
-- Depends on [Time](./time.md) for `smoltcp` time source conversion.
+- Depends on [Task](/explanation/architecture/modules/task) for spawning interface runners.
+- Depends on [Virtual file system](/explanation/architecture/modules/virtual_file_system) for control-device mounting.
+- Depends on [Time](/explanation/architecture/modules/time) for `smoltcp` time source conversion.
 - Uses `smoltcp` as packet/socket engine and platform devices for concrete transport.
 
 ## Failure semantics and recovery behavior
@@ -113,5 +115,5 @@ graph TD
 
 - <HostReference crate="network" />
 - <CodeReference path="modules/network" />
-- [🧰 Std driver crate](../drivers/std.md)
-- [🌍 WASM driver crate](../drivers/wasm.md)
+- [🧰 Std driver crate](/explanation/architecture/drivers/std)
+- [🌍 WASM driver crate](/explanation/architecture/drivers/wasm)

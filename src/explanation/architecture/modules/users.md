@@ -1,5 +1,7 @@
 ---
 layout: doc
+docType: explanation
+description: "The Users module is Xila's in-memory identity and group membership registry."
 ---
 
 # 🧑 Users
@@ -80,7 +82,7 @@ graph TD
 
 ## Dependency model
 
-- Used directly by [Task](./task.md) and [Virtual file system](./virtual_file_system.md).
+- Used directly by [Task](/explanation/architecture/modules/task) and [Virtual file system](/explanation/architecture/modules/virtual_file_system).
 - Higher-level authentication crate composes over this module rather than embedding inside it.
 
 ## Failure semantics and recovery behavior
@@ -106,4 +108,4 @@ Persistent groups are loaded before users. Registering a restored user tolerates
 ## References / See also
 
 - <HostReference crate="users" />
-- [Authentication (crate)](../crates/authentication.md)
+- [Authentication (crate)](/explanation/architecture/crates/authentication)

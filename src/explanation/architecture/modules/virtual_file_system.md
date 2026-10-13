@@ -1,5 +1,7 @@
 ---
 layout: doc
+docType: explanation
+description: "The Virtual File System (VFS) is Xila's path router and policy gate for file systems, devices, and pipes."
 ---
 
 # 🗃️ Virtual file system
@@ -133,6 +135,6 @@ File and directory helpers receive VFS/task explicitly, for example `File::open(
 ## References / See also
 
 - <HostReference crate="virtual_file_system" />
-- [Network module](./network.md)
-- [Task](./task.md)
-- [Users](./users.md)
+- [Network module](/explanation/architecture/modules/network)
+- [Task](/explanation/architecture/modules/task)
+- [Users](/explanation/architecture/modules/users)

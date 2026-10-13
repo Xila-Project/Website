@@ -1,5 +1,7 @@
 ---
 layout: doc
+docType: explanation
+description: "The Time module provides an explicitly constructed time source for Xila services."
 ---
 
 # 🕓 Time
@@ -94,5 +96,5 @@ graph TD
 ## References / See also
 
 - <HostReference crate="time" />
-- [Drivers](../drivers.md)
-- [Synchronization](../crates/synchronization.md)
+- [Drivers](/explanation/architecture/drivers)
+- [Synchronization](/explanation/architecture/crates/synchronization)

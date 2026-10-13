@@ -1,5 +1,7 @@
 ---
 layout: doc
+docType: explanation
+description: "The Graphics module hosts LVGL 9.6 and exposes window/display/input services through an explicitly owned manager."
 ---
 
 # 🖼️ Graphics
@@ -57,7 +59,7 @@ graph TD
 
 ## Lifecycle and execution model
 
-1. Initialize [Time](./time.md) first.
+1. Initialize [Time](/explanation/architecture/modules/time) first.
 2. Initialize graphics with the time manager, screen/input devices, and buffer configuration; retain the returned manager and register it with `set_ffi_manager` where needed.
 3. Spawn graphics loop task calling `Manager::loop(...)`.
 4. Applications create windows and process queued events.
@@ -77,8 +79,8 @@ graph TD
 
 ## Dependency model
 
-- Depends on [Time](./time.md) for tick callback.
-- Interacts with [Bindings](./bindings.md) and VM runtime in WASM host path.
+- Depends on [Time](/explanation/architecture/modules/time) for tick callback.
+- Interacts with [Bindings](/explanation/architecture/modules/bindings) and VM runtime in WASM host path.
 - Uses platform `DirectCharacterDevice` implementations for concrete display/input IO.
 
 ## Failure semantics and recovery behavior
@@ -109,4 +111,4 @@ graph TD
 ## References / See also
 
 - <HostReference crate="graphics" />
-- [File system](../crates/file_system.md)
+- [File system](/explanation/architecture/crates/file_system)

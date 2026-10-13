@@ -1,5 +1,7 @@
 ---
 layout: doc
+docType: explanation
+description: "The Task module owns runtime task identity and metadata, and delegates execution to registered embassy_executor spawners."
 ---
 
 # 🏁 Task
@@ -115,5 +117,5 @@ graph TD
 ## References / See also
 
 - <HostReference crate="task" />
-- [Time](./time.md)
-- [Users](./users.md)
+- [Time](/explanation/architecture/modules/time)
+- [Users](/explanation/architecture/modules/users)

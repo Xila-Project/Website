@@ -1,5 +1,7 @@
 ---
 layout: doc
+docType: explanation
+description: "Xila's WebAssembly runtime lives in executables/wasm and uses the Wasmi interpreter."
 ---
 
 # 🖥️ Virtual machine
@@ -49,18 +51,20 @@ graph TD
 
 ## Scheduling and limits
 
-- `--instruction-limit` selects a nonzero fuel quantum (default 100,000), not a total lifetime instruction budget.
-- Clock polling supports up to 64 realtime/startup-clock subscriptions with relative or absolute deadlines. File-descriptor polling and unsupported clocks return errors.
+- The instruction quantum controls fuel replenishment between yields rather than a total lifetime instruction budget.
+- Clock polling supports realtime/startup clocks with relative or absolute deadlines. File-descriptor polling and unsupported clocks return errors.
 - Startup-clock behavior follows Xila's time manager and its driver; it is not a separate hardware monotonic source.
 - Suspension in a WebAssembly start section is unsupported. WASI command guests should use exported `_start`.
-- `--stack-size` is parsed (default 4096) but is not applied by the runtime.
+- The stack-size option is parsed but is not applied by the runtime.
 - `memory_32` is the default guest-word width; `memory_64` selects the alternate translation configuration. Calculator remains a wasm32 guest.
-- Graphics capabilities cover the supported subset documented in [Bindings](./bindings.md); enabling graphics does not provide every LVGL API.
+- Graphics capabilities cover the supported subset documented in [Bindings](/explanation/architecture/modules/bindings); enabling graphics does not provide every LVGL API.
+
+The [runtime reference](/reference/wasm-runtime#execution-limits) is the authoritative lookup page for option defaults and polling capacities.
 
 ## References / See also
 
 - <CodeReference path="executables/wasm" />
 - <HostReference crate="wasm" />
-- [WASM executable](../executables/wasm.md)
-- [Bindings](./bindings.md)
-- [ABI](./abi.md)
+- [WASM executable](/explanation/architecture/executables/wasm)
+- [Bindings](/explanation/architecture/modules/bindings)
+- [ABI](/explanation/architecture/modules/abi)

@@ -1,5 +1,7 @@
 ---
 layout: doc
+docType: explanation
+description: "Xila's C ABI surface is split between declarations and symbol definitions."
 ---
 
 # 🔗 ABI
@@ -58,6 +60,6 @@ Extend definitions and declarations together, regenerate headers, and preserve s
 - <CodeReference path="modules/abi/definitions/src/lib.rs" />
 - <HostReference crate="abi_declarations" />
 - <HostReference crate="abi_definitions" />
-- [Virtual file system](./virtual_file_system.md)
-- [Bindings](./bindings.md)
-- [Virtual machine](./virtual_machine.md)
+- [Virtual file system](/explanation/architecture/modules/virtual_file_system)
+- [Bindings](/explanation/architecture/modules/bindings)
+- [Virtual machine](/explanation/architecture/modules/virtual_machine)

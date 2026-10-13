@@ -1,5 +1,7 @@
 ---
 layout: doc
+docType: explanation
+description: "Xila's graphics bindings connect guest WebAssembly imports to the context-provided graphics manager."
 ---
 
 # 🔗 Bindings
@@ -33,18 +35,13 @@ sequenceDiagram
 
 The catalog requires guest and host bindings built from the same LVGL revision and configuration; call IDs are not a stable cross-version graphics ABI. Core now uses LVGL 9.6, including its updated event codes.
 
-The supported milestone covers window creation/icon/event retrieval, object creation/deletion, flex flow/grow, width/height, flags, labels, button matrices, and percentage conversion. Calculator exercises this subset. Weather still needs APIs beyond it.
+Calculator exercises the supported graphics subset; Weather still requires calls beyond it. The [graphics reference](/reference/graphics-bindings#supported-calls) lists the exact operations and compatibility requirements.
 
 Calls involving arbitrary native structure layouts, guest callbacks, retained guest pointers, fonts/images/charts, or other unsupported LVGL functions return an unsupported status. Guest memory is never interpreted as a typed host reference.
 
-## Resource limits and status
+## Bounded state
 
-- 256 issued object handles per execution, including deleted handles.
-- 64 button-map entries including the sentinel; 1024 bytes per NUL-terminated string.
-- 8192 retained map-string bytes per widget, including the native sentinel.
-- Null and empty-string map sentinels become LVGL's empty-string terminator; row separators are retained.
-
-Status 0 is success. Error statuses are invalid count (1), invalid memory (2), unavailable capability (3), unsupported call (4), invalid handle (5), resource limit (6), invalid value (7), and native failure (8).
+Object handles and retained map strings have fixed limits so an execution's host-side state remains bounded. Handles are local to the VM and never reused during that execution; this prevents a deleted object's identity from granting access to a later object. The [reference](/reference/graphics-bindings#resource-limits) gives capacities and numeric status codes.
 
 ## Extension points and validation
 
@@ -56,6 +53,6 @@ Extend the shared catalog and checked dispatch together, and keep the Wasmi adap
 - <CodeReference path="executables/wasm/src/host/graphics" />
 - <CodeReference path="executables/wasm/tests/translation/README.md" />
 - <HostReference crate="wasm" />
-- [Graphics](./graphics.md)
-- [Virtual machine](./virtual_machine.md)
-- [ABI](./abi.md)
+- [Graphics](/explanation/architecture/modules/graphics)
+- [Virtual machine](/explanation/architecture/modules/virtual_machine)
+- [ABI](/explanation/architecture/modules/abi)
