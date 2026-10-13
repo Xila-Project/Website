@@ -23,8 +23,8 @@ Checklist links:
 
 Before you start, confirm:
 
-- Rust is installed: `rustc --version`
-- Cargo works: `cargo --version`
+- Devbox is installed at Core's `.devbox-version` on x86_64 Linux, or the manual native/Rust tools are installed.
+- Setup has completed: `devbox run setup` installs toolchains, targets, and npm dependencies.
 - You chose one target path (host, wasm, or contribution)
 - You can run commands from a clean project folder
 
@@ -37,7 +37,9 @@ Pick one path and run the matching command sequence:
 ```bash
 git clone https://github.com/Xila-Project/Core.git
 cd Core
-cargo make run -p native_example
+devbox shell
+devbox run setup
+devbox run gui
 ```
 
 ### WASM
@@ -45,8 +47,11 @@ cargo make run -p native_example
 ```bash
 git clone https://github.com/Xila-Project/Core.git
 cd Core
-rustup target add wasm32-wasip1
-cargo build -p wasm --target wasm32-wasip1
+devbox shell
+devbox run setup
+cargo build -p calculator --target wasm32-wasip1 --release
+cargo make generate-fonts
+(cd examples/wasm && RUSTUP_TOOLCHAIN="$XILA_NIGHTLY_TOOLCHAIN" trunk serve)
 ```
 
 ### Contributor
@@ -54,6 +59,8 @@ cargo build -p wasm --target wasm32-wasip1
 ```bash
 git clone https://github.com/Xila-Project/Core.git
 cd Core
+devbox shell
+devbox run setup
 cargo make before-commit
 ```
 
@@ -63,7 +70,7 @@ You are "started" when you can do one of these:
 
 - **Host path:** run a host app and see it start without panics
 - **Integrator path:** initialize modules, mount runtime services, and launch one executable in your workspace
-- **WASM path:** build a `wasm32-wasip1` binary without target errors
+- **WASM path:** build a `wasm32-wasip1` guest, run Calculator in the browser example, and close its window successfully
 - **Contributor path:** run both native and wasm examples locally
 
 ## Troubleshooting
