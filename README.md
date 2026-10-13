@@ -7,7 +7,8 @@ This project contains all the sources and documentation for the Xila operating s
 ## 🚀 Features
 
 - Built with [VitePress](https://vitepress.dev/) for fast, modern documentation
-- Modular documentation structure (guides, architecture, modules, drivers, etc.)
+- Reader-focused documentation organized with [Diátaxis](https://diataxis.fr/)
+- Local authoring templates informed by [The Good Docs Project](https://github.com/thegooddocsproject/templates)
 - Integrated with [Mermaid](https://mermaid-js.github.io/) for diagrams
 - Full-text search powered by [Pagefind](https://pagefind.app/)
 - Prettier formatting for consistent style
@@ -16,11 +17,18 @@ This project contains all the sources and documentation for the Xila operating s
 
 ```
 src/
-  guide/           # Main guides and tutorials
-  architecture/    # System architecture and modules
+  docs/            # Documentation entry point
+  tutorials/       # Guided learning experiences
+  how-to/          # Task-focused procedures
+  reference/       # Commands, capabilities, limits, and generated API viewers
+  explanation/     # Concepts, architecture, and design choices
+  components/      # Cross-cutting component map
+  about/           # Project information
   public/          # Static assets (images, robots.txt, etc.)
-  reference/       # API and technical references
-  ...
+docs/templates/    # Authoring templates, excluded from the published site
+.vitepress/        # Site configuration, navigation, and reference components
+scripts/           # Documentation validation
+AGENTS.md          # Documentation conventions and maintenance instructions
 ```
 
 ## 🛠️ Getting Started
@@ -28,7 +36,7 @@ src/
 1. **Install dependencies:**
 
    ```sh
-   npm install
+   npm ci
    ```
 
 2. **Start local development server:**
@@ -50,14 +58,15 @@ src/
 
 ## 📝 Available Commands
 
-| Command        | Description                              |
-| -------------- | ---------------------------------------- |
-| `docs:dev`     | Start VitePress in development mode      |
-| `docs:build`   | Build the static site with VitePress     |
-| `docs:preview` | Preview the built site locally           |
-| `format:fix`   | Format all files using Prettier          |
-| `format:check` | Check formatting with Prettier           |
-| `check`        | Run format check and build documentation |
+| Command         | Description                                         |
+| --------------- | --------------------------------------------------- |
+| `docs:dev`      | Start VitePress in development mode                 |
+| `docs:build`    | Build the static site with VitePress                |
+| `docs:preview`  | Preview the built site locally                      |
+| `format:fix`    | Format all files using Prettier                     |
+| `format:check`  | Check formatting with Prettier                      |
+| `docs:validate` | Check documentation links and anchors after a build |
+| `check`         | Check formatting, build, and validate documentation |
 
 Run any command with:
 
@@ -67,7 +76,9 @@ npm run <command>
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please see the guides in `src/guide/get_started/contribute.md` for details on how to get started.
+Read [AGENTS.md](AGENTS.md) for documentation conventions and [docs/templates/README.md](docs/templates/README.md) to choose a writing template. The [documentation contribution guide](src/how-to/write-documentation.md) covers the workflow for this repository; [Core contributions](src/how-to/contribute-core.md) have their own tooling and checks.
+
+Keep each substantive page focused on one reader need. Split mixed onboarding pages into guided tutorials, independent task guides, exact reference, and conceptual explanation, then connect them with links. Use `.vitepress/navigation.ts` and the landing pages to make content discoverable. The site is pre-production: moved pages use their new URLs directly, without redirects.
 
 ## 📄 License
 
