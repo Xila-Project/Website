@@ -1,5 +1,7 @@
 ---
 layout: doc
+docType: explanation
+description: "The command-line shell executable provides text command dispatch for both interactive terminal sessions and one-shot command invocation."
 ---
 
 # ⌨️ Command line shell (executable)
@@ -59,4 +61,4 @@ The command-line shell executable provides text command dispatch for both intera
 ## References
 
 - <CodeReference path="executables/shell/command_line" />
-- [Terminal](./terminal.md)
+- [Terminal](/explanation/architecture/executables/terminal)

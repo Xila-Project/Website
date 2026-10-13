@@ -1,5 +1,7 @@
 ---
 layout: doc
+docType: explanation
+description: "The drivers_espressif crate contains platform-specific drivers for Espressif targets."
 ---
 
 # ⚡ Espressif driver crate
@@ -18,6 +20,6 @@ This crate is intentionally small and keeps dependencies minimal to stay close t
 
 ## See also
 
-- [🪛 Drivers](../drivers.md)
-- [🧱 Core driver crate](./core.md)
-- [🔗 Shared driver crate](./shared.md)
+- [🪛 Drivers](/explanation/architecture/drivers)
+- [🧱 Core driver crate](/explanation/architecture/drivers/core)
+- [🔗 Shared driver crate](/explanation/architecture/drivers/shared)

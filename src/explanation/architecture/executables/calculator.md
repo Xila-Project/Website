@@ -1,5 +1,7 @@
 ---
 layout: doc
+docType: explanation
+description: "The calculator executable provides a scientific-expression evaluation UI primarily for WASM targets."
 ---
 
 # 🧮 Calculator (executable)
@@ -51,4 +53,4 @@ The calculator executable provides a scientific-expression evaluation UI primari
 ## References
 
 - <CodeReference path="executables/calculator" />
-- [🌍 WASM](./wasm.md)
+- [🌍 WASM](/explanation/architecture/executables/wasm)

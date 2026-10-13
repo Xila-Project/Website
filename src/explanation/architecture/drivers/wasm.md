@@ -1,5 +1,7 @@
 ---
 layout: doc
+docType: explanation
+description: "The drivers_wasm crate provides drivers for WebAssembly targets (wasm32)."
 ---
 
 # 🌍 WASM driver crate
@@ -14,7 +16,7 @@ The browser example uses `devices::DriveDevice` to open the origin-private file 
 
 Only dirty disks are saved. Saves are serialized and atomic, with at most one additional disk-sized snapshot rather than a growing queue. Failures leave unsaved changes available for retry; the caller must handle errors. OPFS quota/eviction and abrupt tab termination can still lose data.
 
-The browser example saves at startup, every second when dirty, and on normal shutdown. It validates existing MBR/LittleFS data and stops on mount errors instead of reformatting a saved image. See [Use on WASM](../../get_started/use_wasm.md#persistent-browser-storage) for persistence, login, and reset behavior.
+The browser example validates existing MBR/LittleFS data and stops on mount errors instead of reformatting a saved image. See [Browser storage](/explanation/browser-storage) for the cache/autosave model and [Reset the browser disk](/how-to/reset-browser-storage) for a deliberate reset.
 
 ## Browser capabilities
 
@@ -22,11 +24,11 @@ OPFS, `FileSystemFileHandle.createWritable`, and Web Locks require an appropriat
 
 ## Dependencies
 
-- [🧠 Memory](../modules/memory.md)
-- [🖼️ Graphics](../modules/graphics.md)
-- [🏁 Task](../modules/task.md)
-- [📝 Log](../modules/log.md)
-- [📦 Shared](../crates/shared.md)
+- [🧠 Memory](/explanation/architecture/modules/memory)
+- [🖼️ Graphics](/explanation/architecture/modules/graphics)
+- [🏁 Task](/explanation/architecture/modules/task)
+- [📝 Log](/explanation/architecture/modules/log)
+- [📦 Shared](/explanation/architecture/crates/shared)
 
 ## References
 
@@ -34,5 +36,5 @@ OPFS, `FileSystemFileHandle.createWritable`, and Web Locks require an appropriat
 
 ## See also
 
-- [🪛 Drivers](../drivers.md)
-- [🧱 Core driver crate](./core.md)
+- [🪛 Drivers](/explanation/architecture/drivers)
+- [🧱 Core driver crate](/explanation/architecture/drivers/core)

@@ -1,5 +1,7 @@
 ---
 layout: doc
+docType: explanation
+description: "The WASM executable loads guest programs from Xila's VFS and runs them using Wasmi."
 ---
 
 # 🌍 WASM (executable)
@@ -8,22 +10,15 @@ The WASM executable loads guest programs from Xila's VFS and runs them using Was
 
 ## Role and feature selection
 
-- `host`: Wasmi runtime and Xila executable integration; also used by the browser-hosted Xila runtime.
-- `guest`: guest helper APIs without the interpreter. Disable default features for guest-only consumers.
-- `graphics`: optional generated guest wrappers and supported host graphics imports.
-- `default_guest`: `guest`, `graphics`, `c_bindings`, and `memory_32`; emits `xila_graphics.h` in the build output.
-- `memory_32` / `memory_64`: guest-word translation width. Default runtime features are `host,memory_32`.
+The package serves two sides of the boundary: a host interpreter integrated with Xila's executable services, and helpers compiled into guest applications. The host role also applies when Xila runs in a browser. Optional graphics connects the interpreter to the context's graphics capability.
+
+The [runtime reference](/reference/wasm-runtime#cargo-features) defines the exact Cargo feature sets and defaults.
 
 ## Launching a guest
 
-Run these commands in Xila's terminal, using files already in the VFS:
+The launcher reads a guest from the VFS and invokes either its normal entrypoint or its installer. Both use typed, no-argument exports. Path handling belongs to the caller and the VFS; the loader does not implement the old `Current_directory` resolution step.
 
-```text
-/binaries/wasm /binaries/calculator
-/binaries/wasm --install /binaries/calculator
-```
-
-Normal execution requires `_start: () -> ()`. `--install` selects `__install: () -> ()`; missing or incorrectly typed exports fail. The path must identify a regular file. The loader uses the supplied VFS path directly; it does not implement the old `Current_directory` path-resolution step.
+Follow [Run a guest](/how-to/run-guest) for the procedure and [command syntax](/reference/wasm-runtime#command-syntax) for its options and required exports.
 
 ## Startup and lifecycle
 
@@ -45,16 +40,17 @@ Normal execution requires `_start: () -> ()`. `--install` selects `__install: ()
 
 - Argument, file-kind, compilation, instantiation, missing-export, and execution failures are reported on stderr and return a nonzero executable result.
 - WASI `proc_exit(0)` succeeds; nonzero exit codes become runtime errors.
-- `--instruction-limit` defaults to 100,000 fuel per quantum. Execution remains cooperative; this is not a total instruction cap.
-- `--stack-size` defaults to 4096 but is currently unused.
+- Fuel is replenished after cooperative yielding, so its quantum controls scheduling rather than a total instruction budget.
 - WASI coverage is partial; `poll_oneoff` supports clocks, not file-descriptor readiness. Start-section suspension is unsupported.
 - Graphical guests need bindings compatible with the host's LVGL revision/configuration and supported call subset.
 
-The browser example embeds Calculator at build time, installs its shortcut at startup, and persists its VFS disk in OPFS. See [Use on WASM](../../get_started/use_wasm.md) for building, launching, and storage behavior.
+The browser example embeds Calculator at build time, installs its shortcut at startup, and persists its VFS disk in OPFS. See [Browser tutorial](/tutorials/browser) for building, launching, and storage behavior.
+
+Exact option defaults and constraints live in the [runtime reference](/reference/wasm-runtime#execution-limits); the persistence model is explained in [Browser storage](/explanation/browser-storage).
 
 ## References
 
 - <CodeReference path="executables/wasm" />
-- [Virtual machine](../modules/virtual_machine.md)
-- [Bindings](../modules/bindings.md)
-- [Executable runtime crate](../crates/executables.md)
+- [Virtual machine](/explanation/architecture/modules/virtual_machine)
+- [Bindings](/explanation/architecture/modules/bindings)
+- [Executable runtime crate](/explanation/architecture/crates/executables)

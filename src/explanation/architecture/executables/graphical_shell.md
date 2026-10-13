@@ -1,5 +1,7 @@
 ---
 layout: doc
+docType: explanation
+description: "The graphical shell executable is the session shell that transitions from login to desktop views."
 ---
 
 # 🖼️ Graphical shell (executable)
@@ -55,4 +57,4 @@ The graphical shell executable is the session shell that transitions from login 
 ## References
 
 - <CodeReference path="executables/shell/graphical" />
-- [🏁 Executable runtime crate](../crates/executables.md)
+- [🏁 Executable runtime crate](/explanation/architecture/crates/executables)

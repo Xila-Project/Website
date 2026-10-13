@@ -1,5 +1,7 @@
 ---
 layout: doc
+docType: explanation
+description: "The file manager executable provides a graphical VFS browser with directory navigation controls."
 ---
 
 # 📂 File manager (executable)
@@ -55,4 +57,4 @@ The file manager executable provides a graphical VFS browser with directory navi
 ## References
 
 - <CodeReference path="executables/file_manager" />
-- [🗃️ Virtual file system](../modules/virtual_file_system.md)
+- [🗃️ Virtual file system](/explanation/architecture/modules/virtual_file_system)

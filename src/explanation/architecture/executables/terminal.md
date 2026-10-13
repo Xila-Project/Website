@@ -1,5 +1,7 @@
 ---
 layout: doc
+docType: explanation
+description: "The terminal executable provides a graphical terminal window exposed as a character device and uses it to host the command-line shell."
 ---
 
 # 🖥️ Terminal (executable)
@@ -55,4 +57,4 @@ The terminal executable provides a graphical terminal window exposed as a charac
 ## References
 
 - <CodeReference path="executables/terminal" />
-- [Command line shell](./command_line_shell.md)
+- [Command line shell](/explanation/architecture/executables/command_line_shell)

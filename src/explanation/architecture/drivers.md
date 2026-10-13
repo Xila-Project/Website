@@ -1,11 +1,13 @@
 ---
 layout: doc
+docType: explanation
+description: "Core provides a set of abstraction layers that define how the specific platform interfaces with the underlying hardware."
 ---
 
 # 🛠️ Drivers
 
 Core provides a set of abstraction layers that define how the specific platform interfaces with the underlying hardware. This is achieved through drivers.
-Drivers are implemented in separate crates, linked to the final binary, and registered with the [virtual file system](./modules/virtual_file_system.md) or other modules (when direct access is required) to be used by the rest of the operating system.
+Drivers are implemented in separate crates, linked to the final binary, and registered with the [virtual file system](/explanation/architecture/modules/virtual_file_system) or other modules (when direct access is required) to be used by the rest of the operating system.
 
 Most drivers categorize into two main types:
 
@@ -20,14 +22,14 @@ Additionally, abstract driver interfaces may sometimes incur overhead. To mitiga
 
 ## References
 
-- <HostReference crate="driver" />: Contains the main driver interface declarations.
+- <HostReference crate="file_system" />: Contains character/block device and operation contracts.
 - <CodeReference path="drivers/core" />: Dependency-less implementation for basic drivers (like null device, etc.).
 - <CodeReference path="drivers/std" />: Standard library-based drivers for host environments.
-- <CodeReference path="drivers/espressif" />: Drivers for Espressif microcontrollers (ESP32, ESP8266).
+- <CodeReference path="drivers/espressif" />: Drivers for Espressif targets.
 - <CodeReference path="drivers/native" />: Native drivers for desktop platforms (Linux, Windows, macOS).
 - <CodeReference path="drivers/shared" />: Contains drivers that can be shared across multiple platforms.
 - <CodeReference path="drivers/wasm" />: Drivers for WebAssembly environments.
 
 ## See also
 
-- [Architecture overview](../index.md)
+- [Architecture overview](/docs/)
