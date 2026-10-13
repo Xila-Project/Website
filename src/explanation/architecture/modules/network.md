@@ -4,7 +4,7 @@ docType: explanation
 description: "The Network module provides Xila's asynchronous network runtime around smoltcp."
 ---
 
-# 🌐 Network
+# Network
 
 The Network module provides Xila's asynchronous network runtime around `smoltcp`. It owns interface stacks, socket factories, and a control plane exposed as character devices under the VFS namespace.
 
@@ -115,5 +115,5 @@ graph TD
 
 - <HostReference crate="network" />
 - <CodeReference path="modules/network" />
-- [🧰 Std driver crate](/explanation/architecture/drivers/std)
-- [🌍 WASM driver crate](/explanation/architecture/drivers/wasm)
+- [Std driver crate](/explanation/architecture/drivers/std)
+- [WASM driver crate](/explanation/architecture/drivers/wasm)

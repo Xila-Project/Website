@@ -4,7 +4,7 @@ docType: explanation
 description: "Xila is designed with modularity and portability in mind."
 ---
 
-# 📐 Architecture
+# Architecture
 
 Xila is designed with modularity and portability in mind. It is built to run on a variety of platforms, from embedded systems to desktop computers, and even in web browsers via WebAssembly (WASM).
 

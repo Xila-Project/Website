@@ -4,7 +4,7 @@ docType: explanation
 description: "The peripherals crate defines shared data types used to configure and interact with low-level peripherals."
 ---
 
-# 🎛️ Peripherals
+# Peripherals
 
 The `peripherals` crate defines shared data types used to configure and interact with low-level peripherals.
 
@@ -53,5 +53,5 @@ It currently focuses on pin modeling primitives (direction, level, pull mode, an
 ## References
 
 - <CodeReference path="modules/peripherals" />
-- [🔌 Device](/explanation/architecture/crates/device)
-- [🪛 Drivers](/explanation/architecture/drivers)
+- [Device](/explanation/architecture/crates/device)
+- [Drivers](/explanation/architecture/drivers)

@@ -4,7 +4,7 @@ docType: explanation
 description: "This crate implements persistent account/group data handling and password verification flows used by the host runtime."
 ---
 
-# 🔒 Authentication
+# Authentication
 
 This crate implements persistent account/group data handling and password verification flows used by the host runtime.
 

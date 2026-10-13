@@ -4,7 +4,7 @@ docType: explanation
 description: Understand Xila's build-time locale selection and external embedded-i18n integration.
 ---
 
-# 🌐 Internationalization
+# Internationalization
 
 Xila uses the external `embedded-i18n` dependency for build-time localization. Core re-exports it as `xila::internationalization`; the former `modules/internationalization` crate is no longer in the workspace.
 

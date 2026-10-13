@@ -4,7 +4,7 @@ docType: explanation
 description: "Xila's graphics bindings connect guest WebAssembly imports to the context-provided graphics manager."
 ---
 
-# 🔗 Bindings
+# Bindings
 
 Xila's graphics bindings connect guest WebAssembly imports to the context-provided graphics manager. The shared LVGL catalog is generated in `modules/graphics/bindings_generator`; host dispatch and the Wasmi adapter live in `executables/wasm/src/host/graphics`.
 

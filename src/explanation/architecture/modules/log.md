@@ -4,7 +4,7 @@ docType: explanation
 description: "The Log module is the global bridge between Xila logging calls and a concrete backend implementation."
 ---
 
-# 📝 Log
+# Log
 
 The Log module is the global bridge between Xila logging calls and a concrete backend implementation.
 

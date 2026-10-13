@@ -4,7 +4,7 @@ Welcome to the repository for the [Xila Website](https://www.xila.dev)!
 
 This project contains all the sources and documentation for the Xila operating system, including guides, architecture references, and developer resources.
 
-## 🚀 Features
+## Features
 
 - Built with [VitePress](https://vitepress.dev/) for fast, modern documentation
 - Reader-focused documentation organized with [Diátaxis](https://diataxis.fr/)
@@ -13,7 +13,7 @@ This project contains all the sources and documentation for the Xila operating s
 - Full-text search powered by [Pagefind](https://pagefind.app/)
 - Prettier formatting for consistent style
 
-## 📦 Project Structure
+## Project Structure
 
 ```
 src/
@@ -30,7 +30,7 @@ scripts/           # Documentation validation
 AGENTS.md          # Documentation conventions and maintenance instructions
 ```
 
-## 🛠️ Getting Started
+## Getting Started
 
 1. **Install dependencies:**
 
@@ -55,7 +55,7 @@ AGENTS.md          # Documentation conventions and maintenance instructions
    npm run docs:preview
    ```
 
-## 📝 Available Commands
+## Available Commands
 
 | Command         | Description                                         |
 | --------------- | --------------------------------------------------- |
@@ -73,12 +73,12 @@ Run any command with:
 npm run <command>
 ```
 
-## 🤝 Contributing
+## Contributing
 
 Read [AGENTS.md](AGENTS.md) for documentation conventions and [docs/templates/README.md](docs/templates/README.md) to choose a writing template. The [documentation contribution guide](src/how-to/write-documentation.md) covers the workflow for this repository; [Core contributions](src/how-to/contribute-core.md) have their own tooling and checks.
 
 Keep each substantive page focused on one reader need. Split mixed onboarding pages into guided tutorials, independent task guides, exact reference, and conceptual explanation, then connect them with links. Use `.vitepress/navigation.ts` and the landing pages to make content discoverable. The site is pre-production: moved pages use their new URLs directly, without redirects.
 
-## 📄 License
+## License
 
 This project is under the [GNU General Public License v2.0](LICENSE).

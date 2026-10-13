@@ -4,7 +4,7 @@ docType: explanation
 description: "The terminal executable provides a graphical terminal window exposed as a character device and uses it to host the command-line shell."
 ---
 
-# 🖥️ Terminal (executable)
+# Terminal (executable)
 
 The terminal executable provides a graphical terminal window exposed as a character device and uses it to host the command-line shell.
 

@@ -4,7 +4,7 @@ docType: explanation
 description: "The target crate provides typed build-target introspection from Cargo-provided environment variables."
 ---
 
-# 🎯 Target
+# Target
 
 The `target` crate provides typed build-target introspection from Cargo-provided environment variables.
 
@@ -56,4 +56,4 @@ The `target` crate provides typed build-target introspection from Cargo-provided
 ## References
 
 - <CodeReference path="modules/target" />
-- [🏁 Executable crate](/explanation/architecture/crates/executables)
+- [Executable crate](/explanation/architecture/crates/executables)

@@ -4,7 +4,7 @@ docType: explanation
 description: "The Task module owns runtime task identity and metadata, and delegates execution to registered embassy_executor spawners."
 ---
 
-# 🏁 Task
+# Task
 
 The Task module owns runtime task identity and metadata, and delegates execution to registered `embassy_executor` spawners.
 

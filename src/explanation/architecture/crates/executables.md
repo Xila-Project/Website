@@ -4,7 +4,7 @@ docType: explanation
 description: "The executable crate defines the native executable contract and the launcher used across Core."
 ---
 
-# 🏃 Executables
+# Executables
 
 The `executable` crate defines the native executable contract and the launcher used across Core.
 

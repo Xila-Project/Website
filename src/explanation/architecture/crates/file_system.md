@@ -4,7 +4,7 @@ docType: explanation
 description: "The file_system crate is the architectural contract layer for storage nodes, files, directories, and device endpoints."
 ---
 
-# 📁 File system
+# File system
 
 The `file_system` crate is the architectural contract layer for storage nodes, files, directories, and device endpoints.
 
@@ -64,4 +64,4 @@ The `file_system` crate is the architectural contract layer for storage nodes, f
 
 - <HostReference crate="file_system" />
 - <CodeReference path="modules/file_system" />
-- [📁 Little FS](/explanation/architecture/crates/little_fs)
+- [Little FS](/explanation/architecture/crates/little_fs)

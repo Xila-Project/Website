@@ -4,7 +4,7 @@ docType: explanation
 description: "The synchronization crate standardizes synchronization primitives used across Core."
 ---
 
-# 🔃 Synchronization
+# Synchronization
 
 The `synchronization` crate standardizes synchronization primitives used across Core.
 
@@ -59,4 +59,4 @@ The `synchronization` crate standardizes synchronization primitives used across 
 
 - <HostReference crate="synchronization" />
 - <CodeReference path="modules/synchronization" />
-- [🏁 Task](/explanation/architecture/modules/task)
+- [Task](/explanation/architecture/modules/task)

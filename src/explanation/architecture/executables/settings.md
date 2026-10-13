@@ -4,7 +4,7 @@ docType: explanation
 description: "The settings executable is a tab-based graphical configuration application."
 ---
 
-# ⚙️ Settings (executable)
+# Settings (executable)
 
 The settings executable is a tab-based graphical configuration application.
 
@@ -57,4 +57,4 @@ The settings executable is a tab-based graphical configuration application.
 ## References
 
 - <CodeReference path="executables/settings" />
-- [🌐 Internationalization](/explanation/architecture/crates/internationalization)
+- [Internationalization](/explanation/architecture/crates/internationalization)

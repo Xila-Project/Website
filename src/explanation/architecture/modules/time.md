@@ -4,7 +4,7 @@ docType: explanation
 description: "The Time module provides an explicitly constructed time source for Xila services."
 ---
 
-# 🕓 Time
+# Time
 
 The Time module provides an explicitly constructed time source for Xila services.
 

@@ -4,7 +4,7 @@ docType: explanation
 description: "Core provides a set of abstraction layers that define how the specific platform interfaces with the underlying hardware."
 ---
 
-# 🛠️ Drivers
+# Drivers
 
 Core provides a set of abstraction layers that define how the specific platform interfaces with the underlying hardware. This is achieved through drivers.
 Drivers are implemented in separate crates, linked to the final binary, and registered with the [virtual file system](/explanation/architecture/modules/virtual_file_system) or other modules (when direct access is required) to be used by the rest of the operating system.

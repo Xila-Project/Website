@@ -4,7 +4,7 @@ docType: explanation
 description: "Xila's C ABI surface is split between declarations and symbol definitions."
 ---
 
-# 🔗 ABI
+# ABI
 
 Xila's C ABI surface is split between declarations and symbol definitions. Rust services use explicit managers; C entrypoints receive their VFS and time capabilities through a separately installed process-wide runtime context.
 

@@ -4,7 +4,7 @@ docType: explanation
 description: "The Virtual File System (VFS) is Xila's path router and policy gate for file systems, devices, and pipes."
 ---
 
-# 🗃️ Virtual file system
+# Virtual file system
 
 The Virtual File System (VFS) is Xila's path router and policy gate for file systems, devices, and pipes. It maps absolute paths to mounted backends, applies ownership/permission checks, and returns typed handles (`File`, `Directory`) for subsequent operations.
 

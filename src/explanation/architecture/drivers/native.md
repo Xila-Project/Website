@@ -4,7 +4,7 @@ docType: explanation
 description: "The drivers_native crate provides desktop-host integrations for native targets (Linux, macOS, Windows)."
 ---
 
-# 🖥️ Native driver crate
+# Native driver crate
 
 The `drivers_native` crate provides desktop-host integrations for native targets (Linux, macOS, Windows).
 
@@ -12,11 +12,11 @@ It is used for host-side runtime features such as window-backed display/input ha
 
 ## Dependencies
 
-- [🖼️ Graphics](/explanation/architecture/modules/graphics)
-- [🏁 Task](/explanation/architecture/modules/task)
-- [📝 Log](/explanation/architecture/modules/log)
-- [🔃 Synchronization](/explanation/architecture/crates/synchronization)
-- [📦 Shared](/explanation/architecture/crates/shared)
+- [Graphics](/explanation/architecture/modules/graphics)
+- [Task](/explanation/architecture/modules/task)
+- [Log](/explanation/architecture/modules/log)
+- [Synchronization](/explanation/architecture/crates/synchronization)
+- [Shared](/explanation/architecture/crates/shared)
 
 ## References
 
@@ -24,6 +24,6 @@ It is used for host-side runtime features such as window-backed display/input ha
 
 ## See also
 
-- [🪛 Drivers](/explanation/architecture/drivers)
-- [🔗 Shared driver crate](/explanation/architecture/drivers/shared)
-- [🧰 Std driver crate](/explanation/architecture/drivers/std)
+- [Drivers](/explanation/architecture/drivers)
+- [Shared driver crate](/explanation/architecture/drivers/shared)
+- [Std driver crate](/explanation/architecture/drivers/std)

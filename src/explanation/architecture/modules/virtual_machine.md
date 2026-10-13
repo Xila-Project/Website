@@ -4,7 +4,7 @@ docType: explanation
 description: "Xila's WebAssembly runtime lives in executables/wasm and uses the Wasmi interpreter."
 ---
 
-# 🖥️ Virtual machine
+# Virtual machine
 
 Xila's WebAssembly runtime lives in `executables/wasm` and uses the Wasmi interpreter. The `host` feature means Xila hosts guest programs; it also works when Xila itself runs in a browser. The previous WAMR integration and `Runtime::execute` API have been removed.
 

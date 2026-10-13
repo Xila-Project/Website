@@ -4,7 +4,7 @@ docType: explanation
 description: "The drivers_wasm crate provides drivers for WebAssembly targets (wasm32)."
 ---
 
-# 🌍 WASM driver crate
+# WASM driver crate
 
 The `drivers_wasm` crate provides drivers for WebAssembly targets (`wasm32`).
 
@@ -24,11 +24,11 @@ OPFS, `FileSystemFileHandle.createWritable`, and Web Locks require an appropriat
 
 ## Dependencies
 
-- [🧠 Memory](/explanation/architecture/modules/memory)
-- [🖼️ Graphics](/explanation/architecture/modules/graphics)
-- [🏁 Task](/explanation/architecture/modules/task)
-- [📝 Log](/explanation/architecture/modules/log)
-- [📦 Shared](/explanation/architecture/crates/shared)
+- [Memory](/explanation/architecture/modules/memory)
+- [Graphics](/explanation/architecture/modules/graphics)
+- [Task](/explanation/architecture/modules/task)
+- [Log](/explanation/architecture/modules/log)
+- [Shared](/explanation/architecture/crates/shared)
 
 ## References
 
@@ -36,5 +36,5 @@ OPFS, `FileSystemFileHandle.createWritable`, and Web Locks require an appropriat
 
 ## See also
 
-- [🪛 Drivers](/explanation/architecture/drivers)
-- [🧱 Core driver crate](/explanation/architecture/drivers/core)
+- [Drivers](/explanation/architecture/drivers)
+- [Core driver crate](/explanation/architecture/drivers/core)

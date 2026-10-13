@@ -4,7 +4,7 @@ docType: explanation
 description: "The drivers_shared crate provides reusable device implementations that are used across multiple platforms."
 ---
 
-# 🔗 Shared driver crate
+# Shared driver crate
 
 The `drivers_shared` crate provides reusable device implementations that are used across multiple platforms.
 
@@ -12,10 +12,10 @@ Today this includes utility devices such as random and hashing devices that can 
 
 ## Dependencies
 
-- [📁 File system](/explanation/architecture/crates/file_system)
-- [📝 Log](/explanation/architecture/modules/log)
-- [📦 Shared](/explanation/architecture/crates/shared)
-- [🔌 Device](/explanation/architecture/crates/device)
+- [File system](/explanation/architecture/crates/file_system)
+- [Log](/explanation/architecture/modules/log)
+- [Shared](/explanation/architecture/crates/shared)
+- [Device](/explanation/architecture/crates/device)
 
 ## References
 
@@ -23,5 +23,5 @@ Today this includes utility devices such as random and hashing devices that can 
 
 ## See also
 
-- [🪛 Drivers](/explanation/architecture/drivers)
-- [🔒 Authentication](/explanation/architecture/crates/authentication)
+- [Drivers](/explanation/architecture/drivers)
+- [Authentication](/explanation/architecture/crates/authentication)

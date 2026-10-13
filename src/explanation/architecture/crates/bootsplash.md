@@ -4,7 +4,7 @@ docType: explanation
 description: "The bootsplash crate provides a focused startup animation layer around the graphics manager and LVGL objects."
 ---
 
-# ✨ Bootsplash
+# Bootsplash
 
 The `bootsplash` crate provides a focused startup animation layer around the graphics manager and LVGL objects.
 
@@ -33,7 +33,7 @@ The `bootsplash` crate provides a focused startup animation layer around the gra
 
 ## Dependency model
 
-- Internal runtime dependency: [🖼️ Graphics](/explanation/architecture/modules/graphics) only.
+- Internal runtime dependency: [Graphics](/explanation/architecture/modules/graphics) only.
 - Uses LVGL symbols re-exported through graphics (`lv_anim_*`, `lv_obj_*`).
 
 ## Failure semantics
@@ -59,4 +59,4 @@ The `bootsplash` crate provides a focused startup animation layer around the gra
 ## References
 
 - <CodeReference path="modules/bootsplash" />
-- [🖼️ Graphics](/explanation/architecture/modules/graphics)
+- [Graphics](/explanation/architecture/modules/graphics)

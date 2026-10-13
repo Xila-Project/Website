@@ -4,7 +4,7 @@ docType: explanation
 description: "The drivers_std crate implements host-side drivers relying on the Rust standard library."
 ---
 
-# 🧰 Std driver crate
+# Std driver crate
 
 The `drivers_std` crate implements host-side drivers relying on the Rust standard library.
 
@@ -12,12 +12,12 @@ It provides commonly used services for host execution, including logging, memory
 
 ## Dependencies
 
-- [🧠 Memory](/explanation/architecture/modules/memory)
-- [🕓 Time](/explanation/architecture/modules/time)
-- [🌐 Network](/explanation/architecture/modules/network)
-- [🏁 Task](/explanation/architecture/modules/task)
-- [👥 Users](/explanation/architecture/modules/users)
-- [🗃️ Virtual file system](/explanation/architecture/modules/virtual_file_system)
+- [Memory](/explanation/architecture/modules/memory)
+- [Time](/explanation/architecture/modules/time)
+- [Network](/explanation/architecture/modules/network)
+- [Task](/explanation/architecture/modules/task)
+- [Users](/explanation/architecture/modules/users)
+- [Virtual file system](/explanation/architecture/modules/virtual_file_system)
 
 ## References
 
@@ -25,5 +25,5 @@ It provides commonly used services for host execution, including logging, memory
 
 ## See also
 
-- [🪛 Drivers](/explanation/architecture/drivers)
-- [🖥️ Native driver crate](/explanation/architecture/drivers/native)
+- [Drivers](/explanation/architecture/drivers)
+- [Native driver crate](/explanation/architecture/drivers/native)

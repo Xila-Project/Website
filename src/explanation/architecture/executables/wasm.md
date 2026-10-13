@@ -4,7 +4,7 @@ docType: explanation
 description: "The WASM executable loads guest programs from Xila's VFS and runs them using Wasmi."
 ---
 
-# 🌍 WASM (executable)
+# WASM (executable)
 
 The WASM executable loads guest programs from Xila's VFS and runs them using Wasmi. Both the native and browser examples mount it at `/binaries/wasm`.
 

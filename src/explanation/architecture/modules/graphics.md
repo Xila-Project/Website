@@ -4,7 +4,7 @@ docType: explanation
 description: "The Graphics module hosts LVGL 9.6 and exposes window/display/input services through an explicitly owned manager."
 ---
 
-# 🖼️ Graphics
+# Graphics
 
 The Graphics module hosts LVGL 9.6 and exposes window/display/input services through an explicitly owned manager.
 

@@ -4,7 +4,7 @@ docType: explanation
 description: "The Users module is Xila's in-memory identity and group membership registry."
 ---
 
-# 🧑 Users
+# Users
 
 The Users module is Xila's in-memory identity and group membership registry.
 

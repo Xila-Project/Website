@@ -31,6 +31,7 @@ Use the locally authored templates in `docs/templates/`, informed by [The Good D
 - Keep tutorial paths focused. Link to optional workflows instead of inserting branching setup alternatives.
 - Document meaningful warnings at the action that needs them, especially operations that erase storage. Avoid speculative warnings.
 - Use English consistently with the existing documentation. Preserve code identifiers, path casing, feature names, and error spellings exactly.
+- Keep technical headings, navigation labels, API/reference text, and documentation link labels free of decorative emojis. Sparse, consistent emojis are welcome on the homepage or overview cards. Use clearly labeled VitePress callouts for warnings and tips; preserve meaningful symbols and literal code/data.
 - Prefer plain language, active voice, short paragraphs, and consistent terminology. Use tables for lookup/comparison and diagrams when they clarify relationships.
 - Choose headings for the subject instead of filling every page with identical boilerplate. Include troubleshooting only when it provides an actionable recovery.
 - Add a useful `description` in frontmatter for new substantive pages. Use `layout: doc` unless the page needs a different layout, such as an API iframe.

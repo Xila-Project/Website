@@ -4,7 +4,7 @@ docType: explanation
 description: "The little_fs crate is the concrete LittleFS backend that implements Xila's file-system contracts."
 ---
 
-# 📁 Little FS
+# Little FS
 
 The `little_fs` crate is the concrete LittleFS backend that implements Xila's file-system contracts.
 
@@ -62,4 +62,4 @@ The `little_fs` crate is the concrete LittleFS backend that implements Xila's fi
 
 - <HostReference crate="little_fs" />
 - <CodeReference path="modules/little_fs" />
-- [🗃️ Virtual file system](/explanation/architecture/modules/virtual_file_system)
+- [Virtual file system](/explanation/architecture/modules/virtual_file_system)

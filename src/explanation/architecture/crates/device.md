@@ -4,7 +4,7 @@ docType: explanation
 description: "The device crate defines typed control-command contracts for device files."
 ---
 
-# 🔌 Device
+# Device
 
 The `device` crate defines typed control-command contracts for device files.
 

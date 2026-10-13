@@ -4,7 +4,7 @@ docType: explanation
 description: "The command-line shell executable provides text command dispatch for both interactive terminal sessions and one-shot command invocation."
 ---
 
-# ⌨️ Command line shell (executable)
+# Command line shell (executable)
 
 The command-line shell executable provides text command dispatch for both interactive terminal sessions and one-shot command invocation.
 

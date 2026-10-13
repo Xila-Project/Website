@@ -4,7 +4,7 @@ docType: explanation
 description: "The Memory module defines allocation contracts and the runtime bridge to the active allocator implementation."
 ---
 
-# 🧠 Memory
+# Memory
 
 The Memory module defines allocation contracts and the runtime bridge to the active allocator implementation.
 
@@ -94,4 +94,4 @@ graph TD
 
 - <HostReference crate="memory" />
 - [Drivers](/explanation/architecture/drivers)
-- [🔃 Synchronization](/explanation/architecture/crates/synchronization)
+- [Synchronization](/explanation/architecture/crates/synchronization)

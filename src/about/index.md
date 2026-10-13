@@ -2,7 +2,7 @@
 layout: doc
 ---
 
-# 📖 About
+# About
 
 Xila is an open-source operating system designed for embedded systems. It aims to provide a modular, portable, and efficient platform for developing applications in the embedded world.
 

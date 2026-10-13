@@ -4,7 +4,7 @@ docType: explanation
 description: "The testing crate assembles a host integration runtime so tests can run against near-real Core wiring."
 ---
 
-# 🧪 Testing
+# Testing
 
 The `testing` crate assembles a host integration runtime so tests can run against near-real Core wiring.
 
@@ -60,5 +60,5 @@ The `testing` crate assembles a host integration runtime so tests can run agains
 ## References
 
 - <CodeReference path="modules/testing" />
-- [🏁 Executable crate](/explanation/architecture/crates/executables)
-- [🏗️ Architecture](/explanation/architecture/)
+- [Executable crate](/explanation/architecture/crates/executables)
+- [Architecture](/explanation/architecture/)
