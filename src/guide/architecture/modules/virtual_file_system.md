@@ -29,7 +29,7 @@ The Virtual File System (VFS) is Xila's path router and policy gate for file sys
 
 ## Internal architecture
 
-- Singleton manager: `virtual_file_system::initialize(...)` stores one `VirtualFileSystem` in `OnceLock`.
+- Owned manager: `virtual_file_system::initialize(task_manager, users_manager, time_manager, root_file_system)` returns a `VirtualFileSystem` holding explicit dependency references.
 - Core state (`RwLock`-protected):
   - `file_systems: Vec<InternalFileSystem>` (mount point + backend pointer + reference count),
   - `character_device: BTreeMap<Inode, InternalCharacterDevice>`,
@@ -40,9 +40,9 @@ The Virtual File System (VFS) is Xila's path router and policy gate for file sys
 
 ## Lifecycle and execution model
 
-1. Initialize `task`, `users`, and `time` managers.
-2. Initialize VFS with root backend (`initialize(..., root_file_system)`).
-3. Create the default hierarchy (`create_default_hierarchy`).
+1. Construct `task`, `users`, and `time` managers and keep them alive.
+2. Construct VFS with those references and the root backend (`initialize(task_manager, users_manager, time_manager, root_file_system)`).
+3. Create the default hierarchy (`create_default_hierarchy(virtual_file_system, task)`).
 4. Mount optional file systems/devices (`mount_file_system`, `mount_character_device`, `mount_block_device`, `create_named_pipe`).
 5. Use async APIs (`open`, `open_directory`, `create_directory`, `remove`, `rename`, ...).
 6. Optionally unmount (`unmount`, `unmount_all`) and uninitialize backend ownership.
@@ -74,7 +74,7 @@ sequenceDiagram
 
 ## Concurrency and synchronization model
 
-- Global state uses `RwLock<CriticalSectionRawMutex, ...>`.
+- Manager-owned state uses `RwLock<CriticalSectionRawMutex, ...>`.
 - Open/close paths update per-mount or per-device reference counters to protect unmount semantics.
 - Busy resources are surfaced as `RessourceBusy`/`file_system::Error::RessourceBusy`.
 - `poll(...)` retries busy operations with `task::yield_now().await`.
@@ -105,15 +105,17 @@ sequenceDiagram
 
 - Symbolic link and file-locking APIs are not implemented in the current surface.
 - Several ABI-level filesystem calls are still `todo!()` (for example symlink/time-setting/truncate paths), so C surface completeness is lower than internal Rust API completeness.
-- Shared global manager simplifies integration but centralizes contention on VFS metadata locks.
+- Shared use of a VFS manager centralizes contention on that manager's metadata locks.
 
 ## Contract vs implementation
 
 - **Stable module contract:** A global path namespace with mount-based dispatch, ownership/permission checks, and typed file/directory/pipe operations surfaced through the module API.
-- **Current implementation details:** A singleton manager backed by `OnceLock` + `RwLock`, in-memory mount/device registries, helper-generated default hierarchy, and specific lock/reference-count strategies used to enforce unmount safety.
+- **Current implementation details:** An owned manager with explicit task/users/time dependencies, `RwLock`-protected mount/device registries, helper-generated default hierarchy, and reference-count strategies enforcing unmount safety.
 - **Compatibility note:** Consumers should depend on API semantics and error behavior, not on concrete internal collections, locking structure, or initialization helper internals, which can evolve without changing the public contract.
 
 ## Reference namespace layout
+
+File and directory helpers receive VFS/task explicitly, for example `File::open(virtual_file_system, task, path, flags)` and `Directory::open(virtual_file_system, task, path)`. Use handles with the same VFS that created them.
 
 - `/`: Root directory
   - `/binaries`: Executable files

@@ -28,7 +28,7 @@ The Users module is Xila's in-memory identity and group membership registry.
 
 ## Internal architecture
 
-- Singleton manager via `initialize()` and `get_instance()`.
+- Explicit `users::Manager::new()` with references passed to VFS, authentication, and executables.
 - Internal `RwLock` protects:
   - `users: BTreeMap<UserIdentifier, InternalUser>`,
   - `groups: BTreeMap<GroupIdentifier, InternalGroup>`.
@@ -45,7 +45,7 @@ graph TD
     Clients@{ shape: processes, label: "Modules / executables" }
     Auth[authentication crate]
     UsersAPI[users module API]
-    Manager[Users Manager singleton]
+    Manager[Explicit Users Manager]
     Lock[RwLock]
     UsersMap[(users map)]
     GroupsMap[(groups map)]
@@ -61,7 +61,7 @@ graph TD
 
 ## Lifecycle and execution model
 
-1. Initialize manager once; root user/group are inserted immediately.
+1. Construct a manager; root user/group are inserted immediately.
 2. Allocate identifiers for additional users/groups.
 3. Register users/groups and membership before launching constrained workloads.
 4. Query identity/membership during runtime from task/VFS policy paths.
@@ -69,7 +69,7 @@ graph TD
 ## Data/control flow
 
 - Task metadata uses user/group identifiers from this module.
-- VFS permission checks call `users::is_in_group(...)` during access control.
+- VFS permission checks use the supplied users manager's `is_in_group(...)` method.
 - Name-based resolution provides bridge between human-readable config and typed runtime ids.
 
 ## Concurrency and synchronization model
@@ -99,7 +99,9 @@ graph TD
 
 - Runtime-only storage; no built-in persistence.
 - Current credential-check method is not a complete authentication implementation.
-- Simplicity of global manager trades off horizontal sharding/partitioning.
+- One manager lock coordinates its identity registry.
+
+Persistent groups are loaded before users. Registering a restored user tolerates primary-group membership already present in the saved group; duplicate user identifiers and names still fail.
 
 ## References / See also
 

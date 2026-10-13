@@ -4,7 +4,7 @@ layout: doc
 
 # 🕓 Time
 
-The Time module provides the global runtime time source for Xila services.
+The Time module provides an explicitly constructed time source for Xila services.
 
 ## Role in system
 
@@ -16,7 +16,7 @@ The Time module provides the global runtime time source for Xila services.
 
 **In scope**
 
-- One-time manager initialization with a direct character device source.
+- Manager construction with a borrowed direct character device source.
 - `get_current_time()` and `get_current_time_since_startup()` query APIs.
 - Conversion between device byte payload and `core::time::Duration`.
 
@@ -28,9 +28,9 @@ The Time module provides the global runtime time source for Xila services.
 
 ## Internal architecture
 
-- Singleton manager in `OnceLock`.
+- `Manager::new(driver)` returns an owned manager; the compatibility helper `time::initialize(driver)` also returns a manager, rather than installing a singleton.
 - `Manager` stores:
-  - `device: &'static dyn DirectCharacterDevice`,
+  - a borrowed `DirectCharacterDevice + Send + Sync` with a lifetime tied to the manager,
   - `start_time: Duration` captured at initialization.
 - Current-time reads deserialize `Duration` directly from device bytes.
 
@@ -42,11 +42,11 @@ The Time module provides the global runtime time source for Xila services.
 ```mermaid
 graph TD
     Clients@{ shape: processes, label: "Other modules / executables" }
-    Init[time::initialize(driver)]
-    Manager[Time Manager singleton]
+    Init[time::Manager::new driver]
+    Manager[Time Manager]
     Driver[DirectCharacterDevice time source]
 
-    Clients -->|time::get_instance()| Manager
+    Clients -->|explicit manager reference| Manager
     Init --> Manager
     Manager -->|read Duration bytes| Driver
     Manager -->|compute uptime from start_time| Manager
@@ -55,8 +55,8 @@ graph TD
 ## Lifecycle and execution model
 
 1. Platform provides time device implementation.
-2. `time::initialize(driver)` captures startup timestamp.
-3. Runtime callers use singleton for current time or elapsed since startup.
+2. `time::Manager::new(driver)` captures the startup timestamp.
+3. Pass a reference to runtime consumers for current time or elapsed since startup.
 
 ## Data/control flow
 

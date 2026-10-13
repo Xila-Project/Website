@@ -29,7 +29,7 @@ The Network module provides Xila's asynchronous network runtime around `smoltcp`
 
 ## Internal architecture
 
-- Singleton `Manager` with `RwLock<Vec<Stack>>`.
+- Owned `Manager` with explicit task/VFS/time/random-device references and `RwLock<Vec<Stack>>`.
 - `StackInner` bundles:
   - interface name and state flags,
   - `smoltcp::iface::Interface` + `SocketSet`,
@@ -58,7 +58,7 @@ graph TD
 
 ## Lifecycle and execution model
 
-1. Initialize manager with random device source.
+1. Construct the manager with `network::initialize(task_manager, virtual_file_system, time_manager, random_device)`; it returns the manager instead of installing a singleton.
 2. Mount interface: build stack, spawn `StackRunner`, expose control device in VFS.
 3. Runner loop polls stack when enabled and sleeps/selects on timeout or wake signal.
 4. Sockets are created against explicit interface or first available interface.
@@ -106,7 +106,7 @@ graph TD
 ## Contract vs implementation
 
 - **Stable module contract:** Interface lifecycle management, control-device exposure under `/devices/network/<name>`, and typed socket services with defined error mapping.
-- **Current implementation details:** Singleton `Manager` with `RwLock<Vec<Stack>>`, `StackInner` composition, runner wake/poll coordination, and present command forwarding behavior to controller devices.
+- **Current implementation details:** Explicitly owned `Manager` with task/VFS/time dependencies, `RwLock<Vec<Stack>>`, `StackInner` composition, runner wake/poll coordination, and command forwarding to controller devices.
 - **Compatibility note:** Integrations should target control commands, socket APIs, and documented failure semantics, not concrete stack container types, lock granularity, or runner-loop internals.
 
 ## References / See also

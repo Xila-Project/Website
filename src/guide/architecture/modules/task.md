@@ -8,7 +8,7 @@ The Task module owns runtime task identity and metadata, and delegates execution
 
 ## Role in system
 
-- Provides globally unique `TaskIdentifier` values and task metadata lookup.
+- Provides `TaskIdentifier` values unique within its manager and task metadata lookup.
 - Connects task creation requests to executor-specific `Spawner` instances.
 - Supplies cross-module identity context (for VFS, ABI context, users, signal handling).
 
@@ -28,7 +28,7 @@ The Task module owns runtime task identity and metadata, and delegates execution
 
 ## Internal architecture
 
-- Singleton manager: `task::initialize()` + `task::get_instance()`.
+- Explicit manager: `task::Manager::new()` is constructed by the final binary and passed to consumers. Singleton accessors exist only under test/test-harness configuration.
 - Core state is `RwLock`-guarded `Inner`:
   - `tasks: BTreeMap<TaskIdentifier, Metadata>`,
   - `identifiers: BTreeMap<usize, TaskIdentifier>` mapping executor-internal identity to task id,
@@ -45,7 +45,7 @@ The Task module owns runtime task identity and metadata, and delegates execution
 graph TD
     Executables@{ shape: processes, label: "Executables / modules" }
     TaskAPI[task module API]
-    Manager[Manager singleton]
+    Manager[Explicit task Manager]
     TasksMap[(tasks metadata map)]
     SpawnersMap[(registered spawners)]
     Spawner[embassy executor spawner]
@@ -61,7 +61,7 @@ graph TD
 
 ## Lifecycle and execution model
 
-1. Initialize manager once.
+1. Construct a manager and pass it to the platform task/executor bootstrap (the examples use the `manager` argument of `#[task::run(...)]`).
 2. Register one or more spawners from platform executors.
 3. Spawn task: register metadata, pick explicit or best-load spawner, spawn future, bind internal identifier.
 4. Task completion: signal join handle and unregister metadata.
@@ -75,7 +75,7 @@ graph TD
 
 ## Concurrency and synchronization model
 
-- Manager state is protected by a global async `RwLock`.
+- Each manager's state is protected by an async `RwLock`.
 - Read-heavy queries (`get_user`, `get_group`, `peek_signal`, relationship queries) use read lock.
 - Mutations (`register`, `unregister`, env updates, signal send/pop) use write lock.
 - Scheduling is cooperative: forward progress requires tasks to await/yield.
@@ -108,8 +108,8 @@ graph TD
 
 ## Contract vs implementation
 
-- **Stable module contract:** Global task identity, metadata access, signal operations, and async spawn/join behavior through module APIs independent of concrete executor internals.
-- **Current implementation details:** Singleton manager lifecycle, `BTreeMap`-backed metadata/spawner tables, current spawner selection heuristic, and fixed-width task-name truncation policy.
+- **Module contract:** Manager-scoped task identity, metadata access, signal operations, and async spawn/join behavior independent of concrete executor internals.
+- **Current implementation details:** Explicit manager ownership, `BTreeMap`-backed metadata/spawner tables, current spawner selection heuristic, and fixed-width task-name truncation policy.
 - **Compatibility note:** Callers should rely on identifier, metadata, and spawn semantics rather than internal map layout or selection mechanics, which are implementation choices and may change.
 
 ## References / See also

@@ -6,7 +6,7 @@ layout: doc
 
 This section is an architecture map of the library crates used by Core modules and executable crates.
 
-Compared with [Modules](../modules/), these crates define reusable contracts, data models, and helper layers. Stateful orchestration usually happens in module singletons (for example task/users/virtual_file_system), while crates provide the typed interfaces those modules and executables consume.
+Compared with [Modules](../modules/), these crates define reusable contracts, data models, and helper layers. Stateful orchestration happens in explicitly owned managers (for example task/users/virtual_file_system), while crates provide the typed interfaces those modules and executables consume.
 
 ## Architecture map
 
