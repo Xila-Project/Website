@@ -1,19 +1,22 @@
 ---
 layout: page
+docType: reference
+title: Host API
+description: Generated Rust reference for Xila host runtime services.
 footer: false
 ---
 
 <script setup>
 import { ref, onMounted } from 'vue'
 
-const iframeSrc = ref('https://documentation.xila.dev/guest/wasm/index.html')
+const iframeSrc = ref('https://documentation.xila.dev/host/xila/index.html')
 
 onMounted(() => {
   if (typeof window !== 'undefined') {
     const params = new URLSearchParams(window.location.search)
     const path = params.get('path')
     if (path) {
-      iframeSrc.value = `https://documentation.xila.dev/guest/${path}`
+      iframeSrc.value = `https://documentation.xila.dev/host/${path}`
     }
   }
 })

@@ -1,10 +1,14 @@
 ---
 layout: doc
+description: Look up Xila's API documentation, development commands, WASM options, and graphics limits.
 ---
 
 # Reference
 
-Here you will find the Rust documentation for the following components:
+Use these pages to look up exact interfaces and constraints. For instructions, use the [how-to guides](/how-to/).
 
-- [Host](../host-reference.md): Documentation for the operating system (Host).
-- [Guest](../guest-reference.md): Documentation for the client library used by WASM applications running on Xila.
+- [Host API](./host): generated Rust documentation for Xila's runtime services.
+- [Guest API](./guest): generated Rust documentation for the client library used by guest applications.
+- [Development commands](./development-commands): cargo-make tasks, targets, version sources, and website commands.
+- [WASM runtime](./wasm-runtime): command options, Cargo features, execution limits, and browser capabilities.
+- [Graphics bindings](./graphics-bindings): supported calls, status codes, resource limits, and compatibility.

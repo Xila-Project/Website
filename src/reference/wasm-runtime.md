@@ -1,0 +1,79 @@
+---
+layout: doc
+docType: reference
+description: Xila WASM command options, package features, WASI constraints, and browser capabilities.
+---
+
+# WASM runtime
+
+The `wasm` package implements the Wasmi runtime and guest helper APIs. The native and browser examples mount its executable at `/binaries/wasm`. Sources: <CodeReference path="executables/wasm/Cargo.toml" /> and <CodeReference path="executables/wasm/src/host/main.rs" />.
+
+## Command syntax
+
+```text
+/binaries/wasm [--install] [--stack-size <bytes>] [--instruction-limit <fuel>] <path>
+```
+
+The command runs in Xila's terminal. `<path>` must identify a regular guest file in the VFS; the loader reads the supplied path directly and does not perform `Current_directory` resolution. The guest receives its module path as its argument and the task environment as its environment.
+
+| Argument/option       | Default  | Behavior                                                                                                                     |
+| --------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `<path>`              | Required | Guest module file path. Use an absolute VFS path.                                                                            |
+| `--install`           | Off      | Selects `__install: () -> ()` instead of `_start: () -> ()`. A missing or incorrectly typed export fails.                    |
+| `--stack-size`        | 4096     | Parsed as a stack size, but currently not applied by the runtime.                                                            |
+| `--instruction-limit` | 100,000  | Nonzero fuel quantum used by resumable execution. Fuel is replenished after yielding; this is not a total instruction limit. |
+
+## Cargo features
+
+| Feature         | Purpose                                                                                       |
+| --------------- | --------------------------------------------------------------------------------------------- |
+| `host`          | Wasmi interpreter and Xila executable integration; includes browser-hosted Xila.              |
+| `guest`         | Guest helpers without the interpreter when default features are disabled.                     |
+| `graphics`      | Generated graphics wrappers and supported host imports.                                       |
+| `c_bindings`    | Guest C wrappers/header generation; enables guest/graphics dependencies.                      |
+| `memory_32`     | 32-bit guest-word translation configuration; default.                                         |
+| `memory_64`     | Alternate 64-bit guest-word translation configuration. Calculator remains a wasm32 guest.     |
+| `default_guest` | `guest,graphics,c_bindings,memory_32`; emits `xila_graphics.h` in the build output directory. |
+
+Default features are `host,memory_32`. Guest-only consumers must disable defaults. Core's `xila` package has neither a `host` nor a `wasm` feature; these runtime features belong to the `wasm` package.
+
+## Results and errors
+
+- WASI `proc_exit(0)` succeeds; a nonzero exit code becomes a runtime error.
+- Argument, file-kind, compilation, instantiation, missing-export, and execution failures are reported on stderr and return a nonzero executable result.
+- Standard streams are descriptors 0/1/2 in the per-execution WASI context. The root directory is preopened if available.
+- Graphics status and capability errors are defined in the [graphics reference](./graphics-bindings).
+
+## Execution limits
+
+| Capability                  | Current constraint                                                                                                                               |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Scheduling                  | Fuel exhaustion and `sched_yield` yield cooperatively to the executor.                                                                           |
+| `poll_oneoff`               | Up to 64 realtime/startup-clock subscriptions with relative or absolute deadlines. File-descriptor polling and unsupported clocks return errors. |
+| Startup clock               | Uses Xila's time manager and driver, not a separate hardware monotonic source.                                                                   |
+| WebAssembly start sections  | Suspension is unsupported. WASI command guests should use exported `_start`.                                                                     |
+| WASI/graphics compatibility | Partial WASI coverage and a supported graphics subset, not full compatibility.                                                                   |
+| Graphics ABI                | Guest and host must match the LVGL revision/configuration.                                                                                       |
+
+## Browser capabilities
+
+| Area           | Browser example behavior                                                                                                                                     |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Host target    | Xila builds for `wasm32-unknown-unknown`; application guests build for `wasm32-wasip1`.                                                                      |
+| Storage APIs   | Requires OPFS, `FileSystemFileHandle.createWritable`, and Web Locks on localhost/HTTPS.                                                                      |
+| Disk           | `xila_drive.img`, 16 MiB MBR/LittleFS image, local to the origin.                                                                                            |
+| Disk ownership | One Xila tab can hold the disk's lifetime Web Lock.                                                                                                          |
+| Saves          | At boot, every second when dirty, and on normal shutdown; synchronous flushes update the memory cache.                                                       |
+| Memory         | 16 MiB disk cache plus one temporary 16 MiB snapshot and browser buffering during saves. Guest/interpreter and embedded application bytes add further costs. |
+| Fresh account  | `administrator` with an empty password; created only for a fresh disk. Existing accounts are restored.                                                       |
+| Bundled guest  | Calculator copied to `/binaries/calculator` and installed at startup; requires its release artifact before browser compilation.                              |
+| Guest upload   | No general upload mechanism. Other guests must already be present in the VFS.                                                                                |
+| Networking     | No Xila network manager; HTTP uses Fetch under CORS/browser restrictions and does not expose raw sockets.                                                    |
+
+Browser-managed storage can be evicted or lost; abrupt termination can lose changes since the last completed save. See [Browser storage](/explanation/browser-storage) for the durability model.
+
+## Related documentation
+
+- [Build a guest](/how-to/build-guest) and [run a guest](/how-to/run-guest).
+- [Run Calculator in the browser](/tutorials/browser).
+- [Wasmi execution model](/explanation/architecture/modules/virtual_machine).
