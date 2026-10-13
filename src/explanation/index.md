@@ -13,4 +13,4 @@ Explore the relationships and design choices behind Xila's services and runtime.
 - [Wasmi execution model](./architecture/modules/virtual_machine) explains guest execution and cooperative scheduling.
 - [Graphics bindings](./architecture/modules/bindings) explains memory, object handles, and ownership at the guest/host boundary.
 
-Use the [component map](/components/) for a specific module, crate, driver, or executable. For actions and exact interfaces, use [how-to guides](/how-to/) and [reference](/reference/).
+Use the [component map](/explanation/architecture/components) for a specific module, crate, driver, or executable. For actions and exact interfaces, use [how-to guides](/how-to/) and [reference](/reference/).

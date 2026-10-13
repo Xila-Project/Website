@@ -10,7 +10,7 @@ Prepare an implementation change with a clear expected behavior, appropriate che
 
 ## Before you begin
 
-Set up the [development environment](./setup-development) and read <CodeReference path="AGENTS.md" /> in Core. Identify the owning crate using the [component map](/components/).
+Set up the [development environment](./setup-development) and read <CodeReference path="AGENTS.md" /> in Core. Identify the owning crate using the [component map](/explanation/architecture/components).
 
 ## Prepare the change
 

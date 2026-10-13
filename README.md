@@ -21,8 +21,7 @@ src/
   tutorials/       # Guided learning experiences
   how-to/          # Task-focused procedures
   reference/       # Commands, capabilities, limits, and generated API viewers
-  explanation/     # Concepts, architecture, and design choices
-  components/      # Cross-cutting component map
+  explanation/     # Concepts, architecture, component map, and design choices
   about/           # Project information
   public/          # Static assets (images, robots.txt, etc.)
 docs/templates/    # Authoring templates, excluded from the published site

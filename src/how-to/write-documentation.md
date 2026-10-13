@@ -36,7 +36,7 @@ Keep the published content in English and preserve technical identifiers exactly
 
 ## Connect the page
 
-Update its section landing page and `.vitepress/navigation.ts`. Link to it from relevant existing pages and the [component map](/components/) when appropriate.
+Update its section landing page and `.vitepress/navigation.ts`. Link to it from relevant existing pages and the [component map](/explanation/architecture/components) when appropriate.
 
 When moving a page, update incoming links and anchors. The site is pre-production; the current workflow moves pages directly without legacy redirects.
 

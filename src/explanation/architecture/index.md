@@ -8,6 +8,8 @@ description: "Xila is designed with modularity and portability in mind."
 
 Xila is designed with modularity and portability in mind. It is built to run on a variety of platforms, from embedded systems to desktop computers, and even in web browsers via WebAssembly (WASM).
 
+Use the [component map](./components) to find a module, crate, driver, or executable together with its related task guides and reference.
+
 - [Drivers](/explanation/architecture/drivers/): Xila supports a wide range of hardware drivers, allowing it to interface with various peripherals and devices.
 - [Crates](/explanation/architecture/crates/): Internal libraries, or "crates", provide essential functionalities that can be leveraged by modules and applications.
 - [Modules](/explanation/architecture/modules/): Stateful crates providing core services through explicitly constructed managers and references passed by the final binary.

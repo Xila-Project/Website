@@ -1,5 +1,6 @@
 ---
 layout: doc
+docType: explanation
 description: Find a Xila module, crate, driver, or executable and its related guides, explanation, and reference.
 ---
 

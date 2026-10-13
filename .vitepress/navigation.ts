@@ -84,7 +84,6 @@ export const nav: DefaultTheme.NavItem[] = [
   { text: "How-to", link: "/how-to/" },
   { text: "Reference", link: "/reference/" },
   { text: "Explanation", link: "/explanation/" },
-  { text: "Components", link: "/components/" },
   {
     text: "Demonstration",
     link: "https://documentation.xila.dev/demonstrations/wasm/en/",
@@ -130,19 +129,24 @@ const documentationSidebar: DefaultTheme.SidebarItem[] = [
     text: "Explanation",
     link: "/explanation/",
     items: [
-      { text: "Architecture", link: "/explanation/architecture/" },
+      {
+        text: "Architecture",
+        link: "/explanation/architecture/",
+        collapsed: true,
+        items: [
+          {
+            text: "Component map",
+            link: "/explanation/architecture/components",
+          },
+          ...componentGroups,
+        ],
+      },
       {
         text: "Development environments",
         link: "/explanation/development-environments",
       },
       { text: "Browser storage", link: "/explanation/browser-storage" },
     ],
-  },
-  {
-    text: "Component map",
-    link: "/components/",
-    collapsed: true,
-    items: componentGroups,
   },
   { text: "About Xila", link: "/about/" },
 ];
@@ -154,7 +158,6 @@ export const sidebar: DefaultTheme.Sidebar = Object.fromEntries(
     "/how-to/",
     "/reference/",
     "/explanation/",
-    "/components/",
     "/about/",
   ].map((prefix) => [prefix, documentationSidebar]),
 );

@@ -29,4 +29,4 @@ Start with a guided first run, complete a task, look up an interface, or explore
 
 ## Find a component
 
-Use the [component map](/components/) to find modules, crates, drivers, and executables across the documentation. The [project overview](/about/) describes Xila's goals and license.
+Use the [component map](/explanation/architecture/components) to find modules, crates, drivers, and executables across the documentation. The [project overview](/about/) describes Xila's goals and license.

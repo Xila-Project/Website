@@ -13,7 +13,7 @@ Use [Diátaxis](https://diataxis.fr/) to classify a page by the reader's need:
 | Reference   | Look up an exact fact                   | `src/reference/`   | Commands, options, defaults, features, errors, constraints, and API links.         |
 | Explanation | Understand a concept or design          | `src/explanation/` | Context, relationships, rationale, trade-offs, and boundaries.                     |
 
-`src/docs/` is the documentation entry point; `src/components/` provides cross-cutting component discovery. These indexes link to the four types instead of duplicating content. `src/about/` contains project information.
+`src/docs/` is the documentation entry point. The component map at `src/explanation/architecture/components.md` belongs to Explanation → Architecture and links to related task guides and reference. Keep component discovery within the four documentation types rather than adding a separate top-level category. `src/about/` contains project information.
 
 - Give each substantive page one primary purpose and a `docType` frontmatter value: `tutorial`, `how-to`, `reference`, or `explanation`. Section/index and project-information pages may omit it.
 - Split mixed pages when reader needs differ. Link to the related type instead of copying a procedure or maintaining competing tables of defaults.
