@@ -46,7 +46,7 @@ The calculator executable provides a scientific-expression evaluation UI primari
 ## Operational limitations
 
 - Intended runtime is wasm32; native targets only print fallback message.
-- Event loop currently runs forever on wasm path and relies on host environment behavior.
+- The guest handles window-close events and exits; the runtime then removes its owned window and children. Calculator is embedded and installed by the browser example and is covered by native headless acceptance tests.
 
 ## References
 
