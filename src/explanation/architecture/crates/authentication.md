@@ -1,5 +1,7 @@
 ---
 layout: doc
+docType: explanation
+description: "This crate implements persistent account/group data handling and password verification flows used by the host runtime."
 ---
 
 # 🔒 Authentication
@@ -14,7 +16,7 @@ This crate implements persistent account/group data handling and password verifi
 ## Boundaries
 
 - In scope: reading/writing JSON user and group records, salted password hashing, authentication checks.
-- Out of scope: session/task identity ownership (handled by [Users](../modules/users.md) + [Task](../modules/task.md)).
+- Out of scope: session/task identity ownership (handled by [Users](/explanation/architecture/modules/users) + [Task](/explanation/architecture/modules/task)).
 - In scope: coordinating with `/devices/random` and `/devices/hasher`; out of scope: implementing those devices.
 
 ## Internal structure
@@ -37,7 +39,7 @@ For example, startup calls `authentication::load_all_users_and_groups(&context).
 
 ## Dependency model
 
-- Internal: [File System](./file_system.md), [Device](./device.md), [Virtual file system](../modules/virtual_file_system.md), [Users](../modules/users.md), [Task](../modules/task.md).
+- Internal: [File System](/explanation/architecture/crates/file_system), [Device](/explanation/architecture/crates/device), [Virtual file system](/explanation/architecture/modules/virtual_file_system), [Users](/explanation/architecture/modules/users), [Task](/explanation/architecture/modules/task).
 - External: `miniserde` for JSON serialization/deserialization.
 
 ## Failure semantics
@@ -65,4 +67,4 @@ For example, startup calls `authentication::load_all_users_and_groups(&context).
 
 - <HostReference crate="authentication" />
 - <CodeReference path="modules/authentication" />
-- [Users Module](../modules/users.md)
+- [Users Module](/explanation/architecture/modules/users)

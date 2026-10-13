@@ -1,5 +1,7 @@
 ---
 layout: doc
+docType: explanation
+description: "The little_fs crate is the concrete LittleFS backend that implements Xila's file-system contracts."
 ---
 
 # 📁 Little FS
@@ -33,7 +35,7 @@ The `little_fs` crate is the concrete LittleFS backend that implements Xila's fi
 
 ## Dependency model
 
-- Core dependencies: [File system](./file_system.md), [Task](../modules/task.md), [Users](../modules/users.md), [Time](../modules/time.md), [Synchronization](./synchronization.md), `littlefs2-sys`.
+- Core dependencies: [File system](/explanation/architecture/crates/file_system), [Task](/explanation/architecture/modules/task), [Users](/explanation/architecture/modules/users), [Time](/explanation/architecture/modules/time), [Synchronization](/explanation/architecture/crates/synchronization), `littlefs2-sys`.
 
 ## Failure semantics
 
@@ -60,4 +62,4 @@ The `little_fs` crate is the concrete LittleFS backend that implements Xila's fi
 
 - <HostReference crate="little_fs" />
 - <CodeReference path="modules/little_fs" />
-- [🗃️ Virtual file system](../modules/virtual_file_system.md)
+- [🗃️ Virtual file system](/explanation/architecture/modules/virtual_file_system)

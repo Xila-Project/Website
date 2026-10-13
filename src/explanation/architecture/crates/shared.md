@@ -1,5 +1,7 @@
 ---
 layout: doc
+docType: explanation
+description: "The shared crate is the low-level cross-cutting utility layer used by modules, drivers, and executables."
 ---
 
 # 📦 Shared
@@ -55,4 +57,4 @@ The `shared` crate is the low-level cross-cutting utility layer used by modules,
 
 - <HostReference crate="shared" />
 - <CodeReference path="modules/shared" />
-- [🔃 Synchronization](./synchronization.md)
+- [🔃 Synchronization](/explanation/architecture/crates/synchronization)

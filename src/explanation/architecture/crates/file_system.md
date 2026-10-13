@@ -1,5 +1,7 @@
 ---
 layout: doc
+docType: explanation
+description: "The file_system crate is the architectural contract layer for storage nodes, files, directories, and device endpoints."
 ---
 
 # 📁 File system
@@ -15,7 +17,7 @@ The `file_system` crate is the architectural contract layer for storage nodes, f
 ## Boundaries
 
 - In scope: trait contracts and shared semantics for file/device operations.
-- Out of scope: global namespace mounting/orchestration (handled by [Virtual file system](../modules/virtual_file_system.md)).
+- Out of scope: global namespace mounting/orchestration (handled by [Virtual file system](/explanation/architecture/modules/virtual_file_system)).
 
 ## Internal structure
 
@@ -29,11 +31,11 @@ The `file_system` crate is the architectural contract layer for storage nodes, f
 
 - VFS calls file-system and device traits through dynamic dispatch.
 - Device nodes expose `control` commands and read/write operations via the same contract surface.
-- Backends like [Little FS](./little_fs.md) map these traits to concrete storage engines.
+- Backends like [Little FS](/explanation/architecture/crates/little_fs) map these traits to concrete storage engines.
 
 ## Dependency model
 
-- Depends on [Task](../modules/task.md), [Users](../modules/users.md), [Shared](./shared.md), [Synchronization](./synchronization.md), and [Internationalization](./internationalization.md).
+- Depends on [Task](/explanation/architecture/modules/task), [Users](/explanation/architecture/modules/users), [Shared](/explanation/architecture/crates/shared), [Synchronization](/explanation/architecture/crates/synchronization), and [Internationalization](/explanation/architecture/crates/internationalization).
 - Upstream consumers include virtual_file_system, executable, authentication, and drivers.
 
 ## Failure semantics
@@ -62,4 +64,4 @@ The `file_system` crate is the architectural contract layer for storage nodes, f
 
 - <HostReference crate="file_system" />
 - <CodeReference path="modules/file_system" />
-- [📁 Little FS](./little_fs.md)
+- [📁 Little FS](/explanation/architecture/crates/little_fs)

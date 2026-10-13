@@ -1,5 +1,7 @@
 ---
 layout: doc
+docType: explanation
+description: "The target crate provides typed build-target introspection from Cargo-provided environment variables."
 ---
 
 # 🎯 Target
@@ -54,4 +56,4 @@ The `target` crate provides typed build-target introspection from Cargo-provided
 ## References
 
 - <CodeReference path="modules/target" />
-- [🏁 Executable crate](./executables.md)
+- [🏁 Executable crate](/explanation/architecture/crates/executables)
