@@ -113,4 +113,4 @@ Keep each substantive page focused on one reader need. Split mixed onboarding pa
 
 ## License
 
-This project is under the [GNU General Public License v2.0](LICENSE).
+This project is under the [Apache License 2.0](LICENSE).
