@@ -1,10 +1,30 @@
-<h1 align="center">Xila - Website</h1>
+# Xila documentation — Rust, embedded systems, and WebAssembly
 
-Welcome to the repository for the [Xila Website](https://www.xila.dev)!
+Learn to run Xila, build a WebAssembly application, and explore the architecture
+of an open-source embedded operating system written in Rust. This repository
+publishes **[xila.dev](https://www.xila.dev/)**, the official Xila website and
+developer documentation.
 
-This project contains all the sources and documentation for the Xila operating system, including guides, architecture references, and developer resources.
+[Read the documentation](https://www.xila.dev/docs/) ·
+[Explore Core](https://github.com/xila-project/core) ·
+[Join the community](https://matrix.to/#/#xila:anneraud.fr)
 
-## Features
+## Find your starting point
+
+| Your goal                                  | Start here                                                                                                                                      |
+| ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| Run Xila for the first time                | [Native tutorial](https://www.xila.dev/tutorials/native) or [browser tutorial](https://www.xila.dev/tutorials/browser).                         |
+| Build a Wasm application                   | [Guest application guide](https://www.xila.dev/how-to/build-guest).                                                                             |
+| Understand the OS                          | [Architecture and design](https://www.xila.dev/explanation/) and the [component map](https://www.xila.dev/explanation/architecture/components). |
+| Look up commands, capabilities, or APIs    | [Reference](https://www.xila.dev/reference/).                                                                                                   |
+| Improve a guide or fix a documentation gap | [Documentation contribution guide](src/how-to/write-documentation.md).                                                                          |
+
+Xila's Rust implementation lives in **[xila-project/core](https://github.com/xila-project/core)**.
+The Node.js commands below build the documentation website; use the
+[Core contributor guide](https://www.xila.dev/how-to/contribute-core) to work on
+the operating system.
+
+## Documentation stack
 
 - Built with [VitePress](https://vitepress.dev/) for fast, modern documentation
 - Reader-focused documentation organized with [Diátaxis](https://diataxis.fr/)
@@ -30,7 +50,15 @@ scripts/           # Documentation validation
 AGENTS.md          # Documentation conventions and maintenance instructions
 ```
 
-## Getting Started
+## Run the website locally
+
+Use a current Node.js LTS release and npm, matching the website CI. From your host
+terminal, clone the repository and enter its directory:
+
+```sh
+git clone https://github.com/xila-project/website.git
+cd website
+```
 
 1. **Install dependencies:**
 
@@ -54,6 +82,10 @@ AGENTS.md          # Documentation conventions and maintenance instructions
    ```sh
    npm run docs:preview
    ```
+
+Open the local URL printed by VitePress to view the site. Before submitting a
+change, run `npm run check` to check formatting, build the site, and validate
+documentation links.
 
 ## Available Commands
 
