@@ -2,7 +2,7 @@
 
 The editable masters and export tooling live in [xila-project/brand](https://github.com/xila-project/brand).
 
-Imported revision: `56631fca2fd9115ede8324d7d116bce5853e6fe3` (Continuity, identity version `1.0.0`).
+Imported revision: `a7f0b4441c2328935d92970a585cdfe999f0537e` (Continuity, identity version `1.1.0`).
 
 | File             | Use                                                         |
 | ---------------- | ----------------------------------------------------------- |

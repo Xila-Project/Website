@@ -32,6 +32,7 @@ const configuration = defineConfig({
   },
   lastUpdated: true,
   head: [
+    ["link", { rel: "stylesheet", href: "/fonts/montserrat.css" }],
     [
       "link",
       {

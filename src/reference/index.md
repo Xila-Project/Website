@@ -1,6 +1,6 @@
 ---
 layout: doc
-description: Look up Xila's API documentation, development commands, WASM options, and graphics limits.
+description: Look up Xila's APIs, shell syntax, development commands, WASM options, and graphics limits.
 ---
 
 # Reference
@@ -9,6 +9,7 @@ Use these pages to look up exact interfaces and constraints. For instructions, u
 
 - [Host API](./host): generated Rust documentation for Xila's runtime services.
 - [Guest API](./guest): generated Rust documentation for the client library used by guest applications.
+- [Shell](./shell): composition syntax, expansion, statuses, resource limits, and built-in command inventory.
 - [Development commands](./development-commands): cargo-make tasks, targets, version sources, and website commands.
 - [WASM runtime](./wasm-runtime): command options, Cargo features, execution limits, and browser capabilities.
-- [Graphics bindings](./graphics-bindings): supported calls, status codes, resource limits, and compatibility.
+- [Graphics bindings](./graphics-bindings): supported calls, checked helpers, status codes, resource limits, and compatibility.
