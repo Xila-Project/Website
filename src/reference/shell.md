@@ -28,18 +28,18 @@ missing-command 2> /temporary/errors || echo recovered
 long-running-command > /temporary/result & echo foreground
 ```
 
-| Syntax     | Behavior                                                             |
-| ---------- | -------------------------------------------------------------------- |
-| `A \| B`  | Run pipeline stages concurrently; the pipeline status is B's status. |
-| `A && B`   | Run B only when A succeeds.                                          |
-| `A || B`   | Run B only when A fails.                                             |
-| `A ; B`    | Run sequential command lists.                                        |
-| `A &`      | Start the preceding conditional list in a background task.           |
-| `< FILE`   | Read standard input from FILE.                                       |
-| `> FILE`   | Create/truncate FILE for standard output.                            |
-| `>> FILE`  | Append standard output to FILE.                                      |
-| `2> FILE`  | Create/truncate FILE for standard error.                             |
-| `2>> FILE` | Append standard error to FILE.                                       |
+| Syntax      | Behavior                                                             |
+| ----------- | -------------------------------------------------------------------- |
+| `A \| B`   | Run pipeline stages concurrently; the pipeline status is B's status. |
+| `A && B`    | Run B only when A succeeds.                                          |
+| `A \|\| B` | Run B only when A fails.                                             |
+| `A ; B`     | Run sequential command lists.                                        |
+| `A &`       | Start the preceding conditional list in a background task.           |
+| `< FILE`    | Read standard input from FILE.                                       |
+| `> FILE`    | Create/truncate FILE for standard output.                            |
+| `>> FILE`   | Append standard output to FILE.                                      |
+| `2> FILE`   | Create/truncate FILE for standard error.                             |
+| `2>> FILE`  | Append standard error to FILE.                                       |
 
 `|` binds more tightly than `&&` and `||`. The two conditional operators have equal precedence and evaluate left to right. Redirections belong to one command, are applied left to right, and override a pipeline endpoint when they target the same stream.
 
@@ -125,5 +125,3 @@ The current language does not implement script files, multiline syntax, command 
 - [Command-line shell architecture](/explanation/architecture/executables/command_line_shell).
 - <CodeReference path="executables/shell/command_line/README.md" />.
 - <CodeReference path="executables/shell/command_line/src/commands/mod.rs" />.
-
-<!-- prettier-probe -->
