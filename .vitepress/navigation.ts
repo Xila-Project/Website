@@ -66,9 +66,11 @@ const componentGroups: DefaultTheme.SidebarItem[] = [
     collapsed: true,
     items: [
       ["Calculator", "calculator"],
+      ["Clock", "clock"],
       ["Command line shell", "command_line_shell"],
       ["File manager", "file_manager"],
       ["Graphical shell", "graphical_shell"],
+      ["Pixel Painter", "pixel_painter"],
       ["Settings", "settings"],
       ["Terminal", "terminal"],
       ["WASM", "wasm"],
@@ -110,7 +112,7 @@ const documentationSidebar: DefaultTheme.SidebarItem[] = [
       { text: "Run a guest", link: "/how-to/run-guest" },
       { text: "Validate Core", link: "/how-to/validate-core" },
       { text: "Contribute to Core", link: "/how-to/contribute-core" },
-      { text: "Reset the browser disk", link: "/how-to/reset-browser-storage" },
+      { text: "Manage browser disks", link: "/how-to/reset-browser-storage" },
       { text: "Write documentation", link: "/how-to/write-documentation" },
     ],
   },
@@ -120,6 +122,7 @@ const documentationSidebar: DefaultTheme.SidebarItem[] = [
     items: [
       { text: "Host API", link: "/reference/host" },
       { text: "Guest API", link: "/reference/guest" },
+      { text: "Shell", link: "/reference/shell" },
       { text: "Development commands", link: "/reference/development-commands" },
       { text: "WASM runtime", link: "/reference/wasm-runtime" },
       { text: "Graphics bindings", link: "/reference/graphics-bindings" },
