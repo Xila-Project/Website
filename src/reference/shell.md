@@ -125,3 +125,5 @@ The current language does not implement script files, multiline syntax, command 
 - [Command-line shell architecture](/explanation/architecture/executables/command_line_shell).
 - <CodeReference path="executables/shell/command_line/README.md" />.
 - <CodeReference path="executables/shell/command_line/src/commands/mod.rs" />.
+
+<!-- prettier-probe -->
