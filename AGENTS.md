@@ -1,62 +1,168 @@
-# Documentation repository
+# Xila website agent guide
 
-This repository publishes the English-language Xila documentation with VitePress. Core's Rust code lives in the separate `xila-project/core` repository. Keep website tooling and Core runtime commands clearly distinguished.
+This repository publishes the English-language Xila website and developer documentation with VitePress. The operating-system implementation lives in the separate `Xila-Project/core` repository. Treat this repository as documentation/site tooling unless the task explicitly asks for a Core change.
 
-## Information architecture
+## Instruction scope
 
-Use [Diátaxis](https://diataxis.fr/) to classify a page by the reader's need:
+This root `AGENTS.md` applies to the entire repository. If a more specific `AGENTS.md` or `AGENTS.override.md` is added in a subdirectory later, follow the more specific instructions for files in that subtree.
 
-| Type        | Reader's need                           | Location           | Content                                                                            |
-| ----------- | --------------------------------------- | ------------------ | ---------------------------------------------------------------------------------- |
-| Tutorial    | Learn through a guided first experience | `src/tutorials/`   | One reproducible path, prerequisites, actions, observable results, and next steps. |
-| How-to      | Complete a specific task                | `src/how-to/`      | Task-focused steps, requirements, verification, and relevant recovery actions.     |
-| Reference   | Look up an exact fact                   | `src/reference/`   | Commands, options, defaults, features, errors, constraints, and API links.         |
-| Explanation | Understand a concept or design          | `src/explanation/` | Context, relationships, rationale, trade-offs, and boundaries.                     |
+`AGENTS.md` is the canonical agent instruction file. Compatibility aliases such as `CLAUDE.md` and `GEMINI.md` should point to this file rather than duplicate its contents. Edit `AGENTS.md`, not an alias.
 
-`src/docs/` is the documentation entry point. The component map at `src/explanation/architecture/components.md` belongs to Explanation → Architecture and links to related task guides and reference. Keep component discovery within the four documentation types rather than adding a separate top-level category. `src/about/` contains project information.
+## Repository map
 
-- Give each substantive page one primary purpose and a `docType` frontmatter value: `tutorial`, `how-to`, `reference`, or `explanation`. Section/index and project-information pages may omit it.
-- Split mixed pages when reader needs differ. Link to the related type instead of copying a procedure or maintaining competing tables of defaults.
-- Put learning walkthroughs in tutorials, task instructions in how-to guides, exhaustive facts in reference, and design reasoning in explanations.
-- Treat an architecture lifecycle diagram as explanation; a command sequence the reader must execute belongs in a tutorial or how-to guide.
+| Path                     | Purpose                                                                    |
+| ------------------------ | -------------------------------------------------------------------------- |
+| `src/docs/`              | Documentation entry point                                                  |
+| `src/tutorials/`         | Guided first experiences                                                   |
+| `src/how-to/`            | Task-focused procedures                                                    |
+| `src/reference/`         | Exact commands, options, limits, capabilities, and API/source references   |
+| `src/explanation/`       | Concepts, architecture, rationale, trade-offs, and component relationships |
+| `src/about/`             | Project information                                                        |
+| `src/public/`            | Static assets published by VitePress                                       |
+| `docs/templates/`        | Local authoring templates; never published directly                        |
+| `.vitepress/`            | VitePress configuration, navigation, theme, and custom components          |
+| `scripts/check-docs.mjs` | Documentation metadata, link, anchor, and Core source-path validation      |
+| `.github/workflows/`     | Pull-request checks and GitHub Pages deployment                            |
+| `package.json`           | Local development, formatting, build, preview, and validation commands     |
 
-## Authoring conventions
+Before editing, inspect the target page, its section landing page, nearby related pages, and `.vitepress/navigation.ts` when navigation may be affected.
 
-Use the locally authored templates in `docs/templates/`, informed by [The Good Docs Project](https://github.com/thegooddocsproject/templates). Read `docs/templates/README.md` when creating a page. Adapt the outline to the reader's task; remove unused sections and all placeholders. Do not publish templates under `src/`.
+## Sources of truth
 
-- Start with the page's goal and intended reader. Use concrete, descriptive titles; use action verbs for task pages.
-- State prerequisites before procedures: operating system, target, toolchain, device/browser capabilities, credentials, and existing artifacts when relevant.
-- State the working directory and shell context before commands. Distinguish host terminal commands from commands in Xila's terminal.
-- Include an observable result for key tutorial steps and a completion check for how-to guides. Do not invent command output or claim a check was run when it was only inferred from source.
-- Keep tutorial paths focused. Link to optional workflows instead of inserting branching setup alternatives.
-- Document meaningful warnings at the action that needs them, especially operations that erase storage. Avoid speculative warnings.
-- Use English consistently with the existing documentation. Preserve code identifiers, path casing, feature names, and error spellings exactly.
-- Keep technical headings, navigation labels, API/reference text, and documentation link labels free of decorative emojis. Sparse, consistent emojis are welcome on the homepage or overview cards. Use clearly labeled VitePress callouts for warnings and tips; preserve meaningful symbols and literal code/data.
-- Prefer plain language, active voice, short paragraphs, and consistent terminology. Use tables for lookup/comparison and diagrams when they clarify relationships.
-- Choose headings for the subject instead of filling every page with identical boilerplate. Include troubleshooting only when it provides an actionable recovery.
-- Add a useful `description` in frontmatter for new substantive pages. Use `layout: doc` unless the page needs a different layout, such as an API iframe.
+Use the strongest available source for each claim:
 
-## Technical accuracy and maintenance
+1. **Core behavior:** verify against `Xila-Project/core` source, manifests, examples, and CI at a known revision. A sibling checkout at `../core` is preferred when available; `scripts/check-docs.mjs` also honors `XILA_CORE_PATH`.
+2. **Website behavior:** verify against this repository's `package.json`, `.vitepress/`, components, scripts, and workflows.
+3. **Existing documentation:** use as supporting context, not as the sole proof for technical behavior that may have changed.
 
-- Verify APIs, feature names, defaults, paths, and build commands against Core's source, manifests, examples, and CI. Existing documentation and adjacent README files are supporting material, not sufficient proof by themselves.
-- Inspect Core read-only unless a Core change is part of the user's task. Use a local checkout when available; otherwise read the repository's source at a known revision.
-- Keep WASI guest (`wasm32-wasip1`) and browser (`wasm32-unknown-unknown`) targets distinct. Rust host checks, browser behavior, and embedded hardware validation establish different things.
-- Explain resource costs and capability limits when they affect readers: RAM/flash/stack, retained buffers, persistence durability, browser restrictions, and supported graphics/WASI subsets.
-- Keep generated API documentation on `documentation.xila.dev`; link through `HostReference`, `GuestReference`, or `CodeReference`. Verify referenced crates and source paths exist before adding links.
-- When refactoring, preserve technical facts and documented workflows by moving them or linking to their new home. Keep one authoritative page for each reference table.
-- Update the appropriate landing page, `.vitepress/navigation.ts`, related links, and homepage links when adding or moving pages.
-- The documentation is currently pre-production. Move pages directly and update internal links and navigation; do not add redirects unless the user requests URL compatibility.
-- Do not add dependencies for changes that existing VitePress/Vue/Node facilities can support. Keep build assets, caches, scratch files, and generated binaries out of commits.
+Do not invent commands, flags, supported targets, resource limits, API names, file paths, error messages, or runtime behavior. Preserve identifiers, path casing, feature names, and literal error spellings exactly.
 
-## Validation and delivery
+Inspect Core read-only unless the user explicitly asks for a Core change. Do not silently turn a website/documentation task into a cross-repository implementation task.
 
-Install with `npm ci` when dependencies are missing. Use `npm run docs:dev` while editing and `npm run docs:preview` to inspect the production build.
+## Documentation model
 
-Before completing a documentation change:
+Use Diátaxis to classify each substantive page by the reader's need:
 
-1. Format the changed files with Prettier.
-2. Run `npm run check` (formatting, production build, and documentation links).
-3. Run `git diff --check` and review the diff for lost facts, unresolved placeholders, and accidental changes.
-4. Check navigation and any changed user journey. For moved pages, verify incoming links and relevant anchors; for API iframe links, preserve their query parameters.
+| Type        | Reader need                             | Location           | Expected content                                                                         |
+| ----------- | --------------------------------------- | ------------------ | ---------------------------------------------------------------------------------------- |
+| Tutorial    | Learn through a guided first experience | `src/tutorials/`   | One reproducible path, prerequisites, actions, observable results, and next steps        |
+| How-to      | Complete a specific task                | `src/how-to/`      | Focused steps, requirements, completion checks, and relevant recovery actions            |
+| Reference   | Look up an exact fact                   | `src/reference/`   | Commands, options, defaults, features, errors, constraints, limits, and API/source links |
+| Explanation | Understand a concept or design          | `src/explanation/` | Context, relationships, rationale, trade-offs, architecture, and boundaries              |
 
-Run Core/runtime/browser/hardware checks only when appropriate to the change; report precisely what was actually verified and any unavailable prerequisites. Keep commits focused by subject, following the repository's `docs:` convention.
+Use the locally authored templates in `docs/templates/` when creating pages. Read `docs/templates/README.md`, copy the appropriate template, remove unused sections, and replace every placeholder before publishing.
+
+Keep one primary reader need per substantive page. Split mixed content when reader needs differ and connect the pages with links instead of duplicating procedures or authoritative reference tables.
+
+## Authoring rules
+
+- Write published documentation in English.
+- Start with the page goal and intended reader; use concrete titles and action-oriented titles for task pages.
+- State prerequisites before procedures, including operating system, target, toolchain, device/browser requirements, credentials, and existing artifacts when relevant.
+- State the working directory and execution context before commands. Distinguish host-shell commands, browser-console commands, Devbox/Core commands, and commands run inside Xila.
+- Add observable results for important tutorial steps and completion checks for how-to guides.
+- Use reference pages for exhaustive facts and explanation pages for design reasoning.
+- Prefer plain language, active voice, short paragraphs, and consistent terminology.
+- Use tables for lookup/comparison and Mermaid diagrams when they clarify relationships.
+- Keep technical headings, navigation labels, reference text, and documentation-link labels free of decorative emojis. Sparse, consistent emojis are acceptable on overview/marketing surfaces.
+- Put warnings next to the action that requires them, especially destructive storage operations. Do not add speculative warnings.
+- Avoid unnecessary troubleshooting sections; include them only when there is a concrete recovery path.
+- Do not claim a command, browser flow, hardware target, or runtime path was verified unless it actually ran successfully.
+
+### Frontmatter
+
+Substantive pages under `src/tutorials/`, `src/how-to/`, `src/reference/`, and `src/explanation/` must use the matching `docType` value and a non-empty `description`. Section/index pages may omit `docType`.
+
+Use `layout: doc` unless the page intentionally requires a different layout, such as an API/reference viewer.
+
+### Navigation and links
+
+When adding, moving, or removing documentation:
+
+- update the appropriate section/index page;
+- update `.vitepress/navigation.ts` when the page should appear in site navigation;
+- update relevant related links and incoming links;
+- update the architecture component map when the page changes component discovery;
+- preserve meaningful anchors and query parameters when changing API/reference links.
+
+The site is pre-production. Move pages directly and update links instead of adding redirects unless URL compatibility is explicitly requested.
+
+Use `HostReference`, `GuestReference`, and `CodeReference` for generated API/source links. Verify referenced crates and source paths exist before adding them.
+
+## Technical boundaries worth preserving
+
+Keep these distinctions explicit in documentation:
+
+- `wasm32-wasip1` guest applications versus `wasm32-unknown-unknown` browser code;
+- host/native validation versus browser behavior versus embedded-hardware validation;
+- website Node/npm commands versus Core Rust/Devbox commands;
+- supported behavior versus planned or experimental behavior.
+
+When resource use matters, document relevant RAM, flash, stack, retained buffers, persistence durability, browser restrictions, and supported graphics/WASI subsets. Do not generalize native results to embedded targets without evidence.
+
+## Development commands
+
+Use a current Node.js LTS release and npm, matching CI.
+
+```sh
+npm ci
+npm run docs:dev
+npm run docs:build
+npm run docs:preview
+```
+
+Prefer formatting only the files you changed:
+
+```sh
+npx prettier --write path/to/file.md
+```
+
+Use `npm run format:fix` only when intentionally formatting the whole repository.
+
+## Required validation
+
+Before completing a documentation or site change:
+
+1. Format changed files with Prettier.
+2. Run `npm run check`.
+3. Run `git diff --check`.
+4. Review the final diff for lost facts, unresolved placeholders, accidental broad formatting, and unrelated changes.
+5. Check the affected navigation and reader journey when pages or links changed.
+
+`npm run check` runs formatting validation, a production VitePress build, Pagefind generation, and `scripts/check-docs.mjs`.
+
+The documentation validator checks:
+
+- required `docType` values by Diátaxis directory;
+- non-empty `description` frontmatter on substantive pages;
+- rendered internal links;
+- rendered anchors;
+- `CodeReference` source paths when a Core checkout is available at `XILA_CORE_PATH` or `../core`.
+
+If Core is unavailable, the validator explicitly skips Core source-path checks. Report that limitation rather than implying those references were verified.
+
+Pull-request CI is the source of truth for repository validation: it uses Node LTS, runs `npm ci`, then runs `npm run check`. GitHub Pages deployment performs the same documentation check before publishing.
+
+Run Core/runtime/browser/hardware checks only when relevant to the task. Report exactly which checks ran, which passed, and which could not run.
+
+## Change discipline
+
+- Make the smallest focused change that fully addresses the request.
+- Do not add dependencies when existing VitePress, Vue, Node, or repository utilities are sufficient.
+- Keep build output, caches, generated search indexes, scratch files, and downloaded binaries out of commits.
+- Do not rewrite unrelated pages or normalize unrelated formatting while touching a focused area.
+- Preserve technical facts when reorganizing documentation; move or link them instead of dropping them.
+- Keep one authoritative location for reference tables and exact defaults.
+- Follow the repository's existing commit style, using focused subjects such as `docs: ...`, `ci: ...`, or `chore: ...` as appropriate.
+
+## Agent workflow
+
+For an agentic change in this repository:
+
+1. Read this file and the relevant repository files before proposing edits.
+2. Inspect the implementation/source of truth for every material technical claim.
+3. Keep the plan proportional to the task; do not create extra architecture or tooling without evidence it is needed.
+4. Edit the smallest coherent set of files.
+5. Run the narrowest useful checks during iteration, then the required final validation above.
+6. Never state that validation passed unless the command or CI run actually succeeded.
+7. Summarize changed files, important decisions, validation performed, and any remaining limitations in the final result.
