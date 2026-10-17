@@ -10,16 +10,16 @@ The `wasm` package's optional `graphics` feature provides the supported `xila_gr
 
 ## Supported calls
 
-| Family          | Supported operations                                                        |
-| --------------- | --------------------------------------------------------------------------- |
-| Windows         | Creation, icon, event retrieval, pointer-aware event retrieval              |
-| Objects         | Creation/deletion, flex flow/grow, width/height, flags, padding             |
-| Labels          | Creation and text                                                           |
-| Button matrices | Creation, map, selected button                                              |
-| Text areas      | Checked text copy                                                           |
-| Keyboards       | Checked keyboard attachment                                                 |
-| Indexed canvas  | Host-owned indexed image creation and pixel/palette upload                  |
-| Geometry        | Percentage conversion                                                       |
+| Family          | Supported operations                                            |
+| --------------- | --------------------------------------------------------------- |
+| Windows         | Creation, icon, event retrieval, pointer-aware event retrieval  |
+| Objects         | Creation/deletion, flex flow/grow, width/height, flags, padding |
+| Labels          | Creation and text                                               |
+| Button matrices | Creation, map, selected button                                  |
+| Text areas      | Checked text copy                                               |
+| Keyboards       | Checked keyboard attachment                                     |
+| Indexed canvas  | Host-owned indexed image creation and pixel/palette upload      |
+| Geometry        | Percentage conversion                                           |
 
 Calculator exercises the basic widget subset. Pixel Painter additionally exercises pointer events, text input, keyboard attachment, and the indexed-canvas helpers. Weather still needs APIs beyond the currently supported subset.
 
@@ -37,14 +37,14 @@ New Xila helpers use append-only call identifiers starting at `0xf000`, separate
 
 ## Resource limits
 
-| Resource                     | Limit/behavior                                                                                             |
-| ---------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| Issued object handles        | 256 per execution, including deleted handles; handles are not reused during execution.                     |
-| Indexed-canvas pixels        | 65,536 host-owned pixels per VM across indexed canvases.                                                   |
-| Button-map entries           | 64 including the sentinel.                                                                                 |
-| NUL-terminated string        | 1024 bytes.                                                                                                |
-| Retained map strings         | 8192 bytes per widget, including the native sentinel.                                                      |
-| Map termination              | Null and empty-string guest sentinels become LVGL's empty-string terminator; row separators are preserved. |
+| Resource              | Limit/behavior                                                                                             |
+| --------------------- | ---------------------------------------------------------------------------------------------------------- |
+| Issued object handles | 256 per execution, including deleted handles; handles are not reused during execution.                     |
+| Indexed-canvas pixels | 65,536 host-owned pixels per VM across indexed canvases.                                                   |
+| Button-map entries    | 64 including the sentinel.                                                                                 |
+| NUL-terminated string | 1024 bytes.                                                                                                |
+| Retained map strings  | 8192 bytes per widget, including the native sentinel.                                                      |
+| Map termination       | Null and empty-string guest sentinels become LVGL's empty-string terminator; row separators are preserved. |
 
 Indexed-canvas buffers remain owned by the host while their native object exists and are reclaimed after deletion or at VM teardown. Pixel Painter's 160×100 canvas consumes 16,000 indexed pixels plus its palette on the host, in addition to guest-side drawing/undo/file buffers and LVGL allocations.
 
