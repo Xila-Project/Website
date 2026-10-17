@@ -32,11 +32,12 @@ const configuration = defineConfig({
   },
   lastUpdated: true,
   head: [
+    ["link", { rel: "stylesheet", href: "/fonts/montserrat.css" }],
     [
       "link",
       {
         rel: "icon",
-        href: "/images/logo_dark.svg",
+        href: "/images/favicon.svg",
         type: "image/svg+xml",
       },
     ],

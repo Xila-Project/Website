@@ -1,6 +1,7 @@
 import type { Theme } from "vitepress";
 import DefaultTheme from "vitepress/theme";
 import { App } from "vue";
+import "./brand.css";
 
 function registerComponents(app: App<any>) {
   // Auto-register all components in the components directory
