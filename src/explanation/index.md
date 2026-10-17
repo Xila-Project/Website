@@ -1,16 +1,39 @@
 ---
 layout: doc
-description: Understand Xila's architecture, execution model, development targets, and storage choices.
+docType: explanation
+description: Understand how Xila fits together, why its major boundaries exist, and what trade-offs they create.
 ---
 
 # Explanation
 
-Explore the relationships and design choices behind Xila's services and runtime.
+Explanation is where Xila's architecture is made understandable: what the main parts are, how they relate, and why the system is shaped this way.
 
-- [Architecture overview](./architecture/) explains how Core, drivers, and applications are assembled.
-- [Development environments and targets](./development-environments) explains toolchain ownership and what each validation target establishes.
-- [Browser storage](./browser-storage) explains OPFS, the memory cache, autosave, and durability trade-offs.
-- [Wasmi execution model](./architecture/modules/virtual_machine) explains guest execution and cooperative scheduling.
-- [Graphics bindings](./architecture/modules/bindings) explains memory, object handles, and ownership at the guest/host boundary.
+If you are new to Xila, start with the [architecture overview](./architecture/). It gives you the mental model that the more detailed module, driver, runtime, and storage pages build on.
 
-Use the [component map](/explanation/architecture/components) for a specific module, crate, driver, or executable. For actions and exact interfaces, use [how-to guides](/how-to/) and [reference](/reference/).
+## Start with the system
+
+- [Architecture overview](./architecture/) explains how executables, Xila services, shared contracts, drivers, and target platforms fit together.
+- [Component map](./architecture/components) helps you locate a module, crate, driver, or executable by the role it plays in that system.
+- [Modules](./architecture/modules/) explains the long-lived services that provide task identity, files, networking, graphics, time, users, and other runtime capabilities.
+
+## Follow the question you have
+
+**How can the same Xila code run on an MCU, a native host, and in a browser?**
+
+Read [development environments and targets](./development-environments) for the relationship between toolchains, validation targets, and platform ownership.
+
+**How does the browser version keep a persistent disk?**
+
+Read [browser storage](./browser-storage) for the relationship between OPFS, the in-memory disk image, autosave, and durability.
+
+**What happens when Xila executes a WebAssembly guest?**
+
+Read the [virtual machine model](./architecture/modules/virtual_machine) for Wasmi integration, WASI imports, and cooperative execution.
+
+**How do guest graphics calls cross into the host runtime?**
+
+Read [graphics bindings](./architecture/modules/bindings) for the ownership and memory boundary between guest handles and host objects.
+
+## When your question changes
+
+Explanation is intentionally not a task guide or an API catalogue. When you know _why_ a part of Xila works the way it does and want to do something with it, continue with the [how-to guides](/how-to/). When you need an exact command, limit, symbol, or API contract, use the [reference section](/reference/).

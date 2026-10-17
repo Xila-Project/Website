@@ -1,53 +1,79 @@
 ---
 layout: doc
 docType: explanation
-description: "Xila is organized as composable modules with explicit contracts and concrete implementations."
+description: Understand Xila's runtime modules as cooperating services with explicit ownership and shared execution boundaries.
 ---
 
 # Modules
 
-Xila is organized as composable modules with explicit contracts and concrete implementations. The final binary constructs stateful managers and passes references to other modules and executables. Lock-protected state belongs to those managers; allocator, logging, C ABI, and LVGL callback boundaries retain process-wide registration.
+Modules are the parts of Xila that give the running system its long-lived behavior: they know about tasks, users, time, paths, network interfaces, graphics state, and the boundaries through which native or WebAssembly code reaches those capabilities.
 
-This section is an architecture map, grouped by system role.
+A useful way to read them is by **role**, not by crate name.
 
-## Recommended reading order
-
-1. [Virtual file system](/explanation/architecture/modules/virtual_file_system)
-2. [Task](/explanation/architecture/modules/task)
-3. [Network](/explanation/architecture/modules/network)
-4. [ABI](/explanation/architecture/modules/abi)
-5. [Bindings](/explanation/architecture/modules/bindings) (runtime integration path)
-6. Remaining modules and integrations: [Memory](/explanation/architecture/modules/memory), [Users](/explanation/architecture/modules/users), [Time](/explanation/architecture/modules/time), [Log](/explanation/architecture/modules/log), [Graphics](/explanation/architecture/modules/graphics), [Virtual machine](/explanation/architecture/modules/virtual_machine)
-
-## Foundation modules
-
-- [Memory](/explanation/architecture/modules/memory): Allocation contract (`ManagerTrait`), global allocator bridge, capability flags, and cache/page helpers.
-- [Task](/explanation/architecture/modules/task): Manager-owned task registry, executor/spawner integration, metadata inheritance, and signal delivery.
-- [Users](/explanation/architecture/modules/users): In-memory user/group database and identifier/membership resolution.
-- [Time](/explanation/architecture/modules/time): Explicit time source abstraction over a direct character device.
-- [Log](/explanation/architecture/modules/log): Global logging bridge (`LoggerTrait`) on top of `log` ecosystem integration.
-
-## Runtime modules
-
-- [Virtual file system](/explanation/architecture/modules/virtual_file_system): Path namespace, mount dispatch (file systems/devices/pipes), ownership/permission checks.
-- [Network](/explanation/architecture/modules/network): `smoltcp` interface stacks, runner tasks, control-device surface under `/devices/network/*`.
-- [Graphics](/explanation/architecture/modules/graphics): LVGL runtime management, display/input plumbing, window/event services.
-
-## Interop and runtime-integration pages
-
-- [ABI](/explanation/architecture/modules/abi): C ABI declarations and definitions, with an explicitly installed runtime context.
-- [Bindings](/explanation/architecture/modules/bindings): Module-adjacent runtime integration implemented in executable/WASM host paths for host-call dispatch and guest/host pointer translation.
-- [Virtual machine](/explanation/architecture/modules/virtual_machine): Module-adjacent Wasmi integration in the WASM executable, with per-execution stores, WASI imports, and cooperative execution.
-
-## Cross-module wiring (high level)
+## Mental model
 
 ```mermaid
-graph TD
-    Foundation[Foundation modules] --> Runtime[Runtime modules]
-    Foundation --> Interop[Interop + execution modules]
-    Runtime --> Interop
+flowchart LR
+    Programs[Executables and guests]
+    Boundaries[Execution boundaries<br/>ABI · bindings · VM]
+    Services[Runtime services<br/>VFS · network · graphics]
+    Foundations[Foundation services<br/>task · users · time · memory · log]
 
-    Foundation --- F1[Memory / Task / Users / Time / Log]
-    Runtime --- R1[VFS / Network / Graphics]
-    Interop --- I1[ABI / Bindings / Virtual machine]
+    Programs --> Services
+    Programs --> Boundaries
+    Boundaries --> Services
+    Services --> Foundations
+    Boundaries --> Foundations
 ```
+
+Foundation services provide identity, allocation, time, users, and logging that other runtime behavior depends on. Runtime services turn those foundations into system-level facilities such as the path namespace, networking, and graphics. Execution-boundary pages explain how foreign or guest code reaches the same services.
+
+The arrows are dependency/usage relationships, not a strict boot order. The final binary constructs the concrete managers and integrations that a target needs and keeps them alive for the runtime.
+
+## Foundation services
+
+[Task](/explanation/architecture/modules/task) answers _which logical task is doing this?_ and connects logical task identity to the async executors that actually run futures.
+
+[Users](/explanation/architecture/modules/users) provides user/group identity and membership information used by access-control decisions.
+
+[Time](/explanation/architecture/modules/time) gives the rest of Xila a target-independent time source.
+
+[Memory](/explanation/architecture/modules/memory) defines the allocation contract and connects that contract to Rust's global allocation path.
+
+[Log](/explanation/architecture/modules/log) bridges Xila's logging into the Rust `log` ecosystem and the runtime's chosen output path.
+
+## Runtime services
+
+[Virtual file system](/explanation/architecture/modules/virtual_file_system) owns the shared path namespace. It resolves mounts, applies ownership/permission policy, and routes operations to file systems, devices, or pipes.
+
+[Network](/explanation/architecture/modules/network) owns network-interface stacks and socket services while exposing interface control through the VFS namespace.
+
+[Graphics](/explanation/architecture/modules/graphics) coordinates LVGL, displays, inputs, windows, and events at the graphical runtime boundary.
+
+## Execution and interop boundaries
+
+[ABI](/explanation/architecture/modules/abi) explains the C-facing boundary and the runtime context required to make those calls meaningful.
+
+[Bindings](/explanation/architecture/modules/bindings) explains how guest/host calls translate handles and memory into operations on Xila services.
+
+[Virtual machine](/explanation/architecture/modules/virtual_machine) explains Wasmi-based WebAssembly execution, WASI integration, and cooperative guest scheduling.
+
+These pages sit next to the modules because they shape how runtime capabilities are reached, even where their current implementation lives in executable/runtime code rather than in a standalone stateful manager.
+
+## Choose a page by the concept
+
+- **Paths, files, devices, mounts, or permissions:** [Virtual file system](/explanation/architecture/modules/virtual_file_system)
+- **Task identity, spawning, joins, environment, or signals:** [Task](/explanation/architecture/modules/task)
+- **Interfaces, sockets, routes, DNS, or network control:** [Network](/explanation/architecture/modules/network)
+- **Allocation and platform memory policy:** [Memory](/explanation/architecture/modules/memory)
+- **Guest execution:** [Virtual machine](/explanation/architecture/modules/virtual_machine) and [Bindings](/explanation/architecture/modules/bindings)
+- **C-facing integration:** [ABI](/explanation/architecture/modules/abi)
+- **Windows, displays, and input:** [Graphics](/explanation/architecture/modules/graphics)
+
+## Under the hood: ownership is mostly explicit
+
+The final binary constructs the stateful managers and passes references to consumers rather than relying on production singleton lookups. Lock-protected runtime state therefore belongs to those manager instances.
+
+A few integration boundaries remain process-wide: the allocator, logger, C ABI runtime registration, and LVGL callbacks. Those exceptions matter when reasoning about isolation; “explicit manager ownership” does not imply that every external runtime can currently be instantiated independently more than once in the same process.
+
+For the system-level view around these modules, return to the [architecture overview](/explanation/architecture/).

@@ -1,9 +1,5 @@
 <script setup>
-import {
-  ReferenceArchitecture,
-  ReferenceCrate,
-  ReferenceKind,
-} from "../utilities/reference";
+import { ReferenceArchitecture } from "../utilities/reference";
 import Reference from "./Reference.vue";
 
 const props = defineProps({
@@ -19,6 +15,10 @@ const props = defineProps({
     type: String,
     required: false,
   },
+  member: {
+    type: String,
+    required: false,
+  },
 });
 </script>
 
@@ -28,6 +28,7 @@ const props = defineProps({
     :crate="crate"
     :kind="kind"
     :symbol="symbol"
+    :member="member"
   >
     <slot />
   </Reference>

@@ -1,140 +1,151 @@
 ---
 layout: doc
 docType: explanation
-description: "The Virtual File System (VFS) is Xila's path router and policy gate for file systems, devices, and pipes."
+description: Understand the VFS as Xila's shared path namespace, access-policy layer, and router to mounted file systems, devices, and pipes.
 ---
 
 # Virtual file system
 
-The Virtual File System (VFS) is Xila's path router and policy gate for file systems, devices, and pipes. It maps absolute paths to mounted backends, applies ownership/permission checks, and returns typed handles (`File`, `Directory`) for subsequent operations.
+Xila has several things that can look like files: persistent storage, character devices, block devices, pipes, and control endpoints such as network interfaces. The Virtual File System (VFS) gives all of them one path namespace and one place to apply access policy.
 
-## Role in system
+The VFS does **not** define how LittleFS stores blocks or how a device implements IO. Its job is to decide _what owns this path?_, _is this task allowed to access it?_, and _where should the operation go next?_
 
-- Provides the global namespace used by modules and executables (`/`, `/devices`, `/system`, `/data`, ...).
-- Normalizes access to heterogeneous backends: regular file systems, character devices, block devices, and named/unnamed pipes.
-- Bridges module concerns: task identity (`task`), user/group policy (`users`), and timestamps (`time`).
+## Mental model
 
-## Responsibilities and boundaries
+Think of the <HostReference crate="virtual_file_system" kind="struct" symbol="VirtualFileSystem" /> as a router for paths:
 
-**In scope**
+```mermaid
+flowchart LR
+    Caller[Executable or module] -->|path operation| VFS[VFS<br/>resolve + authorize]
+    VFS -->|file path| FS[Mounted file system]
+    VFS -->|device path| Device[Mounted device]
+    VFS -->|pipe| Pipe[Pipe endpoint]
+    FS --> Storage[Storage backend]
+```
 
-- Path-to-mount resolution (longest-prefix mount selection).
-- Permission and ownership enforcement before backend calls.
-- Mount/unmount lifecycle for file systems and devices.
-- Handle-level dispatch for file, directory, and pipe operations.
+The VFS owns the **namespace and policy**, while the mounted backend owns the concrete storage/device behavior. That separation is what allows a caller to use the same file-facing abstractions regardless of whether `/data/example` lives in LittleFS or `/devices/network/wlan0` represents a control device.
 
-**Out of scope**
+## Following one path through the system
 
-- Concrete on-disk layout semantics (owned by mounted file-system implementations).
-- Authentication/session policies (owned by higher-level components).
-- Link semantics and advisory locking APIs (not implemented in this module).
+Suppose an executable opens `/data/config.json` through <HostReference crate="virtual_file_system" kind="struct" symbol="File" member="method.open">`File::open`</HostReference>. It does not talk directly to the root file system.
 
-## Internal architecture
+The VFS first associates the request with the supplied Xila task, derives user/group and time context from its Task, Users, and Time dependencies, and resolves which mount owns the path. It then checks the relevant permissions before translating the absolute path into the backend-relative path understood by that mount.
 
-- Owned manager: `virtual_file_system::initialize(task_manager, users_manager, time_manager, root_file_system)` returns a `VirtualFileSystem` holding explicit dependency references.
-- Core state (`RwLock`-protected):
-  - `file_systems: Vec<InternalFileSystem>` (mount point + backend pointer + reference count),
-  - `character_device: BTreeMap<Inode, InternalCharacterDevice>`,
-  - `block_device: BTreeMap<Inode, InternalBlockDevice>`,
-  - `pipes: BTreeMap<Inode, InternalPipe>`.
-- Mount targets are represented as `ItemStatic` and materialized as `File`/`Directory` wrappers around synchronous primitives.
-- Default hierarchy helper (`create_default_hierarchy`) creates and sets permissions on standard paths, including `/devices/network`.
-
-## Lifecycle and execution model
-
-1. Construct `task`, `users`, and `time` managers and keep them alive.
-2. Construct VFS with those references and the root backend (`initialize(task_manager, users_manager, time_manager, root_file_system)`).
-3. Create the default hierarchy (`create_default_hierarchy(virtual_file_system, task)`).
-4. Mount optional file systems/devices (`mount_file_system`, `mount_character_device`, `mount_block_device`, `create_named_pipe`).
-5. Use async APIs (`open`, `open_directory`, `create_directory`, `remove`, `rename`, ...).
-6. Optionally unmount (`unmount`, `unmount_all`) and uninitialize backend ownership.
-
-## Data/control flow
+Only after those namespace and policy decisions does the request reach the mounted backend through the <HostReference crate="file_system" kind="trait" symbol="FileSystemOperations" /> contract.
 
 ```mermaid
 sequenceDiagram
-  participant App as Executable/Module
-  participant VFS as Virtual File System
-  participant Node as Resolved node (FS or device)
-  participant FS as Mounted file system backend
-  participant Dev as Mounted device endpoint
+    participant App as Executable / module
+    participant VFS as Virtual file system
+    participant Policy as Task + users + permissions
+    participant Mount as Resolved mount
+    participant Backend as File system / device
 
-  App->>VFS: open/read/write/control(path, flags)
-  VFS->>VFS: resolve mount + load task/user/time context
-  VFS->>VFS: check owner/group/other permissions
-  VFS->>Node: dispatch operation
-  alt Node is file-system item
-    Node->>FS: backend operation
-    FS-->>Node: data/status
-  else Node is mounted device
-    Node->>Dev: device operation
-    Dev-->>Node: data/status
-  end
-  Node-->>VFS: data/status
-  VFS-->>App: Return handle/data/status
+    App->>VFS: open /data/config.json
+    VFS->>Policy: resolve caller context and permissions
+    Policy-->>VFS: authorized context
+    VFS->>Mount: longest matching mount
+    Mount->>Backend: backend-relative operation
+    Backend-->>VFS: item / status
+    VFS-->>App: typed File handle
 ```
 
-## Concurrency and synchronization model
+The same routing idea applies to directories and devices. The difference is the kind of mounted endpoint and the operations supported after resolution, not a separate namespace implementation.
 
-- Manager-owned state uses `RwLock<CriticalSectionRawMutex, ...>`.
-- Open/close paths update per-mount or per-device reference counters to protect unmount semantics.
-- Busy resources are surfaced as `RessourceBusy`/`file_system::Error::RessourceBusy`.
-- `poll(...)` retries busy operations with `task::yield_now().await`.
-- `blocking_operation(...)` enforces non-blocking file-state behavior by returning busy errors directly when `StateFlags::NonBlocking` is set.
+## Why Task, Users, and Time are dependencies
 
-## Dependency model
+The namespace alone is not enough to behave like a system file layer.
 
-- `task`: current task identifier and owner metadata lookup.
-- `users`: group membership checks for permission evaluation.
-- `time`: timestamp stamping for create/access/modify/status updates.
-- `file_system` traits: backend contracts (`FileSystemOperations`, `CharacterDevice`, `BlockDevice`).
+[Task](/explanation/architecture/modules/task) tells the VFS which logical task initiated an operation and therefore which user/group context applies. [Users](/explanation/architecture/modules/users) answers membership questions used during permission checks. [Time](/explanation/architecture/modules/time) provides the timestamps written during create/access/modify operations.
 
-## Failure semantics and recovery behavior
+This is why a `VirtualFileSystem` is explicitly constructed with references to those managers. The VFS centralizes filesystem policy without reimplementing identity or time itself.
 
-- Invalid path/mount conditions return `Error::InvalidPath`.
-- Missing metadata fields (`kind`, `inode`, `permissions`, ...) return `Error::MissingAttribute`.
-- Permission failures return `Error::PermissionDenied` before backend execution.
-- Unmount with live references returns `Error::RessourceBusy` unless `force` is requested.
-- Device cleanup helpers (`clean_devices*`) tolerate expected stale references (`InvalidIdentifier`) to make startup idempotent.
+## Backends share contracts, not implementations
 
-## Extension points
+Regular file-system backends implement <HostReference crate="file_system" kind="trait" symbol="FileSystemOperations" />. Character and block devices use the corresponding device contracts. Pipes are provided as in-memory endpoints by the VFS itself.
 
-- New file systems: implement <HostReference crate="file_system" kind="trait" symbol="FileSystemOperations" /> and mount them.
-- New devices: implement direct character/block traits and mount into namespace paths.
-- Named/unnamed pipes: provided as built-in in-memory FIFO endpoints.
+Because the VFS dispatches through these contracts, mounting a new backend does not require callers to learn a new path API. The backend can still have completely different on-disk or device semantics underneath that contract.
 
-## Known limitations and trade-offs
+This division also defines a boundary: authentication/session policy lives above the VFS, while concrete block layout and wear-level/storage algorithms live below it.
 
-- Symbolic link and file-locking APIs are not implemented in the current surface.
-- Several ABI-level filesystem calls are still `todo!()` (for example symlink/time-setting/truncate paths), so C surface completeness is lower than internal Rust API completeness.
-- Shared use of a VFS manager centralizes contention on that manager's metadata locks.
+## Mounts and handles have lifetimes
 
-## Contract vs implementation
+Resolving a path is not the end of the VFS's job. Open files/directories and mounted devices keep references into backend state, so the VFS tracks live use to prevent a normal unmount from invalidating active handles.
 
-- **Stable module contract:** A global path namespace with mount-based dispatch, ownership/permission checks, and typed file/directory/pipe operations surfaced through the module API.
-- **Current implementation details:** An owned manager with explicit task/users/time dependencies, `RwLock`-protected mount/device registries, helper-generated default hierarchy, and reference-count strategies enforcing unmount safety.
-- **Compatibility note:** Consumers should depend on API semantics and error behavior, not on concrete internal collections, locking structure, or initialization helper internals, which can evolve without changing the public contract.
+An unmount can therefore report a busy resource while references are alive. A forced unmount deliberately overrides that protection. This is an architectural consequence of exposing long-lived typed handles rather than copying every operation into a stateless path request.
 
-## Reference namespace layout
+For async operations that encounter a temporarily busy backend, the VFS `poll(...)` helper cooperatively yields through Task and retries. A handle opened with the non-blocking state instead surfaces the busy condition rather than waiting for it to clear.
 
-File and directory helpers receive VFS/task explicitly, for example `File::open(virtual_file_system, task, path, flags)` and `Directory::open(virtual_file_system, task, path)`. Use handles with the same VFS that created them.
+## Under the hood
 
-- `/`: Root directory
-  - `/binaries`: Executable files
-  - `/configuration`: Configuration files (user space)
-    - `/shared`: Shared configuration files (e.g. network profiles)
-  - `/data`: Application data files (user space)
-    - `/shared`: Shared data files (e.g. logs)
-  - `/devices`: Mounted devices
-  - `/logs`: System and application logs
-  - `/system`: System files (kernel space)
-    - `/groups`: Group definitions
-    - `/users`: User definitions
-  - `/temporary`: Temporary files (cleared on reboot)
+The current VFS is an explicitly owned <HostReference crate="virtual_file_system" kind="struct" symbol="VirtualFileSystem" />. `initialize(...)` constructs it from Task, Users, Time, and the root `FileSystemOperations` implementation.
 
-## References / See also
+Its mutable routing state is divided across `RwLock<CriticalSectionRawMutex, ...>` collections:
 
-- <HostReference crate="virtual_file_system" />
-- [Network module](/explanation/architecture/modules/network)
-- [Task](/explanation/architecture/modules/task)
-- [Users](/explanation/architecture/modules/users)
+- `file_systems: Vec<InternalFileSystem>` stores mount points, backend pointers, and reference counts;
+- a character-device `BTreeMap` maps inodes to mounted character endpoints;
+- a block-device `BTreeMap` does the same for block endpoints;
+- a pipe `BTreeMap` tracks in-memory pipe endpoints.
+
+Mount resolution selects the file system whose mount point owns the requested path and forwards a relative path to that backend. Typed `File` and `Directory` wrappers retain the VFS/backend context needed for later operations rather than resolving the absolute path again for every byte transferred.
+
+```mermaid
+flowchart LR
+    VFS[VirtualFileSystem]
+    Mounts[(mounted file systems)]
+    Char[(character devices)]
+    Block[(block devices)]
+    Pipes[(pipes)]
+    Handle[File / Directory handle]
+
+    VFS --> Mounts
+    VFS --> Char
+    VFS --> Block
+    VFS --> Pipes
+    Mounts --> Handle
+    Char --> Handle
+    Pipes --> Handle
+```
+
+Those collection choices, lock boundaries, inode maps, and reference-count strategy are current implementation details. The stable architectural idea is the shared namespace, policy gate, mount dispatch, and typed handle semantics.
+
+## Default namespace shape
+
+`create_default_hierarchy(...)` gives a newly assembled runtime a conventional set of locations. The exact tree is useful because these paths communicate intent across modules, but it should be read as a namespace convention rather than a statement about one physical disk:
+
+- `/binaries` — executable files;
+- `/configuration` — user-space configuration, including `/configuration/shared`;
+- `/data` — application data, including `/data/shared`;
+- `/devices` — mounted device endpoints, including `/devices/network`;
+- `/logs` — system/application logs;
+- `/system` — system-owned data such as `/system/users` and `/system/groups`;
+- `/temporary` — temporary data expected to be cleared across reboot/runtime recreation.
+
+The root backend provides the base tree, while additional file systems and devices can be mounted into that namespace later.
+
+## Failure and policy boundaries
+
+A path can fail before the backend is called: the path may be invalid, its mount may not resolve, required metadata may be absent, or permissions may reject the operation. Backend errors then enter the VFS error domain after dispatch.
+
+This distinction is useful when debugging: `PermissionDenied` is a policy decision made before backend execution, while a backend `NotFound`/IO failure describes what happened after routing to the selected implementation.
+
+Device cleanup helpers intentionally tolerate stale device identifiers in expected cleanup cases, making repeated startup cleanup more idempotent. By contrast, live-reference protection on unmount is deliberately strict unless force is requested.
+
+## Limitations and trade-offs
+
+Centralizing namespace and permission policy gives all callers consistent semantics, but it also means shared VFS metadata locks can become contention points under heavy parallel access.
+
+Symbolic-link and advisory file-locking behavior is not implemented in the current surface, and the C/ABI filesystem layer still has incomplete entry points such as some symlink, timestamp, and truncate operations. That ABI incompleteness should not be confused with the full set of internal Rust VFS capabilities.
+
+New file systems can be integrated by implementing the file-system contracts and mounting them; new devices can implement the direct character/block contracts and be placed at namespace paths. Callers should depend on those semantics rather than on internal collection types or initialization helpers.
+
+## Explore further
+
+- <HostReference crate="virtual_file_system" /> — complete host-side VFS Rustdoc.
+- <HostReference crate="virtual_file_system" kind="struct" symbol="VirtualFileSystem" /> — namespace and mount manager API.
+- <HostReference crate="virtual_file_system" kind="struct" symbol="File" /> — async file handle API.
+- <HostReference crate="file_system" kind="trait" symbol="FileSystemOperations" /> — backend contract consumed by the VFS.
+- <CodeReference path="modules/virtual_file_system" /> — current VFS implementation.
+- [File-system crate](/explanation/architecture/crates/file_system) — shared storage/device contracts beneath the VFS.
+- [Network](/explanation/architecture/modules/network) — an example of a module exposing control devices through the namespace.
+- [Task](/explanation/architecture/modules/task) and [Users](/explanation/architecture/modules/users) — identity context used by VFS policy.

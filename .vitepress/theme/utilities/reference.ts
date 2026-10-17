@@ -1,3 +1,5 @@
+import { getReferencePagePath } from "./reference-path.mjs";
+
 export enum ReferenceCrate {
   Abi_context = "abi_context",
   Abi_declarations = "abi_declarations",
@@ -40,7 +42,7 @@ export enum ReferenceKind {
 }
 
 export function getReferencePath(kind: ReferenceKind, symbol: string): string {
-  return `${kind}.${symbol}.html`;
+  return getReferencePagePath(kind, symbol);
 }
 
 export function getReferenceDisplayName(

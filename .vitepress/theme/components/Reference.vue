@@ -2,9 +2,12 @@
 import { computed } from "vue";
 import {
   getReferenceDisplayName,
-  getReferencePath,
   ReferenceArchitecture,
 } from "../utilities/reference";
+import {
+  getReferenceTargetPath,
+  getReferenceViewerHref,
+} from "../utilities/reference-path.mjs";
 
 const props = defineProps({
   architecture: {
@@ -23,29 +26,21 @@ const props = defineProps({
     type: String,
     required: false,
   },
+  member: {
+    type: String,
+    required: false,
+  },
 });
 
 const href = computed(() => {
-  let file = "index.html";
+  const targetPath = getReferenceTargetPath(
+    props.crate,
+    props.kind,
+    props.symbol,
+    props.member,
+  );
 
-  if (props.kind) {
-    if (props.symbol === undefined) {
-      throw new Error("Symbol is required when kind is provided");
-    }
-    file = getReferencePath(props.kind, props.symbol);
-  } else {
-    if (props.symbol !== undefined) {
-      throw new Error("Symbol should not be provided when kind is missing");
-    }
-  }
-
-  const path = `${props.crate}/${file}`;
-
-  if (props.architecture === ReferenceArchitecture.Host) {
-    return `/reference/host?path=${encodeURIComponent(path)}`;
-  } else {
-    return `/reference/guest?path=${encodeURIComponent(path)}`;
-  }
+  return getReferenceViewerHref(props.architecture, targetPath);
 });
 
 const label = computed(() =>
