@@ -1,97 +1,111 @@
 ---
 layout: doc
 docType: explanation
-description: "The Memory module defines allocation contracts and the runtime bridge to the active allocator implementation."
+description: Understand how Xila separates memory-allocation semantics from target-specific allocator policy while still serving Rust's global allocation path.
 ---
 
 # Memory
 
-The Memory module defines allocation contracts and the runtime bridge to the active allocator implementation.
+Memory allocation has different constraints on a microcontroller, a native host, and other Xila targets. The Memory module keeps the rest of the system from depending directly on one allocator implementation.
 
-## Role in system
+Its core idea is simple: Xila defines **what an allocation request means**, then lets the active platform allocator decide how to satisfy it. The same abstraction is also adapted to Rust's global allocation interface, so ordinary Rust allocations and explicit Xila allocation requests ultimately share the runtime's memory backend.
 
-- Provides the system allocation API (`allocate`, `deallocate`, `reallocate`) with explicit `Layout` semantics.
-- Exposes capability-aware allocation requests (`Executable`, `DirectMemoryAccess`).
-- Serves as the source for Rust global allocator integration through `GlobalAlloc` wrapper.
-
-## Responsibilities and boundaries
-
-**In scope**
-
-- `ManagerTrait` contract for allocation/backing allocator implementations.
-- `Manager` wrapper adapting trait object to safe/unsafe call sites and `GlobalAlloc`.
-- Cache and page-size helper surface.
-
-**Out of scope**
-
-- Choosing one universal allocator strategy for all targets.
-- Owning platform-specific heap region setup (performed by platform crates/linking symbols).
-
-## Internal architecture
-
-- Core abstraction: `ManagerTrait` (unsafe allocation primitives + usage stats + cache hooks).
-- Runtime wrapper: `memory::Manager<'a>(&'a dyn ManagerTrait)`.
-- Global accessor: `memory::get_instance()` returns `__XILA_MEMORY_MANAGER` symbol provided by final runtime.
-- Capability flags are bitflags (`Executable`, `DirectMemoryAccess`) used as hints/requirements for backend allocators.
-
-**Contract vs implementation**
-
-- **Contract**: `ManagerTrait` methods and expected safety invariants.
-- **Implementation**: backend-specific allocation algorithms, region policies, and capability interpretation.
+## Mental model
 
 ```mermaid
-graph TD
-    A[Other modules/crates] -->|Allocate/Free| B[Memory module API]
-    B -->|Delegate| C[ManagerTrait implementation]
-    C -->|Backed by| D[Platform allocator / memory backend]
-    B -->|GlobalAlloc adapter| E[Rust allocation path]
-    B -->|Log events| F[Log module]
+flowchart LR
+    Explicit[Xila modules / ABI] -->|allocate with layout + capabilities| Memory[Memory manager]
+    Rust[Rust global allocation] -->|GlobalAlloc| Memory
+    Memory -->|delegates| Contract[Allocator contract]
+    Contract --> Backend[Platform memory backend]
 ```
 
-## Lifecycle and execution model
+The <HostReference crate="memory" kind="trait" symbol="ManagerTrait" /> is the contract implemented by concrete allocators. The <HostReference crate="memory" kind="struct" symbol="Manager" /> is the thin runtime wrapper that exposes that contract to Xila callers and implements Rust's `GlobalAlloc`.
 
-1. Platform/runtime defines concrete manager and exports `__XILA_MEMORY_MANAGER`.
-2. Consumers call memory APIs directly or through Rust allocation path.
-3. Optional cache/page helpers are invoked for architecture-specific coherency needs.
-4. ABI entrypoints may wrap operations with additional metadata and synchronization.
+This split is what lets a target choose its own heap regions and allocation strategy without changing every consumer of memory.
 
-## Data/control flow
+## Two paths, one allocator contract
 
-- Direct path: caller -> `Manager` -> trait object allocator backend.
-- Rust alloc path: allocator trait implementation -> same `Manager` wrapper -> backend.
-- ABI path: C ABI wrappers -> memory manager + allocation metadata helpers.
+An explicit Xila allocation can ask <HostReference crate="memory" kind="struct" symbol="Manager" member="method.allocate">the manager to allocate memory</HostReference> with both a `Layout` and capability flags. Those flags currently express requirements such as executable memory or DMA-compatible memory.
 
-## Concurrency and synchronization model
+Ordinary Rust heap allocation enters through `GlobalAlloc`. The manager translates that standard Rust request into the same underlying `ManagerTrait` contract, using no special capability requirement by default.
 
-- Thread-safety guarantee is part of `ManagerTrait: Send + Sync` contract.
-- Synchronization strategy is backend-defined.
-- ABI allocation wrappers currently serialize operations with a global mutex in their implementation layer.
+Both paths therefore converge before they reach the platform backend:
 
-## Dependency model
+```mermaid
+sequenceDiagram
+    participant Caller as Xila caller or Rust allocator
+    participant Manager as memory::Manager
+    participant Trait as ManagerTrait backend
+    participant Platform as Platform memory
 
-- Core depends on trait-based allocator implementation supplied externally.
-- Used by virtually all modules via Rust allocation flow; additionally consumed explicitly in VM/ABI flows.
+    Caller->>Manager: allocation request
+    Manager->>Trait: layout + capabilities
+    Trait->>Platform: backend-specific allocation
+    Platform-->>Trait: memory or failure
+    Trait-->>Manager: pointer / None
+    Manager-->>Caller: pointer / null as appropriate
+```
 
-## Failure semantics and recovery behavior
+The different return forms are boundary concerns rather than different allocation systems: the trait uses `Option<NonNull<u8>>`, while the wrapper exposes null pointers where the C/Rust allocator-facing interface expects them.
 
-- Allocation/reallocation returns null on failure at C-facing boundary and `None` at trait level.
-- Deallocating null pointers is treated as no-op in wrapper behavior.
-- Reallocate default implementation allocates-copy-deallocates, so failure can occur before ownership transfer.
+## Capabilities describe requirements, not algorithms
 
-## Extension points
+`CapabilityFlags` lets a caller say something important about the requested memory without selecting a concrete heap. `Executable` and `DirectMemoryAccess` are examples of such requirements.
 
-- Provide new `ManagerTrait` implementations (region allocators, platform allocators, debug allocators).
-- Extend capability semantics with additional flags when required by targets.
-- Override cache/page methods for architecture-specific behavior.
+How strongly a flag can be honoured depends on the backend. On a target with several memory regions, the allocator may choose a suitable region. On another target, the same distinction may have little or no concrete effect. The contract therefore makes the requirement visible while leaving allocation policy target-specific.
 
-## Known limitations and trade-offs
+The same principle applies to page size and cache management. `ManagerTrait` provides page-size, instruction-cache, and data-cache hooks because some architectures need them, but their concrete semantics and cost belong to the allocator/platform implementation.
 
-- Fragmentation and allocation behavior are backend-specific.
-- Cache and capability guarantees are only as strong as backend implementation support.
-- Cross-platform consistency requires disciplined backend conformance to trait contracts.
+## Reallocation and failure semantics
 
-## References / See also
+The trait's default reallocation behavior allocates a new region, copies the overlapping amount of data, and then deallocates the old region. That means a failed new allocation leaves the original allocation owned by the caller rather than transferring ownership halfway through the operation.
 
-- <HostReference crate="memory" />
-- [Drivers](/explanation/architecture/drivers)
-- [Synchronization](/explanation/architecture/crates/synchronization)
+The runtime wrapper turns failed allocation/reallocation into a null pointer at the pointer-facing boundary. Deallocating a null pointer through the wrapper is intentionally a no-op, matching the expectations of the C-facing allocation surface.
+
+These details matter because raw-memory operations are unsafe: callers and backends must agree on ownership, layout, and lifetime. The module provides one contract for those invariants; it cannot make an invalid raw-pointer use safe after the fact.
+
+## Under the hood
+
+The active runtime exports a `__XILA_MEMORY_MANAGER` symbol containing a `memory::Manager<'static>`. <HostReference crate="memory" kind="fn" symbol="global_manager" /> returns a shared reference to that global wrapper.
+
+Unlike most stateful Xila services, this allocator boundary is intentionally process-global. Rust's global allocator integration itself requires a globally reachable allocation path, so the Memory module is one of the exceptions to the otherwise explicit-manager assembly model described in the [architecture overview](/explanation/architecture/#runtime-assembly).
+
+The wrapper contains a trait object (`&dyn ManagerTrait`) rather than the concrete allocator type. Its `GlobalAlloc` implementation delegates `alloc`, `dealloc`, and `realloc` back through the same methods exposed to explicit Xila callers.
+
+`ManagerTrait: Send + Sync` requires allocator implementations to be safe to call across the runtime's concurrency model, but the trait does not prescribe how a backend synchronizes its internal state. ABI allocation wrappers currently add their own global mutex around the metadata they maintain at that boundary.
+
+```mermaid
+flowchart LR
+    Global[Global memory::Manager]
+    TraitObj[&dyn ManagerTrait]
+    Policy[Backend allocation policy]
+    Regions[Target memory regions]
+
+    Global --> TraitObj
+    TraitObj --> Policy
+    Policy --> Regions
+```
+
+This is an implementation-level view. Consumers should not depend on the global symbol name, trait-object representation, backend data structures, or a particular region-selection algorithm.
+
+## Trade-offs and boundaries
+
+The abstraction makes callers portable, but it cannot make every target's memory behave identically. Fragmentation, allocation latency, executable-memory support, DMA constraints, cache coherency, and page-size behavior are ultimately backend properties.
+
+That puts an important responsibility on backend implementations: they must preserve the `ManagerTrait` safety and accounting contract even when their allocation strategies differ substantially.
+
+The module also does not own platform heap discovery or linker-region setup. Those are established by the target/platform integration and then presented through the allocator implementation.
+
+## Contract and implementation boundary
+
+Code outside Memory should rely on allocation/deallocation semantics, `Layout`, capability requirements, statistics, and cache/page hooks. It should not rely on one allocator algorithm, one heap layout, or one synchronization strategy being universal across Xila targets.
+
+## Explore further
+
+- <HostReference crate="memory" /> — complete host-side Memory Rustdoc.
+- <HostReference crate="memory" kind="trait" symbol="ManagerTrait" /> — allocator backend contract.
+- <HostReference crate="memory" kind="struct" symbol="Manager" /> — runtime and `GlobalAlloc` wrapper.
+- <CodeReference path="modules/memory" /> — current module implementation.
+- [Drivers](/explanation/architecture/drivers) — where target-specific mechanisms meet portable contracts.
+- [Synchronization](/explanation/architecture/crates/synchronization) — synchronization primitives used across Core.

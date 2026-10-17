@@ -8,6 +8,7 @@ footer: false
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { getReferenceIframeSrc } from '../../.vitepress/theme/utilities/reference-path.mjs'
 
 const iframeSrc = ref('https://documentation.xila.dev/host/xila/index.html')
 
@@ -16,7 +17,7 @@ onMounted(() => {
     const params = new URLSearchParams(window.location.search)
     const path = params.get('path')
     if (path) {
-      iframeSrc.value = `https://documentation.xila.dev/host/${path}`
+      iframeSrc.value = getReferenceIframeSrc('host', path)
     }
   }
 })

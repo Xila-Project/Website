@@ -34,13 +34,53 @@ The structure follows [Diátaxis](https://diataxis.fr/). Local writing templates
 
 Keep the published content in English and preserve technical identifiers exactly. Do not claim commands, hardware support, or runtime behavior were verified unless they actually were.
 
+## Make Explanation pages progressive
+
+Explanation should help a reader build a mental model before asking them to understand implementation details. Prefer a **cognitive order**, not a mandatory heading template:
+
+1. explain what the concept/component is and why Xila needs it;
+2. give a short mental model or faithful analogy when it helps;
+3. show how it relates to neighboring parts of Xila;
+4. describe one concrete interaction in narrative form;
+5. introduce the few Rust abstractions that embody the design;
+6. move current data structures, locks, runner loops, and other internals into a deeper section such as `Under the hood`;
+7. finish with the architectural consequences, trade-offs, boundaries, and deliberate links to related documentation.
+
+Do not turn the concrete interaction into a setup procedure. For example, an Explanation page can describe what happens when an executable opens `/data/config.json`, but the reader should not be instructed to perform those steps. If the reader's next question is _how do I do this?_, link to a How-to or Tutorial instead.
+
+Likewise, avoid reproducing exhaustive error lists, option tables, command matrices, or method inventories. Keep facts that explain a boundary or trade-off, then point to Reference/Rustdoc for exact lookup detail.
+
+### Use diagrams to teach one idea
+
+For introductory Mermaid diagrams:
+
+- show one relationship or flow at a time;
+- normally keep the diagram to roughly 4–7 primary nodes;
+- prefer human labels (`Task manager`, `Interface stack`, `Platform driver`) over Rust implementation names;
+- keep `RwLock`, `BTreeMap`, `StackInner`, refcounts, and similar internals out of the first diagram;
+- explain in prose what the reader should notice after the diagram.
+
+`flowchart LR` works well for architecture/ownership relationships, while `sequenceDiagram` is useful for describing a concrete request journey. A second implementation-level diagram may use exact Rust types once the page has established the conceptual model.
+
+### Link Rustdoc at the point of explanation
+
+Use `HostReference` and `GuestReference` inline when a public Rust symbol gives precision to the concept being discussed. The surrounding sentence must still explain what the symbol means; readers should not need to click the link to understand the page.
+
+A reference can target a crate, a top-level Rustdoc symbol, or an associated-item anchor. For example:
+
+```text
+<HostReference crate="virtual_file_system" kind="struct" symbol="File" member="method.open">opening a file</HostReference>
+```
+
+`member` is the raw Rustdoc anchor (for example `method.open`, `associatedconstant.NAME`, or `associatedtype.Item`), not a website-specific taxonomy. Only use it after verifying the generated symbol/anchor. Keep `CodeReference` for source or example code whose implementation materially helps the explanation, rather than linking source merely because it exists.
+
 ## Connect the page
 
 Update its section landing page and `.vitepress/navigation.ts`. Link to it from relevant existing pages and the [component map](/explanation/architecture/components) when appropriate.
 
 When moving a page, update incoming links and anchors. The site is pre-production; the current workflow moves pages directly without legacy redirects.
 
-For API/source links, use the existing `HostReference`, `GuestReference`, and `CodeReference` components after checking their crate or path. Keep templates outside `src/` so writing prompts never appear in the public site or search.
+For API/source links, use the existing `HostReference`, `GuestReference`, and `CodeReference` components after checking their crate, symbol, member anchor, or source path. Keep templates outside `src/` so writing prompts never appear in the public site or search.
 
 ## Validate the change
 
@@ -52,10 +92,12 @@ npm run format:fix
 npm run check
 ```
 
-`check` verifies formatting, builds the site and search index, and validates documentation links and anchors. Review `format:fix`'s diff; for a focused change, run Prettier on only the changed files instead.
+`check` verifies Rustdoc-reference path behavior, formatting, the production site/search build, and documentation links/anchors. Review `format:fix`'s diff; for a focused change, run Prettier on only the changed files instead.
 
 Preview the production build with `npm run docs:preview`, check the navigation and reader journey, then run `git diff --check`.
 
+For an Explanation rewrite, also compare the old and new page specifically for **technical fact loss**. Every removed implementation fact should either still exist deeper in the page, be deliberately replaced by an authoritative Reference/Rustdoc link, or be intentionally removed because it was stale or did not help explain the design.
+
 ## Verify completion
 
-The page should be discoverable from its section, satisfy one primary reader need, and have no unresolved writing prompts or broken internal links. Review the diff for technical facts lost during splitting, and state which checks actually ran.
+The page should be discoverable from its section, satisfy one primary reader need, and have no unresolved writing prompts or broken internal links. Explanation pages should establish their mental model before implementation internals. Review the diff for technical facts lost during splitting, and state which checks actually ran.

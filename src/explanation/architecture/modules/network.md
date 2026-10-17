@@ -1,119 +1,126 @@
 ---
 layout: doc
 docType: explanation
-description: "The Network module provides Xila's asynchronous network runtime around smoltcp."
+description: Understand how Xila turns a platform network device into interface stacks, async sockets, and a VFS control surface.
 ---
 
 # Network
 
-The Network module provides Xila's asynchronous network runtime around `smoltcp`. It owns interface stacks, socket factories, and a control plane exposed as character devices under the VFS namespace.
+Xila's Network module sits between applications and platform network hardware. It gives executables portable DNS/TCP/UDP/ICMP services while `smoltcp` handles the protocol stack and a target-specific driver moves packets to and from the actual device.
 
-## Role in system
+The same interface also appears in Xila's file namespace as `/devices/network/<name>`, giving the system one control surface for addresses, routes, DNS, DHCP, link state, and backend-specific commands.
 
-- Manages network interface lifecycle and runtime polling.
-- Exposes interface control and introspection via `/devices/network/<name>`.
-- Provides typed async sockets (DNS, TCP, UDP, ICMP) backed by interface-local socket sets.
-
-## Responsibilities and boundaries
-
-**In scope**
-
-- Interface registration (`mount_interface`) and per-interface stack creation.
-- Stack runner task per interface.
-- Socket creation and attachment to selected/available interface.
-- Command-based control API (addresses, routes, DNS, DHCP, link state).
-
-**Out of scope**
-
-- L2/L3 driver implementation details (delegated to platform device backends).
-- Persistent network configuration policy.
-- High-level service abstractions (HTTP, TLS, etc.).
-
-## Internal architecture
-
-- Owned `Manager` with explicit task/VFS/time/random-device references and `RwLock<Vec<Stack>>`.
-- `StackInner` bundles:
-  - interface name and state flags,
-  - `smoltcp::iface::Interface` + `SocketSet`,
-  - controller `DirectCharacterDevice`,
-  - DNS/DHCP settings, MTU metadata, local ephemeral port allocator.
-- `Stack` wrapper uses `Arc<Mutex<...>>` and a `WakeSignal` to coordinate socket calls with the runner loop.
-- `NetworkDevice` implements VFS character-device control dispatch and forwards unknown control commands to platform controller device.
+## Mental model
 
 ```mermaid
-graph TD
-	Apps@{ shape: processes, label: "Executables / modules" }
-	VFS[Virtual file system]
-	Net[Network module]
-	Dev[/devices/network/<name>/]
-	Runner[Interface runner task]
-	Stack[smoltcp interface + sockets]
-	Driver[Platform network driver]
-
-	Apps -->|Open + control| Dev
-	Dev -->|Forward control commands| Net
-	Net -->|Configure| Stack
-	Runner -->|Poll| Stack
-	Stack -->|TX/RX| Driver
-	VFS --> Dev
+flowchart LR
+    App[Executable or module] -->|opens socket| Socket[TCP · UDP · DNS · ICMP]
+    Socket --> Network[Network manager]
+    Network --> Stack[Interface stack]
+    Stack --> Driver[Platform network device]
+    Driver --> Hardware[Hardware / host transport]
+    Control[VFS control device] -->|configure / inspect| Network
 ```
 
-## Lifecycle and execution model
+A <HostReference crate="network" kind="struct" symbol="Manager" /> owns the collection of interface stacks. Each stack represents one named network interface and combines `smoltcp` protocol state with the platform device that performs packet IO.
 
-1. Construct the manager with `network::initialize(task_manager, virtual_file_system, time_manager, random_device)`; it returns the manager instead of installing a singleton.
-2. Mount interface: build stack, spawn `StackRunner`, expose control device in VFS.
-3. Runner loop polls stack when enabled and sleeps/selects on timeout or wake signal.
-4. Sockets are created against explicit interface or first available interface.
-5. Closing sockets removes handles from stack-local `SocketSet`.
+The key idea is that applications do not talk to the hardware driver directly. They ask the Network manager for sockets, while interface configuration travels through the VFS control device. Both paths converge on the same interface stack.
 
-## Data/control flow
+## From a mounted interface to a usable socket
 
-- Control path: `File::control(...)` on `/devices/network/<name>` -> `NetworkDevice::control` -> `StackInner` mutators.
-- Data path: socket method -> stack/socket set access -> runner drives `smoltcp::Interface::poll(...)` with platform device IO.
-- Wake path: socket/stack mutations signal runner for low-latency poll.
+When <HostReference crate="network" kind="struct" symbol="Manager" member="method.mount_interface">an interface is mounted</HostReference>, Xila creates a `smoltcp` interface/socket set around the supplied device, starts a runner task for that stack, and exposes a character device at `/devices/network/<name>`.
 
-## Concurrency and synchronization model
+The runner is what keeps the protocol engine moving. It polls `smoltcp` with the platform device, sleeps when there is nothing useful to do, and can be woken when a socket or control operation changes stack state.
 
-- Manager-level stack list is `RwLock`-guarded.
-- Per-stack mutable state is behind async mutex.
-- Non-blocking lock attempts in control path may return `file_system::Error::RessourceBusy`.
-- Progress is cooperative and tied to task scheduling quality.
+Later, when an executable asks <HostReference crate="network" kind="struct" symbol="Manager" member="method.new_tcp_socket">for a TCP socket</HostReference> (or the corresponding UDP/ICMP/DNS facility), the manager chooses the requested interface or the first available one, adds the protocol socket to that interface's socket set, and returns a typed Xila socket wrapper.
 
-## Dependency model
+```mermaid
+sequenceDiagram
+    participant App as Executable
+    participant Net as Network manager
+    participant Stack as Interface stack
+    participant Runner as Stack runner
+    participant Driver as Platform device
 
-- Depends on [Task](/explanation/architecture/modules/task) for spawning interface runners.
-- Depends on [Virtual file system](/explanation/architecture/modules/virtual_file_system) for control-device mounting.
-- Depends on [Time](/explanation/architecture/modules/time) for `smoltcp` time source conversion.
-- Uses `smoltcp` as packet/socket engine and platform devices for concrete transport.
+    App->>Net: create/use socket
+    Net->>Stack: attach socket to interface
+    Stack-->>App: typed socket wrapper
+    App->>Stack: read / write / connect
+    Stack->>Runner: wake when progress is needed
+    Runner->>Stack: poll protocol state
+    Stack->>Driver: transmit / receive frames
+```
 
-## Failure semantics and recovery behavior
+The application-facing call is asynchronous, but actual network progress depends on that runner continuing to be scheduled.
 
-- Duplicate interface names fail with `DuplicateIdentifier`.
-- Interface/device mount failures are wrapped as `FailedToMountDevice(...)`.
-- Socket creation fails with `NotFound` when no suitable interface is available.
-- Protocol-specific errors map from `smoltcp` to module `Error` (for example bind/connect/state/timeouts).
+## Control lives in the VFS
 
-## Extension points
+Interface configuration is intentionally exposed through the same namespace used for devices elsewhere in Xila. A file opened at `/devices/network/wlan0`, for example, represents the control endpoint for that interface rather than a stream of network payload bytes.
 
-- Add new interface kinds by providing `smoltcp::phy::Device` implementations and controller devices.
-- Extend control command set via `define_command!` in device command module.
-- Add new socket wrappers on top of stack/socket-set abstraction.
+Control commands handled by Xila update stack state such as addresses, routes, DNS, DHCP, or link settings. Commands the Network layer does not own can be forwarded to the controller device supplied by the platform driver. This lets a target expose hardware-specific controls without teaching the portable network manager every device-specific concept.
 
-## Known limitations and trade-offs
+That command-oriented design is flexible and fits Xila's device model, but it is less discoverable than a single strongly typed high-level configuration object. Persistent policy (for example, remembered Wi-Fi/network profiles) also belongs above this module rather than inside the network stack itself.
 
-- Command-oriented control surface is flexible but less discoverable than strongly typed high-level config APIs.
-- Scheduling and latency depend on cooperative runner execution.
-- Capability set varies by backend/controller implementation.
+## Relationship with other modules
 
-## Contract vs implementation
+The Network manager depends on several foundational services rather than duplicating their responsibilities:
 
-- **Stable module contract:** Interface lifecycle management, control-device exposure under `/devices/network/<name>`, and typed socket services with defined error mapping.
-- **Current implementation details:** Explicitly owned `Manager` with task/VFS/time dependencies, `RwLock<Vec<Stack>>`, `StackInner` composition, runner wake/poll coordination, and command forwarding to controller devices.
-- **Compatibility note:** Integrations should target control commands, socket APIs, and documented failure semantics, not concrete stack container types, lock granularity, or runner-loop internals.
+- [Task](/explanation/architecture/modules/task) provides the runner task and cooperative execution context.
+- [Virtual file system](/explanation/architecture/modules/virtual_file_system) provides the `/devices/network/*` control namespace.
+- [Time](/explanation/architecture/modules/time) provides the clock converted into `smoltcp` time.
+- a random character device supplies seeds used by network state.
+- the platform driver supplies the concrete `smoltcp::phy::Device` and a controller device.
 
-## References / See also
+High-level protocols such as HTTP or TLS are intentionally outside this layer. Network is concerned with interfaces, addresses, routing/control, name resolution, and transport/socket primitives.
 
-- <HostReference crate="network" />
-- <CodeReference path="modules/network" />
-- [Std driver crate](/explanation/architecture/drivers/std)
-- [WASM driver crate](/explanation/architecture/drivers/wasm)
+## Under the hood
+
+The current <HostReference crate="network" kind="struct" symbol="Manager" /> stores its stack list in an async `RwLock<Vec<Stack>>` alongside explicit references to Task, VFS, Time, and the random device.
+
+Each `Stack` wraps mutable `StackInner` state behind an async mutex and shares a `WakeSignal` with its runner. `StackInner` contains the interface name and state, `smoltcp::iface::Interface`, `SocketSet`, controller device, DNS/DHCP information, MTU metadata, and local ephemeral-port allocation state.
+
+```mermaid
+flowchart LR
+    Manager[Manager]
+    List[(interface stack list)]
+    Stack[Stack + mutex]
+    Inner[StackInner<br/>Interface · SocketSet · config]
+    Wake[WakeSignal]
+    Runner[StackRunner]
+    Device[Platform device]
+
+    Manager --> List
+    List --> Stack
+    Stack --> Inner
+    Stack --> Wake
+    Wake --> Runner
+    Runner --> Inner
+    Runner --> Device
+```
+
+Socket calls access the stack-local socket set; mutations wake the runner so it can poll promptly. The control path may use non-blocking attempts to acquire stack state, which means contention can surface as `file_system::Error::RessourceBusy` rather than waiting indefinitely.
+
+These locks, container types, wake primitives, and the exact runner loop are implementation choices. Integrations should depend on interface/socket/control semantics rather than on `StackInner` or lock granularity.
+
+## Availability and failure boundaries
+
+An interface name must be unique within a manager, and socket creation needs a suitable available interface. Mounting an interface can also fail if its control device cannot be installed in the VFS or if the runner task cannot be spawned.
+
+Protocol-specific failures are translated from `smoltcp` into the Network module's error domain. Architecturally, the important distinction is between **interface availability**, **control/device integration**, and **socket/protocol state**: failures in any of those layers can prevent a network operation even though the others are healthy.
+
+Scheduling is another boundary. Because the runner executes cooperatively, a starved runner delays protocol progress and therefore increases socket latency. The module does not provide preemptive guarantees beyond what the configured task executors can deliver.
+
+## Extension points and trade-offs
+
+A new platform can integrate networking by providing a `smoltcp::phy::Device` plus its controller device; the Network manager above that pair remains the same. New typed socket wrappers can be layered over the stack/socket-set abstraction, and the device command family can grow as portable control needs evolve.
+
+Capability still varies by backend. A portable command can only be as meaningful as the controller underneath it, and platform-specific commands remain intentionally possible. That is the trade-off that lets one control plane cover both portable state and hardware-specific behavior.
+
+## Explore further
+
+- <HostReference crate="network" /> — complete host-side Network Rustdoc.
+- <HostReference crate="network" kind="struct" symbol="Manager" /> — interface and socket manager API.
+- <CodeReference path="modules/network" /> — current module implementation.
+- [Virtual file system](/explanation/architecture/modules/virtual_file_system) — the namespace hosting interface control devices.
+- [Task](/explanation/architecture/modules/task) — the cooperative runner execution model.
+- [Std driver](/explanation/architecture/drivers/std) and [WASM driver](/explanation/architecture/drivers/wasm) — examples of target adaptation around the portable services.
