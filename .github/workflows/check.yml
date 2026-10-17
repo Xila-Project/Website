@@ -31,5 +31,10 @@ jobs:
       - name: Setup | Install dependencies
         run: npm ci
 
+      - name: Debug | Show Prettier diff
+        run: |
+          npm exec prettier -- --write src/reference/shell.md
+          git diff -- src/reference/shell.md
+
       - name: Check | Documentation
         run: npm run check
