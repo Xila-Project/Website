@@ -28,18 +28,18 @@ missing-command 2> /temporary/errors || echo recovered
 long-running-command > /temporary/result & echo foreground
 ```
 
-| Syntax       | Behavior                                                                 |
-| ------------ | ------------------------------------------------------------------------ |
-| `A | B`      | Run pipeline stages concurrently; the pipeline status is B's status.     |
-| `A && B`     | Run B only when A succeeds.                                              |
-| `A || B`     | Run B only when A fails.                                                 |
-| `A ; B`      | Run sequential command lists.                                            |
-| `A &`        | Start the preceding conditional list in a background task.               |
-| `< FILE`     | Read standard input from FILE.                                           |
-| `> FILE`     | Create/truncate FILE for standard output.                                |
-| `>> FILE`    | Append standard output to FILE.                                          |
-| `2> FILE`    | Create/truncate FILE for standard error.                                 |
-| `2>> FILE`   | Append standard error to FILE.                                           |
+| Syntax     | Behavior                                                             |
+| ---------- | -------------------------------------------------------------------- |
+| `A | B`    | Run pipeline stages concurrently; the pipeline status is B's status. |
+| `A && B`   | Run B only when A succeeds.                                          |
+| `A || B`   | Run B only when A fails.                                             |
+| `A ; B`    | Run sequential command lists.                                        |
+| `A &`      | Start the preceding conditional list in a background task.           |
+| `< FILE`   | Read standard input from FILE.                                       |
+| `> FILE`   | Create/truncate FILE for standard output.                            |
+| `>> FILE`  | Append standard output to FILE.                                      |
+| `2> FILE`  | Create/truncate FILE for standard error.                             |
+| `2>> FILE` | Append standard error to FILE.                                       |
 
 `|` binds more tightly than `&&` and `||`. The two conditional operators have equal precedence and evaluate left to right. Redirections belong to one command, are applied left to right, and override a pipeline endpoint when they target the same stream.
 
@@ -60,31 +60,31 @@ Expansion does not split a variable value on whitespace and does not reinterpret
 
 ## Exit statuses
 
-| Case                                  | Status                          |
-| ------------------------------------- | ------------------------------- |
-| Success                               | 0                               |
-| General built-in failure              | 1                               |
-| `false`                               | 1                               |
-| Malformed `shell -c` source           | 2                               |
-| Unknown command                       | 127                             |
-| External executable                   | Preserved within 0–255          |
-| Pipeline                              | Status of the last stage        |
-| Successful background-list launch     | Sets `$?` to 0                  |
+| Case                              | Status                   |
+| --------------------------------- | ------------------------ |
+| Success                           | 0                        |
+| General built-in failure          | 1                        |
+| `false`                           | 1                        |
+| Malformed `shell -c` source       | 2                        |
+| Unknown command                   | 127                      |
+| External executable               | Preserved within 0–255   |
+| Pipeline                          | Status of the last stage |
+| Successful background-list launch | Sets `$?` to 0           |
 
 `$?` contains the preceding foreground status.
 
 ## Resource limits
 
-| Resource                                             | Limit      |
+| Resource                                             |      Limit |
 | ---------------------------------------------------- | ---------: |
 | Source line                                          | 4096 bytes |
-| Tokens per line                                      | 256        |
-| Commands per line                                    | 32         |
-| Stages per pipeline                                  | 8          |
+| Tokens per line                                      |        256 |
+| Commands per line                                    |         32 |
+| Stages per pipeline                                  |          8 |
 | Expanded arguments and redirection paths per command | 8192 bytes |
 | Buffered formatted output per built-in               | 8192 bytes |
-| Buffered bytes per pipe                              | 512        |
-| Active background lists per shell                    | 8          |
+| Buffered bytes per pipe                              |        512 |
+| Active background lists per shell                    |          8 |
 
 These limits bound shell-owned parsing and pipe storage. They do not bound allocations made by launched commands, inherited environment data, the WASM runtime, or task infrastructure.
 
@@ -94,15 +94,15 @@ These limits bound shell-owned parsing and pipe storage. They do not bound alloc
 
 The current built-in registry contains:
 
-| Area                | Commands                                                                  |
-| ------------------- | ------------------------------------------------------------------------- |
-| Shell/state         | `true`, `false`, `exit`, `cd`, `pwd`, `clear`, `help`                    |
-| Environment         | `export`, `unset`, `printenv`, `which`                                   |
-| Files/directories   | `ls`, `cat`, `stat`, `mkdir`, `rm`, `rmdir`, `realpath`, `touch`, `mv`   |
-| Text/streams        | `echo`, `grep`, `wc`, `head`, `tail`, `tree`                             |
-| Timing              | `sleep`                                                                   |
-| Permissions         | `chmod`                                                                   |
-| Network             | `web_request`, `dns_resolve`, `ping`, `ip`                               |
+| Area              | Commands                                                               |
+| ----------------- | ---------------------------------------------------------------------- |
+| Shell/state       | `true`, `false`, `exit`, `cd`, `pwd`, `clear`, `help`                  |
+| Environment       | `export`, `unset`, `printenv`, `which`                                 |
+| Files/directories | `ls`, `cat`, `stat`, `mkdir`, `rm`, `rmdir`, `realpath`, `touch`, `mv` |
+| Text/streams      | `echo`, `grep`, `wc`, `head`, `tail`, `tree`                           |
+| Timing            | `sleep`                                                                |
+| Permissions       | `chmod`                                                                |
+| Network           | `web_request`, `dns_resolve`, `ping`, `ip`                             |
 
 Selected recent utilities:
 
