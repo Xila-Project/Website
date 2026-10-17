@@ -36,7 +36,7 @@ const configuration = defineConfig({
       "link",
       {
         rel: "icon",
-        href: "/images/logo_dark.svg",
+        href: "/images/favicon.svg",
         type: "image/svg+xml",
       },
     ],
