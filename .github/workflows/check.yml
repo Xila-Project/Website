@@ -31,5 +31,10 @@ jobs:
       - name: Setup | Install dependencies
         run: npm ci
 
+      - name: Debug | Show Prettier diff
+        run: |
+          npm exec prettier -- --write src/reference/graphics-bindings.md src/reference/shell.md src/reference/wasm-runtime.md
+          git diff -- src/reference/graphics-bindings.md src/reference/shell.md src/reference/wasm-runtime.md
+
       - name: Check | Documentation
         run: npm run check
