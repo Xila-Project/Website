@@ -30,7 +30,7 @@ long-running-command > /temporary/result & echo foreground
 
 | Syntax     | Behavior                                                             |
 | ---------- | -------------------------------------------------------------------- |
-| `A | B`    | Run pipeline stages concurrently; the pipeline status is B's status. |
+| `A \| B`  | Run pipeline stages concurrently; the pipeline status is B's status. |
 | `A && B`   | Run B only when A succeeds.                                          |
 | `A || B`   | Run B only when A fails.                                             |
 | `A ; B`    | Run sequential command lists.                                        |
