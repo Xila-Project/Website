@@ -23,6 +23,7 @@ Start with a guided first run, complete a task, look up an interface, or explore
 
 - [Set up a development environment](/how-to/setup-development).
 - [Build a guest application](/how-to/build-guest).
+- [Run a WASI guest in a container](/how-to/run-container-guest) without a graphical desktop.
 - [Integrate Xila into a host application](/how-to/integrate-host).
 - [Validate a Core change](/how-to/validate-core).
 - [Improve the documentation](/how-to/write-documentation).
