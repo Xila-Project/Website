@@ -16,6 +16,8 @@ It currently provides foundational devices such as the null device implementatio
 
 ## References
 
+- <HostReference crate="drivers_core" /> — generated Rust API documentation.
+
 - <CodeReference path="drivers/core" />
 
 ## See also
