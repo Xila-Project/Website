@@ -93,12 +93,6 @@ graph TD
 - Accuracy/monotonic behavior depends entirely on device implementation.
 - Wire contract currently assumes compatible `Duration` representation at device boundary.
 
-## References / See also
-
-- <HostReference crate="time" />
-- [Drivers](/explanation/architecture/drivers)
-- [Synchronization](/explanation/architecture/libraries/synchronization)
-
 ## Implementation details and clock semantics
 
 The current manager is a small adapter around a borrowed `DirectCharacterDevice + Send + Sync`. Construction reads the device once and stores that `Duration` as `start_time`. Each `get_current_time()` call reads a fresh `Duration` directly from the device at offset zero; it does not cache or interpolate between reads.
@@ -123,3 +117,9 @@ The example assumes `device` implements the required direct character-device con
 
 - <CodeReference path="modules/time/src/manager.rs" />
 - <HostReference crate="time" kind="struct" symbol="Manager" />
+
+## References / See also
+
+- <HostReference crate="time" />
+- [Drivers](/explanation/architecture/drivers)
+- [Synchronization](/explanation/architecture/libraries/synchronization)
