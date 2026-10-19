@@ -1,65 +1,28 @@
 ---
 layout: doc
 docType: explanation
-description: "The device crate defines typed control-command and backend-independent inference contracts."
+description: "The device crate defines typed device-control commands and a backend-independent neural-network inference contract."
 ---
 
 # Device
 
-The `device` crate defines reusable device contracts. Alongside control commands for character devices, it now has a backend-independent, synchronous **neural-network inference interface**.
+The `device` crate contains shared contracts between Xila consumers and device implementations.
 
-## Role
+## Device-control commands
 
-- Provides shared command identifiers/payload types that callers and drivers both understand.
-- Defines model sources (serialized buffers, typed AOT models, external locations), tensor types/quantization, backend capabilities, and borrowed input/output data.
-- Keeps command ABI definitions centralized instead of duplicating command numbers in each consumer.
+The `hash` module defines hash-device commands such as `RESET` and `SET_ALGORITHM`. Consumers issue typed commands through mounted VFS device files, while drivers implement their behavior.
 
-## Boundaries
+## Neural-network inference contract
 
-- In scope: command typing, payload enums, `define_command!` declarations and a synchronous inference contract with explicit model/context lifetimes and caller-provided workspace.
-- Out of scope: any actual device behavior, state, or runtime mounting logic.
+The `neural_network` module defines a backend-independent, **synchronous** inference interface. It supports model sources supplied as serialized buffers, typed ahead-of-time models, or external locations. The contract describes tensor shapes and element types, per-tensor/per-axis quantization, backend capabilities, and caller-provided aligned workspaces.
 
-## Internal structure
+Model handles, inference contexts and borrowed tensor views encode important ownership and lifetime relationships. The implementation includes a mock backend exercising model loading, context creation, input binding, computation and output retrieval.
 
-- `lib.rs`: exports command families.
-- `hash.rs`: hash-specific types and commands.
-  - `HashAlgorithm` enum.
-  - `RESET` and `SET_ALGORITHM` command definitions.
-- `neural_network.rs`: tensor metadata, quantization, model source types, memory requirements, capabilities and the inference lifecycle.
-
-## Runtime interaction
-
-- Callers issue `File::control(...)` on mounted device nodes (for example `/devices/hasher`).
-- Drivers decode the same command identifiers to execute implementation-specific behavior.
-
-## Dependency model
-
-- Depends on [File system](/explanation/architecture/libraries/file_system) for `ControlCommand` abstractions and macro support.
-- Consumed by higher-level crates such as [Authentication](/explanation/architecture/libraries/authentication) and driver implementations.
-
-## Failure semantics
-
-- This crate does not execute I/O; operational failures occur in driver or VFS layers.
-- Type/identifier mismatches are surfaced when commands are cast/handled at runtime boundaries.
-
-## Extension points
-
-- Add new command families as separate modules (mirroring `hash.rs`).
-- Preserve existing command IDs to keep backward-compatible control ABI.
-
-## Contract vs implementation
-
-- **Contract**: stable typed command IDs + payload schemas.
-- **Current implementation**: hash-device command definitions and a generic, synchronous inference interface with a mock-backed lifecycle test. A concrete inference backend, device discovery, asynchronous execution and accelerator support are **not yet supplied** by this merged contract. The separate TFLite Micro implementation remains a PR under review.
-
-## Limitations and trade-offs
-
-- Narrow scope means low coupling, but functionality depends on external driver support.
-- Command evolution requires ABI discipline once IDs are consumed by executables/modules.
+The contract does **not** provide inference kernels, production backends, model discovery or asynchronous inference. Formats such as TFLite and ONNX are represented in the interface but are not proof of a working adapter.
 
 ## References
 
 - <HostReference crate="device" />
-- <CodeReference path="modules/device" />
-- [Drivers](/explanation/architecture/drivers)
+- <CodeReference path="modules/device/src/hash.rs" />
 - <CodeReference path="modules/device/src/neural_network.rs" />
+- [Drivers](/explanation/architecture/drivers)
