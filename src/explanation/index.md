@@ -29,7 +29,7 @@ Read [browser storage](./browser-storage) for the relationship between OPFS, the
 
 **What happens when Xila executes a WebAssembly guest?**
 
-Read the [virtual machine model](./architecture/executables/virtual_machine) for Wasmi integration, WASI imports, and cooperative execution.
+Read the [WASM runtime](./architecture/executables/wasm) for Wasmi integration, WASI imports, and cooperative execution.
 
 **How do guest graphics calls cross into the host runtime?**
 
