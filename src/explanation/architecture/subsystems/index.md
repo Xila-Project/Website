@@ -10,17 +10,17 @@ A subsystem owns or coordinates a runtime capability installed by a final Xila b
 
 ## Foundation services
 
-- [Task](/explanation/architecture/subsystems/task): task identity and execution registry.
-- [Users](/explanation/architecture/subsystems/users): user and group management.
-- [Time](/explanation/architecture/subsystems/time): runtime time source and startup clock.
-- [Memory](/explanation/architecture/subsystems/memory): installed allocator integration and allocation capabilities.
-- [Log](/explanation/architecture/subsystems/log): installed logging service and global logger boundary.
+- [Task](/explanation/architecture/subsystems/task): task identity and execution registry — <HostReference crate="task" />.
+- [Users](/explanation/architecture/subsystems/users): user and group management — <HostReference crate="users" />.
+- [Time](/explanation/architecture/subsystems/time): runtime time source and startup clock — <HostReference crate="time" />.
+- [Memory](/explanation/architecture/subsystems/memory): installed allocator integration and allocation capabilities — <HostReference crate="memory" />.
+- [Log](/explanation/architecture/subsystems/log): installed logging service and global logger boundary — <HostReference crate="log" />.
 
 ## Coordinating services
 
-- [Virtual file system](/explanation/architecture/subsystems/virtual_file_system): mounted namespace, permissions and dispatch.
-- [Network](/explanation/architecture/subsystems/network): interface stacks, runners and socket services.
-- [Graphics](/explanation/architecture/subsystems/graphics): LVGL, windows, displays, input and events.
+- [Virtual file system](/explanation/architecture/subsystems/virtual_file_system): mounted namespace, permissions and dispatch — <HostReference crate="virtual_file_system" />.
+- [Network](/explanation/architecture/subsystems/network): interface stacks, runners and socket services — <HostReference crate="network" />.
+- [Graphics](/explanation/architecture/subsystems/graphics): LVGL, windows, displays, input and events — <HostReference crate="graphics" />.
 
 ## Boundaries
 
