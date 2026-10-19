@@ -32,6 +32,8 @@ OPFS, `FileSystemFileHandle.createWritable`, and Web Locks require an appropriat
 
 ## References
 
+- <HostReference crate="drivers_wasm" /> — generated Rust API documentation.
+
 - <CodeReference path="drivers/wasm" />
 
 ## See also
