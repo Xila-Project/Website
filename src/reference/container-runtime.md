@@ -20,15 +20,15 @@ The image uses UID/GID **10001**, keeps state in `/var/lib/xila`, and ships an i
 xila-runtime run [--disk PATH] [--seed PATH] [--network=none] [--mount host=PATH,xila=PATH,ro|rw[,uid=N,gid=N,file_mode=OCTAL,directory_mode=OCTAL]] [--env KEY=VALUE]... -- <Xila executable> [arguments...]
 ```
 
-| Option | Meaning |
-| --- | --- |
-| `--disk PATH` | Mutable LittleFS disk image; defaults to `/var/lib/xila/drive.img` in the container |
-| `--seed PATH` | Image used **only to initialize an absent disk**; the container default is `/usr/share/xila/base.img` |
-| `--network=none` | The sole accepted network mode; no network stack is exposed |
-| `--mount host=...,xila=...,ro\|rw` | Explicit host directory capability with read-only/read-write mode |
-| `--env KEY=VALUE` | Pass one explicit guest environment setting (repeatable) |
-| `--` | End runtime options and begin an **absolute** Xila VFS executable path and its arguments |
-| `--help`, `--version` | Display help or version |
+| Option                             | Meaning                                                                                               |
+| ---------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `--disk PATH`                      | Mutable LittleFS disk image; defaults to `/var/lib/xila/drive.img` in the container                   |
+| `--seed PATH`                      | Image used **only to initialize an absent disk**; the container default is `/usr/share/xila/base.img` |
+| `--network=none`                   | The sole accepted network mode; no network stack is exposed                                           |
+| `--mount host=...,xila=...,ro\|rw` | Explicit host directory capability with read-only/read-write mode                                     |
+| `--env KEY=VALUE`                  | Pass one explicit guest environment setting (repeatable)                                              |
+| `--`                               | End runtime options and begin an **absolute** Xila VFS executable path and its arguments              |
+| `--help`, `--version`              | Display help or version                                                                               |
 
 To launch a WASI guest, use `/binaries/wasm` as the executable and a guest path visible inside the Xila VFS. The runner forwards guest arguments and exit statuses.
 

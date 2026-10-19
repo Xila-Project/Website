@@ -114,7 +114,10 @@ const documentationSidebar: DefaultTheme.SidebarItem[] = [
       { text: "Integrate a host application", link: "/how-to/integrate-host" },
       { text: "Build a guest", link: "/how-to/build-guest" },
       { text: "Run a guest", link: "/how-to/run-guest" },
-      { text: "Run a guest in a container", link: "/how-to/run-container-guest" },
+      {
+        text: "Run a guest in a container",
+        link: "/how-to/run-container-guest",
+      },
       { text: "Validate Core", link: "/how-to/validate-core" },
       { text: "Contribute to Core", link: "/how-to/contribute-core" },
       { text: "Manage browser disks", link: "/how-to/reset-browser-storage" },
@@ -130,7 +133,10 @@ const documentationSidebar: DefaultTheme.SidebarItem[] = [
       { text: "Shell", link: "/reference/shell" },
       { text: "Development commands", link: "/reference/development-commands" },
       { text: "WASM runtime", link: "/reference/wasm-runtime" },
-      { text: "Headless container runtime", link: "/reference/container-runtime" },
+      {
+        text: "Headless container runtime",
+        link: "/reference/container-runtime",
+      },
       { text: "Graphics bindings", link: "/reference/graphics-bindings" },
     ],
   },
