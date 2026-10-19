@@ -65,7 +65,6 @@ const componentGroups: DefaultTheme.SidebarItem[] = [
     link: "/explanation/architecture/executables/",
     collapsed: true,
     items: [
-      ["WASM virtual machine", "virtual_machine"],
       ["WASM guest bindings", "bindings"],
       ["Calculator", "calculator"],
       ["Clock", "clock"],
