@@ -33,7 +33,7 @@ The `bootsplash` crate provides a focused startup animation layer around the gra
 
 ## Dependency model
 
-- Internal runtime dependency: [Graphics](/explanation/architecture/modules/graphics) only.
+- Internal runtime dependency: [Graphics](/explanation/architecture/subsystems/graphics) only.
 - Uses LVGL symbols re-exported through graphics (`lv_anim_*`, `lv_obj_*`).
 
 ## Failure semantics
@@ -58,5 +58,5 @@ The `bootsplash` crate provides a focused startup animation layer around the gra
 
 ## References
 
-- <CodeReference path="modules/bootsplash" />
-- [Graphics](/explanation/architecture/modules/graphics)
+- <CodeReference path="libraries/bootsplash" />
+- [Graphics](/explanation/architecture/subsystems/graphics)

@@ -96,4 +96,4 @@ graph TD
 
 - <HostReference crate="log" />
 - [Drivers](/explanation/architecture/drivers)
-- [Synchronization](/explanation/architecture/crates/synchronization)
+- [Synchronization](/explanation/architecture/libraries/synchronization)

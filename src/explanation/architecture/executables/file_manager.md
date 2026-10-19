@@ -57,4 +57,4 @@ The file manager executable provides a graphical VFS browser with directory navi
 ## References
 
 - <CodeReference path="executables/file_manager" />
-- [Virtual file system](/explanation/architecture/modules/virtual_file_system)
+- [Virtual file system](/explanation/architecture/subsystems/virtual_file_system)

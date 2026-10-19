@@ -32,8 +32,8 @@ The `device` crate defines typed control-command contracts for device files.
 
 ## Dependency model
 
-- Depends on [File system](/explanation/architecture/crates/file_system) for `ControlCommand` abstractions and macro support.
-- Consumed by higher-level crates such as [Authentication](/explanation/architecture/crates/authentication) and driver implementations.
+- Depends on [File system](/explanation/architecture/libraries/file_system) for `ControlCommand` abstractions and macro support.
+- Consumed by higher-level crates such as [Authentication](/explanation/architecture/libraries/authentication) and driver implementations.
 
 ## Failure semantics
 
@@ -58,5 +58,5 @@ The `device` crate defines typed control-command contracts for device files.
 ## References
 
 - <HostReference crate="device" />
-- <CodeReference path="modules/device" />
+- <CodeReference path="libraries/device" />
 - [Drivers](/explanation/architecture/drivers)

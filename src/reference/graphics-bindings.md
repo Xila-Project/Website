@@ -70,7 +70,7 @@ Guest-only applications disable `wasm`'s default features and select `guest,grap
 
 ## Related documentation
 
-- [Graphics binding ownership](/explanation/architecture/modules/bindings).
+- [Graphics binding ownership](/explanation/architecture/executables/bindings).
 - [Pixel Painter](/explanation/architecture/executables/pixel_painter).
 - [Build a guest application](/how-to/build-guest).
 - [WASM runtime](./wasm-runtime).

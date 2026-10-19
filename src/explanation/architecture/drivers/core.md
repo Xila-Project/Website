@@ -12,7 +12,7 @@ It currently provides foundational devices such as the null device implementatio
 
 ## Dependencies
 
-- [File system](/explanation/architecture/crates/file_system): For common device-facing file system traits.
+- [File system](/explanation/architecture/libraries/file_system): For common device-facing file system traits.
 
 ## References
 
@@ -21,4 +21,4 @@ It currently provides foundational devices such as the null device implementatio
 ## See also
 
 - [Drivers](/explanation/architecture/drivers)
-- [Device](/explanation/architecture/crates/device)
+- [Device](/explanation/architecture/libraries/device)

@@ -16,7 +16,7 @@ This crate implements persistent account/group data handling and password verifi
 ## Boundaries
 
 - In scope: reading/writing JSON user and group records, salted password hashing, authentication checks.
-- Out of scope: session/task identity ownership (handled by [Users](/explanation/architecture/modules/users) + [Task](/explanation/architecture/modules/task)).
+- Out of scope: session/task identity ownership (handled by [Users](/explanation/architecture/subsystems/users) + [Task](/explanation/architecture/subsystems/task)).
 - In scope: coordinating with `/devices/random` and `/devices/hasher`; out of scope: implementing those devices.
 
 ## Internal structure
@@ -39,7 +39,7 @@ For example, startup calls `authentication::load_all_users_and_groups(&context).
 
 ## Dependency model
 
-- Internal: [File System](/explanation/architecture/crates/file_system), [Device](/explanation/architecture/crates/device), [Virtual file system](/explanation/architecture/modules/virtual_file_system), [Users](/explanation/architecture/modules/users), [Task](/explanation/architecture/modules/task).
+- Internal: [File System](/explanation/architecture/libraries/file_system), [Device](/explanation/architecture/libraries/device), [Virtual file system](/explanation/architecture/subsystems/virtual_file_system), [Users](/explanation/architecture/subsystems/users), [Task](/explanation/architecture/subsystems/task).
 - External: `miniserde` for JSON serialization/deserialization.
 
 ## Failure semantics
@@ -66,5 +66,5 @@ For example, startup calls `authentication::load_all_users_and_groups(&context).
 ## References
 
 - <HostReference crate="authentication" />
-- <CodeReference path="modules/authentication" />
-- [Users Module](/explanation/architecture/modules/users)
+- <CodeReference path="libraries/authentication" />
+- [Users Module](/explanation/architecture/subsystems/users)

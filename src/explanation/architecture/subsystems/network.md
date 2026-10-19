@@ -65,9 +65,9 @@ That command-oriented design is flexible and fits Xila's device model, but it is
 
 The Network manager depends on several foundational services rather than duplicating their responsibilities:
 
-- [Task](/explanation/architecture/modules/task) provides the runner task and cooperative execution context.
-- [Virtual file system](/explanation/architecture/modules/virtual_file_system) provides the `/devices/network/*` control namespace.
-- [Time](/explanation/architecture/modules/time) provides the clock converted into `smoltcp` time.
+- [Task](/explanation/architecture/subsystems/task) provides the runner task and cooperative execution context.
+- [Virtual file system](/explanation/architecture/subsystems/virtual_file_system) provides the `/devices/network/*` control namespace.
+- [Time](/explanation/architecture/subsystems/time) provides the clock converted into `smoltcp` time.
 - a random character device supplies seeds used by network state.
 - the platform driver supplies the concrete `smoltcp::phy::Device` and a controller device.
 
@@ -120,7 +120,7 @@ Capability still varies by backend. A portable command can only be as meaningful
 
 - <HostReference crate="network" /> — complete host-side Network Rustdoc.
 - <HostReference crate="network" kind="struct" symbol="Manager" /> — interface and socket manager API.
-- <CodeReference path="modules/network" /> — current module implementation.
-- [Virtual file system](/explanation/architecture/modules/virtual_file_system) — the namespace hosting interface control devices.
-- [Task](/explanation/architecture/modules/task) — the cooperative runner execution model.
+- <CodeReference path="subsystems/network" /> — current module implementation.
+- [Virtual file system](/explanation/architecture/subsystems/virtual_file_system) — the namespace hosting interface control devices.
+- [Task](/explanation/architecture/subsystems/task) — the cooperative runner execution model.
 - [Std driver](/explanation/architecture/drivers/std) and [WASM driver](/explanation/architecture/drivers/wasm) — examples of target adaptation around the portable services.

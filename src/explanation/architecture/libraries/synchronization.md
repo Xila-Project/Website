@@ -58,5 +58,5 @@ The `synchronization` crate standardizes synchronization primitives used across 
 ## References
 
 - <HostReference crate="synchronization" />
-- <CodeReference path="modules/synchronization" />
-- [Task](/explanation/architecture/modules/task)
+- <CodeReference path="libraries/synchronization" />
+- [Task](/explanation/architecture/subsystems/task)

@@ -52,6 +52,6 @@ It currently focuses on pin modeling primitives (direction, level, pull mode, an
 
 ## References
 
-- <CodeReference path="modules/peripherals" />
-- [Device](/explanation/architecture/crates/device)
+- <CodeReference path="libraries/peripherals" />
+- [Device](/explanation/architecture/libraries/device)
 - [Drivers](/explanation/architecture/drivers)

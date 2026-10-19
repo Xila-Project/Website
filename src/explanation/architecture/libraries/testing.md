@@ -59,6 +59,6 @@ The `testing` crate assembles a host integration runtime so tests can run agains
 
 ## References
 
-- <CodeReference path="modules/testing" />
-- [Executable crate](/explanation/architecture/crates/executables)
+- <CodeReference path="libraries/testing" />
+- [Executable crate](/explanation/architecture/libraries/executable)
 - [Architecture](/explanation/architecture/)

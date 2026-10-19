@@ -55,5 +55,5 @@ The `target` crate provides typed build-target introspection from Cargo-provided
 
 ## References
 
-- <CodeReference path="modules/target" />
-- [Executable crate](/explanation/architecture/crates/executables)
+- <CodeReference path="libraries/target" />
+- [Executable crate](/explanation/architecture/libraries/executable)

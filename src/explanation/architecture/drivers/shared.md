@@ -12,10 +12,10 @@ Today this includes utility devices such as random and hashing devices that can 
 
 ## Dependencies
 
-- [File system](/explanation/architecture/crates/file_system)
-- [Log](/explanation/architecture/modules/log)
-- [Shared](/explanation/architecture/crates/shared)
-- [Device](/explanation/architecture/crates/device)
+- [File system](/explanation/architecture/libraries/file_system)
+- [Log](/explanation/architecture/subsystems/log)
+- [Shared](/explanation/architecture/libraries/shared)
+- [Device](/explanation/architecture/libraries/device)
 
 ## References
 
@@ -24,4 +24,4 @@ Today this includes utility devices such as random and hashing devices that can 
 ## See also
 
 - [Drivers](/explanation/architecture/drivers)
-- [Authentication](/explanation/architecture/crates/authentication)
+- [Authentication](/explanation/architecture/libraries/authentication)

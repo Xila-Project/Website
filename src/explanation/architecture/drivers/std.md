@@ -12,12 +12,12 @@ It provides commonly used services for host execution, including logging, memory
 
 ## Dependencies
 
-- [Memory](/explanation/architecture/modules/memory)
-- [Time](/explanation/architecture/modules/time)
-- [Network](/explanation/architecture/modules/network)
-- [Task](/explanation/architecture/modules/task)
-- [Users](/explanation/architecture/modules/users)
-- [Virtual file system](/explanation/architecture/modules/virtual_file_system)
+- [Memory](/explanation/architecture/subsystems/memory)
+- [Time](/explanation/architecture/subsystems/time)
+- [Network](/explanation/architecture/subsystems/network)
+- [Task](/explanation/architecture/subsystems/task)
+- [Users](/explanation/architecture/subsystems/users)
+- [Virtual file system](/explanation/architecture/subsystems/virtual_file_system)
 
 ## References
 

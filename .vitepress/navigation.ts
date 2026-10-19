@@ -2,12 +2,10 @@ import type { DefaultTheme } from "vitepress";
 
 const componentGroups: DefaultTheme.SidebarItem[] = [
   {
-    text: "Modules",
-    link: "/explanation/architecture/modules/",
+    text: "Subsystems",
+    link: "/explanation/architecture/subsystems/",
     collapsed: true,
     items: [
-      ["ABI", "abi"],
-      ["Bindings", "bindings"],
       ["Graphics", "graphics"],
       ["Log", "log"],
       ["Memory", "memory"],
@@ -16,21 +14,23 @@ const componentGroups: DefaultTheme.SidebarItem[] = [
       ["Time", "time"],
       ["Users", "users"],
       ["Virtual file system", "virtual_file_system"],
-      ["Virtual machine", "virtual_machine"],
-    ].map(([text, path]) => ({
+    ].map(([text, page]) => ({
       text,
-      link: `/explanation/architecture/modules/${path}`,
+      link: `/explanation/architecture/subsystems/${page}`,
     })),
   },
   {
-    text: "Crates",
-    link: "/explanation/architecture/crates/",
+    text: "Libraries",
+    link: "/explanation/architecture/libraries/",
     collapsed: true,
     items: [
+      ["ABI", "abi"],
+      ["Application metadata", "application_metadata"],
+      ["Audio", "audio"],
       ["Authentication", "authentication"],
       ["Bootsplash", "bootsplash"],
       ["Device", "device"],
-      ["Executable", "executables"],
+      ["Executable", "executable"],
       ["File system", "file_system"],
       ["Internationalization", "internationalization"],
       ["Little FS", "little_fs"],
@@ -39,9 +39,9 @@ const componentGroups: DefaultTheme.SidebarItem[] = [
       ["Synchronization", "synchronization"],
       ["Target", "target"],
       ["Testing", "testing"],
-    ].map(([text, path]) => ({
+    ].map(([text, page]) => ({
       text,
-      link: `/explanation/architecture/crates/${path}`,
+      link: `/explanation/architecture/libraries/${page}`,
     })),
   },
   {
@@ -55,9 +55,9 @@ const componentGroups: DefaultTheme.SidebarItem[] = [
       ["Shared", "shared"],
       ["Std", "std"],
       ["WASM", "wasm"],
-    ].map(([text, path]) => ({
+    ].map(([text, page]) => ({
       text,
-      link: `/explanation/architecture/drivers/${path}`,
+      link: `/explanation/architecture/drivers/${page}`,
     })),
   },
   {
@@ -65,6 +65,7 @@ const componentGroups: DefaultTheme.SidebarItem[] = [
     link: "/explanation/architecture/executables/",
     collapsed: true,
     items: [
+      ["WASM guest bindings", "bindings"],
       ["Calculator", "calculator"],
       ["Clock", "clock"],
       ["Command line shell", "command_line_shell"],
@@ -74,9 +75,9 @@ const componentGroups: DefaultTheme.SidebarItem[] = [
       ["Settings", "settings"],
       ["Terminal", "terminal"],
       ["WASM", "wasm"],
-    ].map(([text, path]) => ({
+    ].map(([text, page]) => ({
       text,
-      link: `/explanation/architecture/executables/${path}`,
+      link: `/explanation/architecture/executables/${page}`,
     })),
   },
 ];

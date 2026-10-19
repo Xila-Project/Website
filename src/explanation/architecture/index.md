@@ -1,81 +1,44 @@
 ---
 layout: doc
 docType: explanation
-description: Understand Xila as a set of portable Rust services assembled with target-specific drivers and executables.
+description: Understand Xila's runtime subsystems, reusable libraries, drivers, and executables.
 ---
 
 # Architecture
 
-Xila is not built around one fixed hardware platform or one monolithic system image. Its core is a set of Rust services and contracts that the final binary assembles with target-specific drivers and the executables it wants to expose.
+Xila is a collection of portable Rust crates assembled into a runtime by a target-specific final binary. The source layout names each component by its **architectural role**, not by whether Cargo considers it a crate (all four categories contain crates).
 
-That assembly model is what lets the same architecture stretch from microcontrollers to a native desktop process and a browser-hosted WebAssembly demonstration.
-
-## Mental model
-
-Think of Xila as four layers that meet in the final binary:
+## Component roles
 
 ```mermaid
 flowchart TB
-    Apps[Executables and WASM guests]
-    Services[Xila services<br/>tasks · VFS · users · time · network · graphics]
-    Contracts[Shared crates and contracts]
-    Drivers[Drivers and platform adapters]
-    Platform[MCU hardware · native host · browser]
-
-    Apps -->|use| Services
-    Services -->|delegate platform work| Drivers
-    Drivers -->|adapt to| Platform
-    Contracts -. define shared semantics .-> Services
-    Contracts -. define shared semantics .-> Drivers
+    Binary[Final binary / example] --> Subsystems[Subsystems: installed runtime services]
+    Binary --> Drivers[Drivers: platform adapters]
+    Binary --> Executables[Executables: shells, apps, WASM runtime]
+    Libraries[Libraries: contracts and reusable implementations] -.-> Subsystems
+    Libraries -.-> Drivers
+    Libraries -.-> Executables
+    Executables --> Subsystems
+    Subsystems --> Drivers
 ```
 
-The important distinction is between **what Xila means** and **how a target provides it**. Services such as the virtual file system or task manager expose system behavior. Shared crates define contracts and reusable types. Drivers adapt those contracts to concrete hardware or host facilities. Executables sit above those services and consume the resulting runtime.
+- [Subsystems](/explanation/architecture/subsystems/) own or coordinate Xila runtime capabilities such as tasks, the VFS, graphics, networking, users and time.
+- [Libraries](/explanation/architecture/libraries/) provide contracts, types, algorithms, protocols, adapters or implementations; having internal state does not automatically make one a subsystem.
+- [Drivers](/explanation/architecture/drivers/) connect generic contracts to ESP32, native, browser and other target facilities.
+- [Executables](/explanation/architecture/executables/) consume the assembled runtime, including shells, applications and the Wasmi guest execution boundary.
 
-## Assembly happens at the edge
-
-Xila Core is implemented as a library. A final binary decides which concrete pieces exist, constructs the stateful managers it needs, and passes references between them.
-
-This keeps ownership explicit. The task manager, users manager, time manager, VFS, graphics manager, and optional network manager are not discovered through a universal runtime registry in production code; the binary creates them in dependency order and gives each consumer the capabilities it needs.
-
-Mounted executables receive those capabilities through <HostReference crate="executable" kind="struct" symbol="ExecutableContext" />, while the executable runtime carries the same context through execution. This is why a native example, an embedded target, and a browser host can share most of the same services while assembling different drivers around them.
-
-```mermaid
-flowchart LR
-    Binary[Final binary] -->|constructs| Managers[Runtime managers]
-    Binary -->|selects| Drivers[Target drivers]
-    Binary -->|mounts| Executables[Executables]
-    Managers --> Executables
-    Drivers --> Managers
-```
-
-The first diagram explains the architectural layers; this second one shows who actually owns the runtime. Xila does not hide that ownership behind a traditional kernel boot boundary.
-
-## Why separate services from drivers?
-
-Portability depends on keeping platform-specific mechanisms out of the architectural contracts. A network service should reason about interfaces and sockets without knowing whether packets ultimately travel through an ESP32 peripheral, a native host adapter, or a browser bridge. The same idea applies to storage, time, graphics, and other platform-facing capabilities.
-
-The separation is not absolute. Some facilities are inherently process-wide, and some integrations still cross architectural layers. The point is to make those boundaries visible rather than pretend every subsystem is interchangeable.
-
-## How the documentation names the pieces
-
-- [Modules](/explanation/architecture/modules/) are the stateful runtime services and module-adjacent execution boundaries that make up the running system.
-- [Crates](/explanation/architecture/crates/) contain shared contracts, data models, helpers, and supporting runtime logic.
-- [Drivers](/explanation/architecture/drivers/) adapt Xila to a concrete target or host environment.
-- [Executables](/explanation/architecture/executables/) are programs exposed through the executable runtime, including native components and WebAssembly guests.
-
-Use the [component map](./components) when you know roughly what part of the system you are looking for but not which page owns it.
+This is a responsibility map, **not a prohibition on legitimate cross-crate dependencies**. For instance, executable helpers in `libraries/executable` use subsystem managers, but they do not own an independently installed service.
 
 ## Runtime assembly
 
-Most stateful services are explicitly owned by the final binary, but a few boundaries remain process-global because of the external interfaces they integrate with. The allocator and logger are global integration points; the C ABI installs a runtime context; LVGL callbacks also cross into process-wide runtime state.
+A final binary creates the managers and drivers needed for its target, assembles their dependencies, and passes references to consumers. Mounted executables receive those capabilities through <HostReference crate="executable" kind="struct" symbol="ExecutableContext" />. This model works for embedded hardware, native processes and browser-hosted WASM.
 
-That means explicit manager ownership should not be read as a promise that multiple completely independent Xila runtimes can always coexist inside one process. In particular, the current LVGL integration remains a global boundary rather than an isolated per-runtime display stack.
+Some external integrations are necessarily process-global: the Rust allocator and logger, C ABI registration and LVGL callbacks. These exceptions do not imply a universal runtime singleton or guarantee that multiple independent Xila runtimes can coexist in one process.
 
-For concrete assembly code, compare <CodeReference path="examples/native/src/main.rs" /> and <CodeReference path="examples/wasm/src/main.rs" />. They are implementation examples of the ownership model described here, not a separate architecture.
+ABI declarations/definitions belong under [Libraries](/explanation/architecture/libraries/abi). Guest/host bindings and the Wasmi interpreter belong with [Executables](/explanation/architecture/executables/wasm), not standalone subsystems.
 
-## Explore further
+For real assembly examples, see <CodeReference path="examples/native/src/main.rs" /> and <CodeReference path="examples/wasm/src/main.rs" />.
 
-- [Component map](./components) — find a service, contract, driver, or executable.
-- [Modules](/explanation/architecture/modules/) — understand the major runtime services.
-- [Development environments](/explanation/development-environments) — understand how the target/toolchain boundary changes across platforms.
-- [Host API](/reference/host) — look up exact host-side Rust interfaces once you need reference detail.
+## Explore
+
+Start with the [component map](./components), then the [subsystem](/explanation/architecture/subsystems/), [library](/explanation/architecture/libraries/), [driver](/explanation/architecture/drivers/) or [executable](/explanation/architecture/executables/) catalog.

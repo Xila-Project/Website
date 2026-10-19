@@ -17,7 +17,7 @@ The `file_system` crate is the architectural contract layer for storage nodes, f
 ## Boundaries
 
 - In scope: trait contracts and shared semantics for file/device operations.
-- Out of scope: global namespace mounting/orchestration (handled by [Virtual file system](/explanation/architecture/modules/virtual_file_system)).
+- Out of scope: global namespace mounting/orchestration (handled by [Virtual file system](/explanation/architecture/subsystems/virtual_file_system)).
 
 ## Internal structure
 
@@ -31,11 +31,11 @@ The `file_system` crate is the architectural contract layer for storage nodes, f
 
 - VFS calls file-system and device traits through dynamic dispatch.
 - Device nodes expose `control` commands and read/write operations via the same contract surface.
-- Backends like [Little FS](/explanation/architecture/crates/little_fs) map these traits to concrete storage engines.
+- Backends like [Little FS](/explanation/architecture/libraries/little_fs) map these traits to concrete storage engines.
 
 ## Dependency model
 
-- Depends on [Task](/explanation/architecture/modules/task), [Users](/explanation/architecture/modules/users), [Shared](/explanation/architecture/crates/shared), [Synchronization](/explanation/architecture/crates/synchronization), and [Internationalization](/explanation/architecture/crates/internationalization).
+- Depends on [Task](/explanation/architecture/subsystems/task), [Users](/explanation/architecture/subsystems/users), [Shared](/explanation/architecture/libraries/shared), [Synchronization](/explanation/architecture/libraries/synchronization), and [Internationalization](/explanation/architecture/libraries/internationalization).
 - Upstream consumers include virtual_file_system, executable, authentication, and drivers.
 
 ## Failure semantics
@@ -63,5 +63,5 @@ The `file_system` crate is the architectural contract layer for storage nodes, f
 ## References
 
 - <HostReference crate="file_system" />
-- <CodeReference path="modules/file_system" />
-- [Little FS](/explanation/architecture/crates/little_fs)
+- <CodeReference path="libraries/file_system" />
+- [Little FS](/explanation/architecture/libraries/little_fs)
