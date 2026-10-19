@@ -106,6 +106,6 @@ Code outside Memory should rely on allocation/deallocation semantics, `Layout`, 
 - <HostReference crate="memory" /> — complete host-side Memory Rustdoc.
 - <HostReference crate="memory" kind="trait" symbol="ManagerTrait" /> — allocator backend contract.
 - <HostReference crate="memory" kind="struct" symbol="Manager" /> — runtime and `GlobalAlloc` wrapper.
-- <CodeReference path="modules/memory" /> — current module implementation.
+- <CodeReference path="subsystems/memory" /> — current module implementation.
 - [Drivers](/explanation/architecture/drivers) — where target-specific mechanisms meet portable contracts.
-- [Synchronization](/explanation/architecture/crates/synchronization) — synchronization primitives used across Core.
+- [Synchronization](/explanation/architecture/libraries/synchronization) — synchronization primitives used across Core.

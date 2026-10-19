@@ -57,4 +57,4 @@ The graphical shell executable is the session shell that transitions from login 
 ## References
 
 - <CodeReference path="executables/shell/graphical" />
-- [Executable runtime crate](/explanation/architecture/crates/executables)
+- [Executable runtime crate](/explanation/architecture/libraries/executable)

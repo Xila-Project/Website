@@ -1,56 +1,36 @@
 ---
 layout: doc
 docType: explanation
-description: "This section is an architecture map of the library crates used by Core modules and executable crates."
+description: Discover Xila's reusable Rust contracts, helpers and implementations.
 ---
 
-# Crates
+# Libraries
 
-This section is an architecture map of the library crates used by Core modules and executable crates.
+Libraries expose reusable contracts, types, protocols, algorithms, adapters and concrete implementations without owning an independently installed runtime service. They may be internally stateful or use subsystem interfaces; **architectural ownership and lifecycle** determine placement.
 
-Compared with [Modules](/explanation/architecture/modules/), these crates define reusable contracts, data models, and helper layers. Stateful orchestration happens in explicitly owned managers (for example task/users/virtual_file_system), while crates provide the typed interfaces those modules and executables consume.
+## Common foundations
 
-## Architecture map
+- [Shared](/explanation/architecture/libraries/shared): portable shared types and helpers.
+- [Synchronization](/explanation/architecture/libraries/synchronization): synchronization abstractions.
+- [Target](/explanation/architecture/libraries/target): target/build configuration utilities.
+- [Internationalization](/explanation/architecture/libraries/internationalization): external `embedded-i18n` integration and build-time locales.
 
-### Foundation and cross-cutting
+## Contracts and implementations
 
-- [Shared](/explanation/architecture/crates/shared): common low-level types (`shared::flags`, units, HTTP/time helpers, UTF-8/slice utilities).
-- [Synchronization](/explanation/architecture/crates/synchronization): synchronization facade (`Arc` + `embassy_sync` re-exports).
-- [Target](/explanation/architecture/crates/target): build-target introspection from Cargo environment.
-- [Internationalization](/explanation/architecture/crates/internationalization): external `embedded-i18n` integration, build-time locales, and font ranges.
+- [File system](/explanation/architecture/libraries/file_system): filesystem, path and device I/O contracts.
+- [LittleFS](/explanation/architecture/libraries/little_fs): concrete embedded filesystem implementation.
+- [Device](/explanation/architecture/libraries/device): device-control definitions.
+- [Peripherals](/explanation/architecture/libraries/peripherals): peripheral data models.
+- [Audio](/explanation/architecture/libraries/audio): bounded PCM device contract, buffers and mixer implementation.
 
-### Storage and device contract stack
+## Execution and support
 
-- [File System](/explanation/architecture/crates/file_system): core path/metadata/device/file-system traits.
-- [Little FS](/explanation/architecture/crates/little_fs): concrete `FileSystemOperations` backend on top of `littlefs2-sys`.
-- [Device](/explanation/architecture/crates/device): typed control commands for device endpoints (currently hash commands).
-- [Peripherals](/explanation/architecture/crates/peripherals): compact shared pin-state payload model.
+- [ABI](/explanation/architecture/libraries/abi): C declarations, exports and interoperability contracts.
+- [Executable](/explanation/architecture/libraries/executable): executable protocol, context and launcher helpers.
+- [Application metadata](/explanation/architecture/libraries/application_metadata): shared guest/native application inventory and shortcut metadata.
+- [Authentication](/explanation/architecture/libraries/authentication): reusable credential/verification operations.
+- [Bootsplash](/explanation/architecture/libraries/bootsplash): startup animation implementation.
+- [Testing](/explanation/architecture/libraries/testing): test assembly helpers.
 
-### Runtime-facing crates
+See [Subsystems](/explanation/architecture/subsystems/) for runtime owners, [Drivers](/explanation/architecture/drivers/) for target implementations and [Executables](/explanation/architecture/executables/) for launched programs and Wasmi integration.
 
-- [Executable](/explanation/architecture/crates/executables): executable contract and launcher path (`GET_MAIN_FUNCTION`, `execute`).
-- [Authentication](/explanation/architecture/crates/authentication): persistent users/groups + password verification routines.
-- [Bootsplash](/explanation/architecture/crates/bootsplash): startup animation crate integrated with graphics manager/LVGL.
-- [Testing](/explanation/architecture/crates/testing): host-oriented integration runtime assembly for tests.
-
-## Reading order (crates-first)
-
-This order stays neutral and follows dependency direction from shared abstractions to runtime usage:
-
-1. [Shared](/explanation/architecture/crates/shared)
-2. [Synchronization](/explanation/architecture/crates/synchronization)
-3. [Target](/explanation/architecture/crates/target)
-4. [Internationalization](/explanation/architecture/crates/internationalization)
-5. [File System](/explanation/architecture/crates/file_system)
-6. [Little FS](/explanation/architecture/crates/little_fs)
-7. [Device](/explanation/architecture/crates/device)
-8. [Peripherals](/explanation/architecture/crates/peripherals)
-9. [Executable](/explanation/architecture/crates/executables)
-10. [Authentication](/explanation/architecture/crates/authentication)
-11. [Bootsplash](/explanation/architecture/crates/bootsplash)
-12. [Testing](/explanation/architecture/crates/testing)
-
-## Contract vs implementation
-
-- **Contract**: this index documents stable architecture boundaries and navigation order for crate-level contracts.
-- **Current implementation**: the mapped crates correspond to the current Core workspace crate layout and dependency direction.

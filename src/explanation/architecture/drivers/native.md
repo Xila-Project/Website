@@ -12,11 +12,11 @@ It is used for host-side runtime features such as window-backed display/input ha
 
 ## Dependencies
 
-- [Graphics](/explanation/architecture/modules/graphics)
-- [Task](/explanation/architecture/modules/task)
-- [Log](/explanation/architecture/modules/log)
-- [Synchronization](/explanation/architecture/crates/synchronization)
-- [Shared](/explanation/architecture/crates/shared)
+- [Graphics](/explanation/architecture/subsystems/graphics)
+- [Task](/explanation/architecture/subsystems/task)
+- [Log](/explanation/architecture/subsystems/log)
+- [Synchronization](/explanation/architecture/libraries/synchronization)
+- [Shared](/explanation/architecture/libraries/shared)
 
 ## References
 

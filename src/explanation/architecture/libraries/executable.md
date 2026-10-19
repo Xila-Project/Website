@@ -36,7 +36,7 @@ The `executable` crate defines the native executable contract and the launcher u
 
 ## Dependency model
 
-- Core dependencies: [File System](/explanation/architecture/crates/file_system), [Virtual file system](/explanation/architecture/modules/virtual_file_system), [Task](/explanation/architecture/modules/task), [Users](/explanation/architecture/modules/users), [Shared](/explanation/architecture/crates/shared), [Log](/explanation/architecture/modules/log), [Internationalization](/explanation/architecture/crates/internationalization).
+- Core dependencies: [File System](/explanation/architecture/libraries/file_system), [Virtual file system](/explanation/architecture/subsystems/virtual_file_system), [Task](/explanation/architecture/subsystems/task), [Users](/explanation/architecture/subsystems/users), [Shared](/explanation/architecture/libraries/shared), [Log](/explanation/architecture/subsystems/log), [Internationalization](/explanation/architecture/libraries/internationalization).
 
 ## Failure semantics
 
@@ -65,5 +65,5 @@ The `executable` crate defines the native executable contract and the launcher u
 ## References
 
 - <HostReference crate="executable" />
-- <CodeReference path="modules/executable" />
+- <CodeReference path="libraries/executable" />
 - [Executables architecture pages](/explanation/architecture/executables/)

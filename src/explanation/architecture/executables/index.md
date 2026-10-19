@@ -6,11 +6,14 @@ description: "This section maps Xila's host executables and bundled WASM guest a
 
 # Executables
 
-This section maps executable crates that run through the [Executable runtime crate](/explanation/architecture/crates/executables), including native host components and bundled WASM guest applications.
+This section maps executable crates that run through the [Executable runtime crate](/explanation/architecture/libraries/executable), including native host components and bundled WASM guest applications.
 
 ## Architecture map
 
 ### Runtime and dispatch executables
+
+- [Virtual machine](/explanation/architecture/executables/virtual_machine): Wasmi interpreter, WASI execution and cooperative scheduling owned by the WASM executable.
+- [Bindings](/explanation/architecture/executables/bindings): guest/host graphics memory and handle translation within the executable runtime.
 
 - [WASM](/explanation/architecture/executables/wasm): host-side WASM loader/runtime bridge and guest-side API facade.
 - [Command line shell](/explanation/architecture/executables/command_line_shell): bounded parser/executor with composition, built-ins, and mounted-binary dispatch.
@@ -44,6 +47,6 @@ The native and browser demonstrations install Calculator, Clock, and Pixel Paint
 
 ## See also
 
-- [Executable runtime crate](/explanation/architecture/crates/executables)
+- [Executable runtime crate](/explanation/architecture/libraries/executable)
 - [WASM runtime reference](/reference/wasm-runtime)
-- [Crates architecture map](/explanation/architecture/crates/)
+- [Libraries architecture map](/explanation/architecture/libraries/)

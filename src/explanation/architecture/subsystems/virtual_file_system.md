@@ -56,7 +56,7 @@ The same routing idea applies to directories and devices. The difference is the 
 
 The namespace alone is not enough to behave like a system file layer.
 
-[Task](/explanation/architecture/modules/task) tells the VFS which logical task initiated an operation and therefore which user/group context applies. [Users](/explanation/architecture/modules/users) answers membership questions used during permission checks. [Time](/explanation/architecture/modules/time) provides the timestamps written during create/access/modify operations.
+[Task](/explanation/architecture/subsystems/task) tells the VFS which logical task initiated an operation and therefore which user/group context applies. [Users](/explanation/architecture/subsystems/users) answers membership questions used during permission checks. [Time](/explanation/architecture/subsystems/time) provides the timestamps written during create/access/modify operations.
 
 This is why a `VirtualFileSystem` is explicitly constructed with references to those managers. The VFS centralizes filesystem policy without reimplementing identity or time itself.
 
@@ -145,7 +145,7 @@ New file systems can be integrated by implementing the file-system contracts and
 - <HostReference crate="virtual_file_system" kind="struct" symbol="VirtualFileSystem" /> — namespace and mount manager API.
 - <HostReference crate="virtual_file_system" kind="struct" symbol="File" /> — async file handle API.
 - <HostReference crate="file_system" kind="trait" symbol="FileSystemOperations" /> — backend contract consumed by the VFS.
-- <CodeReference path="modules/virtual_file_system" /> — current VFS implementation.
-- [File-system crate](/explanation/architecture/crates/file_system) — shared storage/device contracts beneath the VFS.
-- [Network](/explanation/architecture/modules/network) — an example of a module exposing control devices through the namespace.
-- [Task](/explanation/architecture/modules/task) and [Users](/explanation/architecture/modules/users) — identity context used by VFS policy.
+- <CodeReference path="subsystems/virtual_file_system" /> — current VFS implementation.
+- [File-system crate](/explanation/architecture/libraries/file_system) — shared storage/device contracts beneath the VFS.
+- [Network](/explanation/architecture/subsystems/network) — an example of a module exposing control devices through the namespace.
+- [Task](/explanation/architecture/subsystems/task) and [Users](/explanation/architecture/subsystems/users) — identity context used by VFS policy.

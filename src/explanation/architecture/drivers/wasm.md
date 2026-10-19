@@ -24,11 +24,11 @@ OPFS, `FileSystemFileHandle.createWritable`, and Web Locks require an appropriat
 
 ## Dependencies
 
-- [Memory](/explanation/architecture/modules/memory)
-- [Graphics](/explanation/architecture/modules/graphics)
-- [Task](/explanation/architecture/modules/task)
-- [Log](/explanation/architecture/modules/log)
-- [Shared](/explanation/architecture/crates/shared)
+- [Memory](/explanation/architecture/subsystems/memory)
+- [Graphics](/explanation/architecture/subsystems/graphics)
+- [Task](/explanation/architecture/subsystems/task)
+- [Log](/explanation/architecture/subsystems/log)
+- [Shared](/explanation/architecture/libraries/shared)
 
 ## References
 

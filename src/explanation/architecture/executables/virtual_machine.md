@@ -57,7 +57,7 @@ graph TD
 - Suspension in a WebAssembly start section is unsupported. WASI command guests should use exported `_start`.
 - The stack-size option is parsed but is not applied by the runtime.
 - `memory_32` is the default guest-word width; `memory_64` selects the alternate translation configuration. Calculator remains a wasm32 guest.
-- Graphics capabilities cover the supported subset documented in [Bindings](/explanation/architecture/modules/bindings); enabling graphics does not provide every LVGL API.
+- Graphics capabilities cover the supported subset documented in [Bindings](/explanation/architecture/executables/bindings); enabling graphics does not provide every LVGL API.
 
 The [runtime reference](/reference/wasm-runtime#execution-limits) is the authoritative lookup page for option defaults and polling capacities.
 
@@ -66,5 +66,5 @@ The [runtime reference](/reference/wasm-runtime#execution-limits) is the authori
 - <CodeReference path="executables/wasm" />
 - <HostReference crate="wasm" />
 - [WASM executable](/explanation/architecture/executables/wasm)
-- [Bindings](/explanation/architecture/modules/bindings)
-- [ABI](/explanation/architecture/modules/abi)
+- [Bindings](/explanation/architecture/executables/bindings)
+- [ABI](/explanation/architecture/libraries/abi)

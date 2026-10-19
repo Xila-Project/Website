@@ -56,5 +56,5 @@ The `shared` crate is the low-level cross-cutting utility layer used by modules,
 ## References
 
 - <HostReference crate="shared" />
-- <CodeReference path="modules/shared" />
-- [Synchronization](/explanation/architecture/crates/synchronization)
+- <CodeReference path="libraries/shared" />
+- [Synchronization](/explanation/architecture/libraries/synchronization)

@@ -82,7 +82,7 @@ graph TD
 
 ## Dependency model
 
-- Used directly by [Task](/explanation/architecture/modules/task) and [Virtual file system](/explanation/architecture/modules/virtual_file_system).
+- Used directly by [Task](/explanation/architecture/subsystems/task) and [Virtual file system](/explanation/architecture/subsystems/virtual_file_system).
 - Higher-level authentication crate composes over this module rather than embedding inside it.
 
 ## Failure semantics and recovery behavior
@@ -108,4 +108,4 @@ Persistent groups are loaded before users. Registering a restored user tolerates
 ## References / See also
 
 - <HostReference crate="users" />
-- [Authentication (crate)](/explanation/architecture/crates/authentication)
+- [Authentication (crate)](/explanation/architecture/libraries/authentication)

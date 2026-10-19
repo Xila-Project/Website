@@ -57,9 +57,9 @@ Extend definitions and declarations together, regenerate headers, and preserve s
 
 ## References / See also
 
-- <CodeReference path="modules/abi/definitions/src/lib.rs" />
+- <CodeReference path="libraries/abi/definitions/src/lib.rs" />
 - <HostReference crate="abi_declarations" />
 - <HostReference crate="abi_definitions" />
-- [Virtual file system](/explanation/architecture/modules/virtual_file_system)
-- [Bindings](/explanation/architecture/modules/bindings)
-- [Virtual machine](/explanation/architecture/modules/virtual_machine)
+- [Virtual file system](/explanation/architecture/subsystems/virtual_file_system)
+- [Bindings](/explanation/architecture/executables/bindings)
+- [Virtual machine](/explanation/architecture/executables/virtual_machine)

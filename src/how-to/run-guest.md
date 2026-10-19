@@ -49,4 +49,4 @@ Check the guest's expected output or interface and the terminal for reported err
 ## Related documentation
 
 - [Build a guest application](./build-guest).
-- [Wasmi execution model](/explanation/architecture/modules/virtual_machine).
+- [Wasmi execution model](/explanation/architecture/executables/virtual_machine).

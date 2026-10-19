@@ -45,7 +45,7 @@ Build for your actual host target, start the runtime, and launch a mounted execu
 
 ## Related documentation
 
-- [Executable context](/explanation/architecture/crates/executables).
-- [VFS](/explanation/architecture/modules/virtual_file_system).
-- [C ABI context](/explanation/architecture/modules/abi).
+- [Executable context](/explanation/architecture/libraries/executable).
+- [VFS](/explanation/architecture/subsystems/virtual_file_system).
+- [C ABI context](/explanation/architecture/libraries/abi).
 - [Development environments and targets](/explanation/development-environments).

@@ -82,4 +82,4 @@ Browser-managed storage can be evicted or lost; abrupt termination can lose chan
 - [Build a guest](/how-to/build-guest) and [run a guest](/how-to/run-guest).
 - [Run Calculator in the browser](/tutorials/browser).
 - [Graphics bindings](./graphics-bindings), including the indexed-canvas helpers used by Pixel Painter.
-- [Wasmi execution model](/explanation/architecture/modules/virtual_machine).
+- [Wasmi execution model](/explanation/architecture/executables/virtual_machine).

@@ -6,7 +6,7 @@ description: "Xila's graphics bindings connect guest WebAssembly imports to the 
 
 # Bindings
 
-Xila's graphics bindings connect guest WebAssembly imports to the context-provided graphics manager. The shared LVGL catalog is generated in `modules/graphics/bindings_generator`; host dispatch and the Wasmi adapter live in `executables/wasm/src/host/graphics`.
+Xila's graphics bindings connect guest WebAssembly imports to the context-provided graphics manager. The shared LVGL catalog is generated in `subsystems/graphics/bindings_generator`; host dispatch and the Wasmi adapter live in `executables/wasm/src/host/graphics`.
 
 ## Architecture and ownership
 
@@ -49,10 +49,10 @@ Extend the shared catalog and checked dispatch together, and keep the Wasmi adap
 
 ## References / See also
 
-- <CodeReference path="modules/graphics/bindings_generator" />
+- <CodeReference path="subsystems/graphics/bindings_generator" />
 - <CodeReference path="executables/wasm/src/host/graphics" />
 - <CodeReference path="executables/wasm/tests/translation/README.md" />
 - <HostReference crate="wasm" />
-- [Graphics](/explanation/architecture/modules/graphics)
-- [Virtual machine](/explanation/architecture/modules/virtual_machine)
-- [ABI](/explanation/architecture/modules/abi)
+- [Graphics](/explanation/architecture/subsystems/graphics)
+- [Virtual machine](/explanation/architecture/executables/virtual_machine)
+- [ABI](/explanation/architecture/libraries/abi)
