@@ -20,6 +20,8 @@ It is used for host-side runtime features such as window-backed display/input ha
 
 ## References
 
+- <HostReference crate="drivers_native" /> — generated Rust API documentation.
+
 - <CodeReference path="drivers/native" />
 
 ## See also
