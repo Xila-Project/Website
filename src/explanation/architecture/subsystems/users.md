@@ -117,7 +117,7 @@ The manager stores users and groups in `BTreeMap` collections behind an asynchro
 
 ### Implementation references
 
-- <CodeReference path="modules/users/src/manager.rs" />
+- <CodeReference path="subsystems/users/src/manager.rs" />
 - <HostReference crate="users" kind="struct" symbol="Manager" />
 - [Authentication library](/explanation/architecture/libraries/authentication)
 
