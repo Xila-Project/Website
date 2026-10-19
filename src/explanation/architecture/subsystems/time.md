@@ -115,7 +115,7 @@ The example assumes `device` implements the required direct character-device con
 
 ### Implementation references
 
-- <CodeReference path="modules/time/src/manager.rs" />
+- <CodeReference path="subsystems/time/src/manager.rs" />
 - <HostReference crate="time" kind="struct" symbol="Manager" />
 
 ## References / See also
