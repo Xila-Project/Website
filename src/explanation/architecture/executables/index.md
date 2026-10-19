@@ -12,10 +12,9 @@ This section maps executable crates that run through the [Executable runtime cra
 
 ### Runtime and dispatch executables
 
-- [Virtual machine](/explanation/architecture/executables/virtual_machine): Wasmi interpreter, WASI execution and cooperative scheduling owned by the WASM executable.
 - [Bindings](/explanation/architecture/executables/bindings): guest/host graphics memory and handle translation within the executable runtime.
 
-- [WASM](/explanation/architecture/executables/wasm): host-side WASM loader/runtime bridge and guest-side API facade.
+- [WASM](/explanation/architecture/executables/wasm): Wasmi interpreter, WASI execution, cooperative scheduling, guest loading and guest-side API facade.
 - [Command line shell](/explanation/architecture/executables/command_line_shell): bounded parser/executor with composition, built-ins, and mounted-binary dispatch.
 - [Terminal](/explanation/architecture/executables/terminal): graphical terminal device surface that launches the command-line shell.
 
