@@ -69,7 +69,7 @@ Read-heavy metadata queries take the read side of that lock; registration, remov
 
 `Manager::new()` creates those registries without installing a production singleton. The current executor task becomes that manager's logical root when the manager first needs to resolve it. Test/test-harness configurations retain helper accessors, but production integrations are expected to pass the manager explicitly.
 
-Task names are currently stored in an inline `SmolStr` and truncated to 23 bytes during registration. Environment variables are cloned from the parent task into the child record. Signals are represented by a `SignalAccumulator` bitset.
+Task names are currently stored in an inline `SmolStr` and truncated by a 23-byte slice during registration (with a UTF-8 boundary caveat described below). Environment variables are cloned from the parent task into the child record. Signals are represented by a `SignalAccumulator` bitset.
 
 ```mermaid
 flowchart LR
@@ -89,11 +89,31 @@ This diagram describes the **current implementation**, not the public task contr
 
 ## Failure and resource boundaries
 
-The manager has finite identifier space, so registration can fail with `TooManyTasks`. Asking for an unknown explicit spawner fails with `InvalidSpawnerIdentifier`, while operations on stale/unknown logical identifiers can return `InvalidTaskIdentifier`.
+The manager has finite identifier space, with a `TooManyTasks` registration error. However, the current spawn path panics on a registration error before it can propagate that variant. Asking for an unknown explicit spawner fails with `InvalidSpawnerIdentifier`, while operations on stale/unknown logical identifiers can return `InvalidTaskIdentifier`.
 
 Those exact variants are reference-level details; architecturally, the important point is that logical registration and executor dispatch can fail independently. A task is only useful after both the logical record and its execution mapping are established.
 
 The C/ABI thread surface is also not yet complete: several `xila_thread_*` entry points remain unfinished. That limitation belongs to the ABI boundary rather than changing the internal Task model described here.
+
+## Exact task APIs and spawn failure behavior
+
+`Manager::new()` constructs an independent registry. The executor's current task is registered as that manager's logical root on first use of `get_current_task_identifier().await`; it is not pre-populated by the constructor. Production code passes an explicitly owned `&'static Manager` to `spawn`, while `initialize()` and `get_instance()` are only compiled for tests or the `test_harness` feature.
+
+`register_spawner(spawner)` registers an Embassy execution endpoint and returns its `SpawnerIdentifier`. The asynchronous spawn signature accepts a parent identifier, name, optional spawner identifier and closure receiving the new task identifier:
+
+```rust
+let (join, task_id) = task_manager
+    .spawn(parent_id, "worker", None, |id| async move {
+        // Application work using id
+    })
+    .await?;
+```
+
+The task manager must already have a registered spawner. With `None`, the current policy chooses the spawner with the fewest registered logical tasks; it is **not a CPU-load scheduler**.
+
+**Failure caveats:** `spawn` currently calls `expect` if logical registration or the Embassy task-pool spawn fails, rather than returning a typed error at those points. An unavailable spawner can produce `NoSpawnerAvailable`; an unknown explicit spawner returns `InvalidSpawnerIdentifier`. Because registration precedes spawner selection and no cleanup occurs on these failure branches, a failed spawn can leave a registered task record. Consumers should not assume every failure rolls back automatically.
+
+The `register` implementation truncates names by byte offset (`&name[..23]`), so a non-ASCII name crossing that UTF-8 boundary can panic. This is an **implementation limitation**, not a recommended naming contract.
 
 ## Contract and implementation boundary
 
@@ -104,7 +124,9 @@ Code using Task should depend on manager-scoped identity, metadata, spawn/join b
 - <HostReference crate="task" /> — complete host-side Task Rustdoc.
 - <HostReference crate="task" kind="struct" symbol="Manager" /> — manager API and associated methods.
 - <HostReference crate="task" kind="struct" symbol="TaskIdentifier" /> — logical task identifier.
-- <CodeReference path="subsystems/task" /> — current implementation.
+- <CodeReference path="modules/task/src/manager/lifecycle.rs" /> — spawn, join and task identity.
+- <CodeReference path="modules/task/src/manager/spawner.rs" /> — spawner registration and selection.
+- <CodeReference path="modules/task/src/manager/registration.rs" /> — record allocation and cleanup.
 - [Users](/explanation/architecture/subsystems/users) — identity information stored on tasks.
 - [Virtual file system](/explanation/architecture/subsystems/virtual_file_system) — a major consumer of task context.
 - [Time](/explanation/architecture/subsystems/time) — another foundational service used alongside Task.
