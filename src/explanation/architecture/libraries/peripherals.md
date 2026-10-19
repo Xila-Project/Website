@@ -1,30 +1,70 @@
 ---
 layout: doc
 docType: explanation
-description: "The peripherals crate provides a no_std embedded-hal GPIO controller contract and a fixed-capacity mock."
+description: Typed embedded-hal GPIO controller, line reservations, configuration and heap-free test mock.
 ---
 
 # Peripherals
 
-The `peripherals` crate defines a backend-independent GPIO controller contract using `embedded-hal` 1.x digital traits.
+The `peripherals` crate currently provides a **GPIO controller contract** and a deterministic mock. It is a reusable hardware abstraction, not a runtime-managed peripheral service or a complete SPI/I²C/UART implementation.
 
-## GPIO contract
+## API and feature boundaries
 
-Behind the optional `gpio` feature, `GpioController` exposes per-line capabilities and borrowed input/output handles. `LineId`, `InputConfig`, `OutputConfig`, `Pull`, `DriveMode`, and `PinState` describe requests without coupling consumers to a board implementation.
+The `gpio` feature exposes `GpioController`, `LineId`, `LineCapabilities`, `InputConfig`, `OutputConfig`, `Pull`, `DriveMode`, and `PinState`. The `mock` feature exposes `GpioMock<N>`, `MockInput`, `MockOutput`, and `MockError`.
 
-Input and output lines are reserved while their handles are alive. The controller can reject invalid line IDs, already-reserved lines, or unsupported pull and drive configurations.
+`GpioController` declares a controller-specific `Error` implementing `embedded_hal::digital::Error`, and lifetime-bound associated types `Input<'a>` and `Output<'a>`. Input handles implement `embedded_hal::digital::InputPin`; output handles implement both `OutputPin` and `StatefulOutputPin`. The three controller methods are:
 
-## Mock implementation
+- `capabilities(LineId) -> Option<LineCapabilities>`: query an existing line's supported operations.
+- `request_input(LineId, InputConfig)`: reserve an input line and return a borrowed handle.
+- `request_output(LineId, OutputConfig)`: reserve an output line and return a borrowed handle.
 
-The optional `mock` feature provides `GpioMock<N>`, a fixed-capacity, heap-free implementation of `embedded-hal::digital` input and output traits. Tests can inject input levels and inspect output states without physical hardware.
+The returned handles borrow the controller, so callers cannot treat them as detached, indefinitely owned device objects.
 
-The previous `PinData` byte-buffer API was removed. This is a breaking change: consumers should use the typed controller and line handles rather than serializing pin state through `PinData`.
+## Configurations and validation
 
-## Scope and limitations
+`LineId::new(offset)` wraps a `u16` line offset. `LineCapabilities` reports whether the line supports input, output, pull-up, pull-down and open-drain. `InputConfig` chooses `Pull::Disabled`, `Up`, or `Down` (disabled by default). `OutputConfig` adds `DriveMode::PushPull` or `OpenDrain` and an initial physical `PinState::Low` or `High`.
 
-This is the **GPIO contract and mock**, not a complete peripheral stack. Board-specific adapters and other peripheral families remain future work. In particular, the Espressif adapter depends on the target/toolchain setup tracked in Core issue #328.
+Controllers may reject an invalid line, a line already reserved by another handle, or a requested capability that hardware does not support. Reserving a line is exclusive until the handle is dropped. The output initial state is applied when the output is requested.
 
-## References
+## Heap-free mock for tests
+
+`GpioMock<N>` receives an array of `N` line capabilities and stores state in fixed-capacity memory. Its line handles implement the same `embedded-hal` digital traits as real adapters. Tests can call `set_input_level()` to inject an input level, read it through `InputPin`, and verify output levels through `StatefulOutputPin`.
+
+```rust
+use embedded_hal::digital::{InputPin, OutputPin, StatefulOutputPin};
+use peripherals::gpio::{
+    DriveMode, GpioController, GpioMock, InputConfig, LineCapabilities,
+    LineId, OutputConfig, PinState, Pull,
+};
+
+let capabilities = LineCapabilities {
+    input: true, output: true, pull_up: true,
+    pull_down: true, open_drain: true,
+};
+let gpio = GpioMock::new([capabilities; 2]);
+let line = LineId::new(0);
+gpio.set_input_level(line, PinState::High)?;
+let mut input = gpio.request_input(line, InputConfig::default())?;
+assert!(input.is_high()?);
+drop(input);
+
+let mut output = gpio.request_output(
+    line,
+    OutputConfig::new(Pull::Disabled, DriveMode::PushPull, PinState::Low),
+)?;
+output.set_high()?;
+assert!(output.is_set_high()?);
+```
+
+This example requires the `gpio` and `mock` features. The mock tests cover invalid IDs, exclusive reservations, release on drop, initial output level, injected input state, and unsupported pull/drive modes.
+
+## Migration and limitations
+
+The earlier `PinData` byte-buffer interface has been removed. Consumers should migrate to typed controller requests and borrowed line handles; serialized pin-state operations are no longer the GPIO API.
+
+Board-specific adapters remain separate work. A passing mock test does not establish that a particular MCU pin, interrupt, pull resistor or electrical mode is supported. The Espressif integration remains constrained by the target/toolchain work tracked in Core issue #328.
+
+## Source and API references
 
 - <HostReference crate="peripherals" />
 - <CodeReference path="modules/peripherals/src/gpio.rs" />
