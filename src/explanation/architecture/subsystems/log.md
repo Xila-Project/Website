@@ -97,3 +97,18 @@ graph TD
 - <HostReference crate="log" />
 - [Drivers](/explanation/architecture/drivers)
 - [Synchronization](/explanation/architecture/libraries/synchronization)
+
+## Backend contract and global initialization
+
+A backend implements `LoggerTrait: Send + Sync`, supplying `enabled(Level)` and `write(fmt::Arguments)`. The default `log(Record)` method formats severity, target and arguments with ANSI escape sequences; `flush()` defaults to a no-op and may be overridden. `Level` covers Error, Warn, Info, Debug and Trace.
+
+`initialize(&'static dyn LoggerTrait)` stores a logger adapter in a `OnceLock` and registers it with the Rust `log` facade. This is process-global integration, unlike managers that can be freely instantiated. The facade maximum level is set to Trace, but the backend's `enabled()` still decides which records are emitted.
+
+**Important initialization caveat:** if `set_logger()` fails, the current implementation logs an error directly to the supplied backend and still returns `Ok(())`. Consequently a successful return does not prove that this backend became the active global logger. `is_initialized()` checks whether the internal `OnceLock` contains an adapter, not whether the requested backend was installed.
+
+Applications can use the re-exported `error!`, `warning!`, `information!`, `debug!`, and `trace!` macros. Transport, persistence and concurrency behavior belong to the concrete backend, not the facade.
+
+### Implementation references
+
+- <CodeReference path="modules/log/src/lib.rs" />
+- <HostReference crate="log" />
