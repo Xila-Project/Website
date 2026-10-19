@@ -46,7 +46,7 @@ Follow [Run a guest](/how-to/run-guest) for the procedure and [command syntax](/
 - WASI coverage is partial; `poll_oneoff` supports clocks, not file-descriptor readiness. Start-section suspension is unsupported.
 - Graphical guests need bindings compatible with the host's LVGL revision/configuration and supported call subset.
 
-The browser example embeds Calculator, Clock, and Pixel Painter at build time, installs their shortcuts at startup, and persists the selected VFS disk in OPFS. See [Browser tutorial](/tutorials/browser) for the build flow and [Browser storage](/explanation/browser-storage) for multi-disk persistence.
+The native and browser examples now start from pre-seeded LittleFS images containing bundled WASI guests such as Calculator, Clock, Pixel Painter, Synth, Weather, and Text Editor. New images contain the matching applications and shortcuts; existing persistent images are preserved without automatic upgrades. The browser persists its selected live disk in OPFS. See [Browser tutorial](/tutorials/browser) for the build flow, [Browser storage](/explanation/browser-storage) for persistence, and [the headless container runtime](/reference/container-runtime) for running WASI without graphics or networking.
 
 Exact option defaults and constraints live in the [runtime reference](/reference/wasm-runtime#execution-limits).
 
