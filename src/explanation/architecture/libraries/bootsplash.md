@@ -58,5 +58,7 @@ The `bootsplash` crate provides a focused startup animation layer around the gra
 
 ## References
 
+- <HostReference crate="bootsplash" /> — generated Rust API documentation.
+
 - <CodeReference path="libraries/bootsplash" />
 - [Graphics](/explanation/architecture/subsystems/graphics)
