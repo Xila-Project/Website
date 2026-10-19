@@ -1,16 +1,17 @@
 ---
 layout: doc
 docType: explanation
-description: "The settings executable is a tab-based graphical configuration application."
+description: "The Settings executable manages system configuration and persistent per-user appearance preferences."
 ---
 
 # Settings (executable)
 
-The settings executable is a tab-based graphical configuration application.
+The Settings executable is a tab-based graphical configuration application. It now includes **Appearance** alongside General, Password, Network, and About.
 
 ## Role
 
-- Hosts configurable system UI tabs (general/password/network/about).
+- Hosts configurable system UI tabs (general/appearance/password/network/about).
+- Applies a dark/light theme and five primary/secondary color presets to existing windows immediately.
 - Provides shortcut registration for desktop discovery.
 
 ## Startup and lifecycle
@@ -25,11 +26,14 @@ The settings executable is a tab-based graphical configuration application.
 - Task module for environment and current-task context handling in specific tabs.
 - Authentication crate in password tab (`authenticate_user`, `change_user_password`).
 - Network module in network tab via interface control commands.
+- Graphics theme controls for live palette updates, including calls from within an existing LVGL lock.
 - VFS for shortcut write and network-device opening.
 
 ## Data and control flow / VFS touchpoints
 
-- VFS write touchpoint: settings shortcut JSON file.
+- VFS write touchpoint: settings shortcut JSON file and per-user appearance record at `/users/<uid>/.appearance`.
+- Shells create private `/users/<uid>` home directories (mode `0700`) and set `HOME`. Appearance records are mode `0600`.
+- A versioned appearance record is written through a temporary replacement and restored for the user at login; native/browser startup also restore administrator preferences for the login screen.
 - Password tab flow: user resolution -> current password validation -> persisted password update through authentication crate.
 - Network tab flow: enumerate `/devices/network/*`, open interface file, issue control commands for status/config.
 
@@ -47,7 +51,7 @@ The settings executable is a tab-based graphical configuration application.
 ## Contract vs implementation
 
 - **Contract**: settings executable opens configuration UI and processes tab interactions until closed.
-- **Current implementation**: four fixed tabs with explicit password and network integration logic plus static shortcut JSON registration.
+- **Current implementation**: five fixed tabs including appearance persistence, password/network integration and shortcut registration.
 
 ## Operational limitations
 
