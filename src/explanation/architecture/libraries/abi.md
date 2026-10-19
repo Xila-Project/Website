@@ -62,4 +62,4 @@ Extend definitions and declarations together, regenerate headers, and preserve s
 - <HostReference crate="abi_definitions" />
 - [Virtual file system](/explanation/architecture/subsystems/virtual_file_system)
 - [Bindings](/explanation/architecture/executables/bindings)
-- [Virtual machine](/explanation/architecture/executables/virtual_machine)
+- [WASM runtime](/explanation/architecture/executables/wasm)
