@@ -124,9 +124,9 @@ Code using Task should depend on manager-scoped identity, metadata, spawn/join b
 - <HostReference crate="task" /> — complete host-side Task Rustdoc.
 - <HostReference crate="task" kind="struct" symbol="Manager" /> — manager API and associated methods.
 - <HostReference crate="task" kind="struct" symbol="TaskIdentifier" /> — logical task identifier.
-- <CodeReference path="modules/task/src/manager/lifecycle.rs" /> — spawn, join and task identity.
-- <CodeReference path="modules/task/src/manager/spawner.rs" /> — spawner registration and selection.
-- <CodeReference path="modules/task/src/manager/registration.rs" /> — record allocation and cleanup.
+- <CodeReference path="subsystems/task/src/manager/lifecycle.rs" /> — spawn, join and task identity.
+- <CodeReference path="subsystems/task/src/manager/spawner.rs" /> — spawner registration and selection.
+- <CodeReference path="subsystems/task/src/manager/registration.rs" /> — record allocation and cleanup.
 - [Users](/explanation/architecture/subsystems/users) — identity information stored on tasks.
 - [Virtual file system](/explanation/architecture/subsystems/virtual_file_system) — a major consumer of task context.
 - [Time](/explanation/architecture/subsystems/time) — another foundational service used alongside Task.
