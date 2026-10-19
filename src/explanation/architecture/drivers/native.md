@@ -10,6 +10,10 @@ The `drivers_native` crate provides desktop-host integrations for native targets
 
 It is used for host-side runtime features such as window-backed display/input handling and native integrations used by development and testing flows.
 
+The native example also initializes audio playback through the default host output for [Synth](/explanation/architecture/executables/synth). If audio is unavailable, the OS can still boot and applications can run in silent mode.
+
+For headless workloads, native HostFS supplies explicitly mounted host-directory access to [the container runtime](/reference/container-runtime). Mounts can be read-only or writable, with Linux path-race defenses and no ambient filesystem access.
+
 ## Dependencies
 
 - [Graphics](/explanation/architecture/subsystems/graphics)

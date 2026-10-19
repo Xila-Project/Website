@@ -14,6 +14,8 @@ Each browser disk is a 16 MiB MBR/LittleFS image stored on the current origin. T
 
 Files, configuration, and credentials survive reloads when the browser keeps the corresponding OPFS image. Another origin has separate storage, even when it serves the same application.
 
+A new image is initialized from a prebuilt, locale-matched LittleFS seed containing the bundled applications and shortcut metadata. Updating Xila or its reference seed does **not** silently replace applications already installed in an existing image; create another disk if you need the newer bundle while keeping the old disk as a backup.
+
 On a fresh image, startup creates the default administrator account with an empty password. On an existing image, it restores users and groups, including when the administrator was removed. Invalid partition tables or filesystem mount errors stop boot without reformatting the saved image. Changing the requested disk size does not silently resize an existing image.
 
 ## Why there is a memory cache

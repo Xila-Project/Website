@@ -29,8 +29,11 @@ This section maps executable crates that run through the [Executable runtime cra
 - [Calculator](/explanation/architecture/executables/calculator): scientific calculator UI and expression engine.
 - [Clock](/explanation/architecture/executables/clock): UTC clock, one saved alarm, stopwatch, and countdown timer.
 - [Pixel Painter](/explanation/architecture/executables/pixel_painter): bounded indexed-canvas drawing application with VFS save/open support.
+- [Text Editor](/explanation/architecture/executables/text_editor): page-based UTF-8 editing with a temporary working copy and bounded memory.
+- [Synth](/explanation/architecture/executables/synth): eight-voice WASM instrument using the audio playback device.
+- [Weather](/explanation/architecture/executables/weather): network-dependent Open-Meteo demonstration guest.
 
-The native and browser demonstrations install Calculator, Clock, and Pixel Painter through `/binaries/wasm`. Other guest applications can use the same runtime without being part of the default demonstration bundle.
+New native and browser seed images bundle Calculator, Clock, Pixel Painter, Synth, Weather, and Text Editor through `/binaries/wasm` where the matching image build includes them. Existing persistent disks keep their previous binaries; a newer seed does not automatically upgrade an installed filesystem. Other guest applications can use the same runtime without being part of the default bundle.
 
 ## Shared executable model
 
@@ -52,4 +55,5 @@ The <HostReference crate="executable">host executable contract</HostReference> d
 
 - [Executable runtime crate](/explanation/architecture/libraries/executable)
 - [WASM runtime reference](/reference/wasm-runtime)
+- [Headless container runtime](/reference/container-runtime)
 - [Libraries architecture map](/explanation/architecture/libraries/)
