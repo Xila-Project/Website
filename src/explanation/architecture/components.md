@@ -24,4 +24,3 @@ A file request starts in an [executable](/explanation/architecture/executables/)
 A WebAssembly guest uses the [virtual machine and bindings](/explanation/architecture/executables/virtual_machine) owned by the WASM executable. Those adapters pass operations to the same task/VFS/time/graphics subsystem managers used by native executables.
 
 See the [architecture overview](/explanation/architecture/) for lifecycle, dependency and process-global integration details.
-

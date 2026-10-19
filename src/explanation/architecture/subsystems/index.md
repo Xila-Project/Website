@@ -27,4 +27,3 @@ A subsystem owns or coordinates a runtime capability installed by a final Xila b
 Subsystems use contracts from [libraries](/explanation/architecture/libraries/) and concrete [drivers](/explanation/architecture/drivers/). The final binary constructs them in a valid dependency order and passes managers to [executables](/explanation/architecture/executables/). The allocator, logger and LVGL remain partially process-global by design.
 
 C ABI contracts are [libraries](/explanation/architecture/libraries/abi). Wasmi and guest bindings belong to the [WASM executable](/explanation/architecture/executables/virtual_machine) rather than representing new independent subsystems.
-

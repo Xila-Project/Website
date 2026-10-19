@@ -42,4 +42,3 @@ For real assembly examples, see <CodeReference path="examples/native/src/main.rs
 ## Explore
 
 Start with the [component map](./components), then the [subsystem](/explanation/architecture/subsystems/), [library](/explanation/architecture/libraries/), [driver](/explanation/architecture/drivers/) or [executable](/explanation/architecture/executables/) catalog.
-

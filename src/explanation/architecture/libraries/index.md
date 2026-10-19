@@ -33,4 +33,3 @@ Libraries expose reusable contracts, types, protocols, algorithms, adapters and 
 - [Testing](/explanation/architecture/libraries/testing): test assembly helpers.
 
 See [Subsystems](/explanation/architecture/subsystems/) for runtime owners, [Drivers](/explanation/architecture/drivers/) for target implementations and [Executables](/explanation/architecture/executables/) for launched programs and Wasmi integration.
-
