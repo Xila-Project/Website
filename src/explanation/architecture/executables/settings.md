@@ -58,6 +58,12 @@ The Settings executable is a tab-based graphical configuration application. It n
 - Tab set is compile-time fixed.
 - Event polling interval is fixed and can impact perceived UI responsiveness.
 
+## Appearance and per-user homes
+
+The Appearance tab supports light/dark mode and five primary/secondary color presets. The Zinc-based palette updates existing windows immediately, including contrasting text colors.
+
+Each user has a private home directory at `/users/<uid>` (mode `0700`). Appearance preferences are stored in a small versioned record at `/users/<uid>/.appearance` (mode `0600`) and restored on login. The native and browser examples also restore the root user's appearance for the login screen. Changes are saved through a temporary-file replacement strategy; invalid records are rejected.
+
 ## References
 
 - <CodeReference path="executables/settings" />
