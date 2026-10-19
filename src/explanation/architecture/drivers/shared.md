@@ -19,6 +19,8 @@ Today this includes utility devices such as random and hashing devices that can 
 
 ## References
 
+- <HostReference crate="drivers_shared" /> — generated Rust API documentation.
+
 - <CodeReference path="drivers/shared" />
 
 ## See also
