@@ -121,7 +121,7 @@ Those collection choices, lock boundaries, inode maps, and reference-count strat
 - `/system` — system-owned data such as `/system/users` and `/system/groups`;
 - `/temporary` — temporary data expected to be cleared across reboot/runtime recreation.
 
-The root backend provides the base tree, while additional file systems and devices can be mounted into that namespace later.
+The root backend provides the base tree, while additional file systems and devices can be mounted into that namespace later. `create_default_hierarchy` creates directories and applies baseline permissions; it does **not** itself implement automatic temporary-directory cleanup or log rotation.
 
 ## Failure and policy boundaries
 
@@ -175,6 +175,7 @@ New file systems can be integrated by implementing the file-system contracts and
 - <CodeReference path="modules/virtual_file_system/src/file.rs" /> — async file API.
 - <CodeReference path="modules/virtual_file_system/src/operation.rs" /> — poll and cancellation guard.
 - <CodeReference path="modules/virtual_file_system/src/lib.rs" /> — one-shot metadata poll.
+- <CodeReference path="modules/virtual_file_system/src/hierarchy.rs" /> — actual default directory tree.
 - [File-system crate](/explanation/architecture/libraries/file_system) — shared storage/device contracts beneath the VFS.
 - [Network](/explanation/architecture/subsystems/network) — an example of a module exposing control devices through the namespace.
 - [Task](/explanation/architecture/subsystems/task) and [Users](/explanation/architecture/subsystems/users) — identity context used by VFS policy.
