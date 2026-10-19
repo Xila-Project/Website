@@ -72,6 +72,6 @@ The example emits a short 440 Hz square wave when a host audio device is availab
 ## Source and API references
 
 - <HostReference crate="audio" />
-- <CodeReference path="modules/audio/README.md" />
+- <CodeReference path="libraries/audio/README.md" />
 - [Synth application](/explanation/architecture/executables/synth)
 - [Virtual filesystem](/explanation/architecture/subsystems/virtual_file_system)
