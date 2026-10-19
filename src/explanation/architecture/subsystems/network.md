@@ -139,8 +139,8 @@ Capability still varies by backend. A portable command can only be as meaningful
 
 - <HostReference crate="network" /> — complete host-side Network Rustdoc.
 - <HostReference crate="network" kind="struct" symbol="Manager" /> — interface and socket manager API.
-- <CodeReference path="modules/network/src/manager/mod.rs" /> — mount and socket APIs.
-- <CodeReference path="modules/network/src/manager/runner.rs" /> — interface runner.
+- <CodeReference path="subsystems/network/src/manager/mod.rs" /> — mount and socket APIs.
+- <CodeReference path="subsystems/network/src/manager/runner.rs" /> — interface runner.
 - [Virtual file system](/explanation/architecture/subsystems/virtual_file_system) — the namespace hosting interface control devices.
 - [Task](/explanation/architecture/subsystems/task) — the cooperative runner execution model.
 - [Std driver](/explanation/architecture/drivers/std) and [WASM driver](/explanation/architecture/drivers/wasm) — examples of target adaptation around the portable services.
