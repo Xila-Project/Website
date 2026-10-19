@@ -27,3 +27,24 @@ A subsystem owns or coordinates a runtime capability installed by a final Xila b
 Subsystems use contracts from [libraries](/explanation/architecture/libraries/) and concrete [drivers](/explanation/architecture/drivers/). The final binary constructs them in a valid dependency order and passes managers to [executables](/explanation/architecture/executables/). The allocator, logger and LVGL remain partially process-global by design.
 
 C ABI contracts are [libraries](/explanation/architecture/libraries/abi). Wasmi and guest bindings belong to the [WASM executable](/explanation/architecture/executables/wasm) rather than representing new independent subsystems.
+
+## How to read each subsystem reference
+
+Every subsystem page is intended to serve as an engineering reference, not just an overview. Read its **public contract** first (what consumers may depend on), then its **implementation and ownership** (who constructs it, which resources it retains, and how it is synchronized), then its **failure and portability boundaries**. Use the Rustdoc and source links for exact signatures; implementation details can change without changing the contract.
+
+| Subsystem | Core responsibility | Key integration boundary |
+| --- | --- | --- |
+| [Task](./task) | Task identity, metadata, spawn and join | Embassy executors and user context |
+| [Users](./users) | User/group identifiers and memberships | Authentication and VFS authorization |
+| [Time](./time) | Read current clock and startup-relative duration | Direct character-device clock |
+| [Memory](./memory) | Allocation contract and global allocation | Target allocator and capabilities |
+| [Log](./log) | Global logging facade and filtering | Backend `LoggerTrait` |
+| [Virtual file system](./virtual_file_system) | Namespace, mounts, permissions and handles | File-system and device contracts |
+| [Network](./network) | Interface stacks and socket services | `smoltcp`, driver and VFS control |
+| [Graphics](./graphics) | LVGL lifecycle, display/input and windows | Target display/input drivers and guest events |
+
+### Stability and completeness
+
+These pages describe the **current Core implementation**, not a promise that every interface is stable. In particular, the time manager's startup-relative reading is not a monotonic clock, the Users credential check is not an authentication mechanism, and logging initialization is process-global. Consult the individual pages for the consequences and known limitations.
+
+For changes affecting application-facing interfaces, check both the subsystem and the corresponding [library contract](/explanation/architecture/libraries/), [driver](/explanation/architecture/drivers/) or [executable integration](/explanation/architecture/executables/).
