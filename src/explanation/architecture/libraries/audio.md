@@ -23,15 +23,15 @@ Input samples are interleaved little-endian PCM, with **1–8 channels**. The in
 
 The device control prefix is `b'A'`:
 
-| Command | Number | Payload or result |
-| --- | ---: | --- |
-| `SET_CONFIGURATION` | 1 | `Configuration` → `()` |
-| `GET_CONFIGURATION` | 2 | `()` → `Configuration` |
-| `GET_WRITABLE` | 3 | `()` → `u32` free bytes |
-| `SET_VOLUME` | 4 | `u8` percentage, 0–100 → `()` |
-| `GET_VOLUME` | 5 | `()` → `u8` percentage |
-| `START` | 6 | `()` → `()` |
-| `STOP` | 7 | `()` → `()` |
+| Command             | Number | Payload or result              |
+| ------------------- | -----: | ------------------------------ |
+| `SET_CONFIGURATION` |      1 | `Configuration` → `()`         |
+| `GET_CONFIGURATION` |      2 | `()` → `Configuration`         |
+| `GET_WRITABLE`      |      3 | `()` → `u32` free bytes         |
+| `SET_VOLUME`        |      4 | `u8` percentage, 0–100 → `()`  |
+| `GET_VOLUME`        |      5 | `()` → `u8` percentage         |
+| `START`             |      6 | `()` → `()`                    |
+| `STOP`              |      7 | `()` → `()`                    |
 
 Control payloads must have the specified size and alignment; malformed payloads return `InvalidParameter`. Configuration is fixed when storage is split and a backend is opened. Setting the same configuration succeeds, but changing it requires a new stream.
 
