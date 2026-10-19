@@ -171,11 +171,11 @@ New file systems can be integrated by implementing the file-system contracts and
 - <HostReference crate="virtual_file_system" kind="struct" symbol="VirtualFileSystem" /> — namespace and mount manager API.
 - <HostReference crate="virtual_file_system" kind="struct" symbol="File" /> — async file handle API.
 - <HostReference crate="file_system" kind="trait" symbol="FileSystemOperations" /> — backend contract consumed by the VFS.
-- <CodeReference path="modules/virtual_file_system/src/file_system/mod.rs" /> — mount and path routing.
-- <CodeReference path="modules/virtual_file_system/src/file.rs" /> — async file API.
-- <CodeReference path="modules/virtual_file_system/src/operation.rs" /> — poll and cancellation guard.
-- <CodeReference path="modules/virtual_file_system/src/lib.rs" /> — one-shot metadata poll.
-- <CodeReference path="modules/virtual_file_system/src/hierarchy.rs" /> — actual default directory tree.
+- <CodeReference path="subsystems/virtual_file_system/src/file_system/mod.rs" /> — mount and path routing.
+- <CodeReference path="subsystems/virtual_file_system/src/file.rs" /> — async file API.
+- <CodeReference path="subsystems/virtual_file_system/src/operation.rs" /> — poll and cancellation guard.
+- <CodeReference path="subsystems/virtual_file_system/src/lib.rs" /> — one-shot metadata poll.
+- <CodeReference path="subsystems/virtual_file_system/src/hierarchy.rs" /> — actual default directory tree.
 - [File-system crate](/explanation/architecture/libraries/file_system) — shared storage/device contracts beneath the VFS.
 - [Network](/explanation/architecture/subsystems/network) — an example of a module exposing control devices through the namespace.
 - [Task](/explanation/architecture/subsystems/task) and [Users](/explanation/architecture/subsystems/users) — identity context used by VFS policy.
