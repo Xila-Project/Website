@@ -1,21 +1,22 @@
 ---
 layout: doc
 docType: explanation
-description: "The device crate defines typed control-command contracts for device files."
+description: "The device crate defines typed control-command and backend-independent inference contracts."
 ---
 
 # Device
 
-The `device` crate defines typed control-command contracts for device files.
+The `device` crate defines reusable device contracts. Alongside control commands for character devices, it now has a backend-independent, synchronous **neural-network inference interface**.
 
 ## Role
 
 - Provides shared command identifiers/payload types that callers and drivers both understand.
+- Defines model sources (serialized buffers, typed AOT models, external locations), tensor types/quantization, backend capabilities, and borrowed input/output data.
 - Keeps command ABI definitions centralized instead of duplicating command numbers in each consumer.
 
 ## Boundaries
 
-- In scope: command typing, payload enums, `define_command!` declarations.
+- In scope: command typing, payload enums, `define_command!` declarations and a synchronous inference contract with explicit model/context lifetimes and caller-provided workspace.
 - Out of scope: any actual device behavior, state, or runtime mounting logic.
 
 ## Internal structure
@@ -24,6 +25,7 @@ The `device` crate defines typed control-command contracts for device files.
 - `hash.rs`: hash-specific types and commands.
   - `HashAlgorithm` enum.
   - `RESET` and `SET_ALGORITHM` command definitions.
+- `neural_network.rs`: tensor metadata, quantization, model source types, memory requirements, capabilities and the inference lifecycle.
 
 ## Runtime interaction
 
@@ -48,7 +50,7 @@ The `device` crate defines typed control-command contracts for device files.
 ## Contract vs implementation
 
 - **Contract**: stable typed command IDs + payload schemas.
-- **Current implementation**: only hash-device contract family is defined in-tree.
+- **Current implementation**: hash-device command definitions and a generic, synchronous inference interface with a mock-backed lifecycle test. A concrete inference backend, device discovery, asynchronous execution and accelerator support are **not yet supplied** by this merged contract. The separate TFLite Micro implementation remains a PR under review.
 
 ## Limitations and trade-offs
 
@@ -58,5 +60,6 @@ The `device` crate defines typed control-command contracts for device files.
 ## References
 
 - <HostReference crate="device" />
-- <CodeReference path="libraries/device" />
+- <CodeReference path="modules/device" />
 - [Drivers](/explanation/architecture/drivers)
+- <CodeReference path="modules/device/src/neural_network.rs" />
