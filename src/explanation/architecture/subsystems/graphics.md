@@ -133,6 +133,6 @@ This snippet assumes an initialized `graphics_manager` with an active display. T
 
 - <HostReference crate="graphics" />
 - <HostReference crate="graphics" kind="struct" symbol="Manager" /> — runtime API.
-- <CodeReference path="modules/graphics/src/manager.rs" /> — lifecycle, inspection and synthetic input.
-- <CodeReference path="modules/graphics/src/window.rs" /> — window ownership and events.
+- <CodeReference path="subsystems/graphics/src/manager.rs" /> — lifecycle, inspection and synthetic input.
+- <CodeReference path="subsystems/graphics/src/window.rs" /> — window ownership and events.
 - [File system](/explanation/architecture/libraries/file_system)
