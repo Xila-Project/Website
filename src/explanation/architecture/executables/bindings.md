@@ -54,5 +54,5 @@ Extend the shared catalog and checked dispatch together, and keep the Wasmi adap
 - <CodeReference path="executables/wasm/tests/translation/README.md" />
 - <HostReference crate="wasm" />
 - [Graphics](/explanation/architecture/subsystems/graphics)
-- [Virtual machine](/explanation/architecture/executables/virtual_machine)
+- [WASM runtime](/explanation/architecture/executables/wasm)
 - [ABI](/explanation/architecture/libraries/abi)
