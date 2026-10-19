@@ -44,6 +44,10 @@ The native and browser demonstrations install Calculator, Clock, and Pixel Paint
 - **Contract**: this map describes executable-level responsibilities and integration points on top of the executable runtime contract.
 - **Current implementation**: entries and relationships reflect the currently mounted/implemented executables and the browser/native demonstration bundle in Core.
 
+## API documentation
+
+The <HostReference crate="executable">host executable contract</HostReference> defines launch and context APIs. The <HostReference crate="wasm">host WASM runtime</HostReference> and <GuestReference crate="wasm">guest WASM APIs</GuestReference> document the two sides of guest execution.
+
 ## See also
 
 - [Executable runtime crate](/explanation/architecture/libraries/executable)

@@ -16,6 +16,8 @@ This crate is intentionally small and keeps dependencies minimal to stay close t
 
 ## References
 
+- <HostReference crate="drivers_espressif" /> — generated Rust API documentation.
+
 - <CodeReference path="drivers/espressif" />
 
 ## See also

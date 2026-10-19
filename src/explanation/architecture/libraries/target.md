@@ -55,5 +55,7 @@ The `target` crate provides typed build-target introspection from Cargo-provided
 
 ## References
 
+- <HostReference crate="target" /> — generated Rust API documentation.
+
 - <CodeReference path="libraries/target" />
 - [Executable crate](/explanation/architecture/libraries/executable)

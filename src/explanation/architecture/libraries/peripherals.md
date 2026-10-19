@@ -52,6 +52,8 @@ It currently focuses on pin modeling primitives (direction, level, pull mode, an
 
 ## References
 
+- <HostReference crate="peripherals" /> — generated Rust API documentation.
+
 - <CodeReference path="libraries/peripherals" />
 - [Device](/explanation/architecture/libraries/device)
 - [Drivers](/explanation/architecture/drivers)

@@ -59,6 +59,8 @@ The `testing` crate assembles a host integration runtime so tests can run agains
 
 ## References
 
+- <HostReference crate="testing" /> — generated Rust API documentation.
+
 - <CodeReference path="libraries/testing" />
 - [Executable crate](/explanation/architecture/libraries/executable)
 - [Architecture](/explanation/architecture/)

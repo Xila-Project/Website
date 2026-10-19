@@ -52,6 +52,9 @@ Exact option defaults and constraints live in the [runtime reference](/reference
 
 ## References
 
+- <HostReference crate="wasm" /> — host-side interpreter and integration APIs.
+- <GuestReference crate="wasm" /> — guest-facing WebAssembly helper APIs.
+
 - <CodeReference path="executables/wasm" />
 - [Graphics bindings](/reference/graphics-bindings)
 - [Bindings](/explanation/architecture/executables/bindings)
