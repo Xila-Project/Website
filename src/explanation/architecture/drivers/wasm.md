@@ -18,6 +18,10 @@ Only dirty disks are saved. Saves are serialized and atomic, with at most one ad
 
 The browser example validates existing MBR/LittleFS data and stops on mount errors instead of reformatting a saved image. See [Browser storage](/explanation/browser-storage) for the cache/autosave model and [Reset the browser disk](/how-to/reset-browser-storage) for a deliberate reset.
 
+## Browser audio
+
+The browser example mounts `/devices/audio/playback` only after an explicit **Enable audio** user gesture. This starts the Web Audio context in accordance with browser autoplay restrictions. The [Synth guest](/explanation/architecture/executables/synth) can retry audio initialization without requiring an OS restart.
+
 ## Browser capabilities
 
 OPFS, `FileSystemFileHandle.createWritable`, and Web Locks require an appropriate browser and localhost/HTTPS. Only one Xila tab can hold the disk lock. The HTTP device uses Fetch and follows browser restrictions such as CORS; it does not expose raw sockets or provide the Xila network manager.
