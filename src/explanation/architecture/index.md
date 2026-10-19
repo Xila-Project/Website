@@ -35,7 +35,7 @@ A final binary creates the managers and drivers needed for its target, assembles
 
 Some external integrations are necessarily process-global: the Rust allocator and logger, C ABI registration and LVGL callbacks. These exceptions do not imply a universal runtime singleton or guarantee that multiple independent Xila runtimes can coexist in one process.
 
-ABI declarations/definitions belong under [Libraries](/explanation/architecture/libraries/abi). Guest/host bindings and the Wasmi interpreter belong with [Executables](/explanation/architecture/executables/virtual_machine), not standalone subsystems.
+ABI declarations/definitions belong under [Libraries](/explanation/architecture/libraries/abi). Guest/host bindings and the Wasmi interpreter belong with [Executables](/explanation/architecture/executables/wasm), not standalone subsystems.
 
 For real assembly examples, see <CodeReference path="examples/native/src/main.rs" /> and <CodeReference path="examples/wasm/src/main.rs" />.
 
