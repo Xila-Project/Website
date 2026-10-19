@@ -92,12 +92,6 @@ graph TD
 - Formatting includes ANSI control sequences by default, which may be undesirable in non-terminal sinks unless backend adapts.
 - Reliability guarantees (buffering, durability) are sink-specific.
 
-## References / See also
-
-- <HostReference crate="log" />
-- [Drivers](/explanation/architecture/drivers)
-- [Synchronization](/explanation/architecture/libraries/synchronization)
-
 ## Backend contract and global initialization
 
 A backend implements `LoggerTrait: Send + Sync`, supplying `enabled(Level)` and `write(fmt::Arguments)`. The default `log(Record)` method formats severity, target and arguments with ANSI escape sequences; `flush()` defaults to a no-op and may be overridden. `Level` covers Error, Warn, Info, Debug and Trace.
@@ -112,3 +106,9 @@ Applications can use the re-exported `error!`, `warning!`, `information!`, `debu
 
 - <CodeReference path="modules/log/src/lib.rs" />
 - <HostReference crate="log" />
+
+## References / See also
+
+- <HostReference crate="log" />
+- [Drivers](/explanation/architecture/drivers)
+- [Synchronization](/explanation/architecture/libraries/synchronization)
