@@ -54,6 +54,5 @@ Exact option defaults and constraints live in the [runtime reference](/reference
 
 - <CodeReference path="executables/wasm" />
 - [Graphics bindings](/reference/graphics-bindings)
-- [Virtual machine](/explanation/architecture/executables/virtual_machine)
 - [Bindings](/explanation/architecture/executables/bindings)
 - [Executable runtime crate](/explanation/architecture/libraries/executable)
