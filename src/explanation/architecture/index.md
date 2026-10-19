@@ -39,6 +39,10 @@ ABI declarations/definitions belong under [Libraries](/explanation/architecture/
 
 For real assembly examples, see <CodeReference path="examples/native/src/main.rs" /> and <CodeReference path="examples/wasm/src/main.rs" />.
 
+## API reference
+
+Browse the <HostReference crate="xila">host Rustdoc</HostReference> for native and runtime APIs, or the <GuestReference crate="xila">guest Rustdoc</GuestReference> for WebAssembly guest-facing APIs. Individual component pages link directly to their crate documentation.
+
 ## Explore
 
 Start with the [component map](./components), then the [subsystem](/explanation/architecture/subsystems/), [library](/explanation/architecture/libraries/), [driver](/explanation/architecture/drivers/) or [executable](/explanation/architecture/executables/) catalog.
