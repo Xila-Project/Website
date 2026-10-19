@@ -29,7 +29,7 @@ flowchart TB
 
 This is a responsibility map, **not a prohibition on legitimate cross-crate dependencies**. For instance, executable helpers in `libraries/executable` use subsystem managers, but they do not own an independently installed service.
 
-## Runtime ownership
+## Runtime assembly
 
 A final binary creates the managers and drivers needed for its target, assembles their dependencies, and passes references to consumers. Mounted executables receive those capabilities through <HostReference crate="executable" kind="struct" symbol="ExecutableContext" />. This model works for embedded hardware, native processes and browser-hosted WASM.
 
