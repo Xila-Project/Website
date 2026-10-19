@@ -32,16 +32,16 @@ C ABI contracts are [libraries](/explanation/architecture/libraries/abi). Wasmi 
 
 Every subsystem page is intended to serve as an engineering reference, not just an overview. Read its **public contract** first (what consumers may depend on), then its **implementation and ownership** (who constructs it, which resources it retains, and how it is synchronized), then its **failure and portability boundaries**. Use the Rustdoc and source links for exact signatures; implementation details can change without changing the contract.
 
-| Subsystem | Core responsibility | Key integration boundary |
-| --- | --- | --- |
-| [Task](./task) | Task identity, metadata, spawn and join | Embassy executors and user context |
-| [Users](./users) | User/group identifiers and memberships | Authentication and VFS authorization |
-| [Time](./time) | Read current clock and startup-relative duration | Direct character-device clock |
-| [Memory](./memory) | Allocation contract and global allocation | Target allocator and capabilities |
-| [Log](./log) | Global logging facade and filtering | Backend `LoggerTrait` |
-| [Virtual file system](./virtual_file_system) | Namespace, mounts, permissions and handles | File-system and device contracts |
-| [Network](./network) | Interface stacks and socket services | `smoltcp`, driver and VFS control |
-| [Graphics](./graphics) | LVGL lifecycle, display/input and windows | Target display/input drivers and guest events |
+| Subsystem                                    | Core responsibility                              | Key integration boundary                      |
+| -------------------------------------------- | ------------------------------------------------ | --------------------------------------------- |
+| [Task](./task)                               | Task identity, metadata, spawn and join          | Embassy executors and user context            |
+| [Users](./users)                             | User/group identifiers and memberships           | Authentication and VFS authorization          |
+| [Time](./time)                               | Read current clock and startup-relative duration | Direct character-device clock                 |
+| [Memory](./memory)                           | Allocation contract and global allocation        | Target allocator and capabilities             |
+| [Log](./log)                                 | Global logging facade and filtering              | Backend `LoggerTrait`                         |
+| [Virtual file system](./virtual_file_system) | Namespace, mounts, permissions and handles       | File-system and device contracts              |
+| [Network](./network)                         | Interface stacks and socket services             | `smoltcp`, driver and VFS control             |
+| [Graphics](./graphics)                       | LVGL lifecycle, display/input and windows        | Target display/input drivers and guest events |
 
 ### Stability and completeness
 
