@@ -104,7 +104,7 @@ Applications can use the re-exported `error!`, `warning!`, `information!`, `debu
 
 ### Implementation references
 
-- <CodeReference path="modules/log/src/lib.rs" />
+- <CodeReference path="subsystems/log/src/lib.rs" />
 - <HostReference crate="log" />
 
 ## References / See also
