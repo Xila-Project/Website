@@ -19,8 +19,8 @@ Libraries expose reusable contracts, types, protocols, algorithms, adapters and 
 
 - [File system](/explanation/architecture/libraries/file_system): filesystem, path and device I/O contracts. <HostReference crate="file_system" />.
 - [LittleFS](/explanation/architecture/libraries/little_fs): concrete embedded filesystem implementation. <HostReference crate="littlefs" />.
-- [Device](/explanation/architecture/libraries/device): device-control definitions. <HostReference crate="device" />.
-- [Peripherals](/explanation/architecture/libraries/peripherals): peripheral data models. <HostReference crate="peripherals" />.
+- [Device](/explanation/architecture/libraries/device): device-control and backend-independent neural-network inference contracts. <HostReference crate="device" />.
+- [Peripherals](/explanation/architecture/libraries/peripherals): embedded-hal GPIO contract and fixed-capacity mock. <HostReference crate="peripherals" />.
 - [Audio](/explanation/architecture/libraries/audio): bounded PCM device contract, buffers and mixer implementation. <HostReference crate="audio" />.
 
 ## Execution and support
