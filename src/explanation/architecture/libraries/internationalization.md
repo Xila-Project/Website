@@ -26,6 +26,6 @@ Tolgee extraction and synchronization are configured in `tolgee.config.ts` and `
 
 - <HostReference crate="embedded_i18n" />
 - <CodeReference path="src/lib.rs" /> and <CodeReference path=".cargo/config.toml" />.
-- <CodeReference path="modules/graphics/fonts_generator/src/main.rs" />.
+- <CodeReference path="subsystems/graphics/fonts_generator/src/main.rs" />.
 - <CodeReference path="tolgee.config.ts" /> and <CodeReference path="tolgee.extractor.mjs" />.
 - [Graphics](/explanation/architecture/subsystems/graphics).
