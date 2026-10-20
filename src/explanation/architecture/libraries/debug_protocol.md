@@ -21,7 +21,7 @@ The `debug_protocol` crate describes the **data exchanged with Xila's debug/diag
 Example serialized request:
 
 ```json
-{"op":"ui_tree","max_elements":64,"max_depth":16}
+{\n  "op": "ui_tree",\n  "max_elements": 64,\n  "max_depth": 16\n}
 ```
 
 The helper `validate_request(&request)` currently checks **text payload length** and **non-empty screenshot paths**. It does not inspect every variant's runtime preconditions, validate allowed key names, or enforce the overall encoded request size. Those checks belong to the receiving endpoint.
