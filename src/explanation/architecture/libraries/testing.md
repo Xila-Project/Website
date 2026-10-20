@@ -91,7 +91,6 @@ Managers and devices are leaked for lifetime convenience. Global logger state an
 - [File system](/explanation/architecture/libraries/file_system) — test block device and backend interfaces.
 - [Executable](/explanation/architecture/libraries/executable) — returned Standard context.
 
-
 ## References
 
 - <HostReference crate="testing" /> — generated Rust API documentation.
