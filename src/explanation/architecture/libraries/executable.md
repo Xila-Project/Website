@@ -23,7 +23,6 @@ The `executable` crate defines the native executable contract and the launcher u
 - `traits.rs`: `ExecutableTrait`, `ExecutableWrapper`, `mount_executables!`, command definition.
 - `lib.rs`: launch path (`execute`) + execution permission helpers.
 - `standard.rs`: `Standard` abstraction (`open`, `duplicate`, `read_line`, `close`).
-- `arguments_parser.rs`: argument helper support for executable crates.
 - `error.rs`: launcher-level error type.
 
 ## Runtime interaction
@@ -61,6 +60,47 @@ The `executable` crate defines the native executable contract and the launcher u
 
 - Contract is intentionally narrow (`main` only), simplifying dispatch but leaving richer lifecycle hooks to higher layers.
 - `setuid`-style override logic is constrained and permission-checked at launch time.
+
+## Exact launch and executable entrypoint contracts
+
+An implementation of `ExecutableTrait` exposes one static `main(Standard<'static>, Vec<String>) -> MainFuture` function. `MainFuture` is a pinned boxed future resolving to `Result<(), NonZeroUsize>`. `ExecutableWrapper<T>` owns the implementation value plus a borrowed `'static ExecutableContext`, and publishes the `GET_MAIN_FUNCTION` control command as **family `b'E'`, read command 1**.
+
+```rust
+use executable::{ExecutableTrait, MainFuture, Standard};
+use alloc::{boxed::Box, string::String, vec::Vec};
+
+struct Example;
+impl ExecutableTrait for Example {
+    fn main(mut standard: Standard<'static>, arguments: Vec<String>) -> MainFuture {
+        Box::pin(async move {
+            let _ = arguments;
+            standard.out().write(b"Hello from Xila\n").await.map_err(|_| {
+                core::num::NonZeroUsize::new(1).unwrap()
+            })?;
+            Ok(())
+        })
+    }
+}
+```
+
+The snippet assumes `alloc` is available and the program is mounted with a valid `ExecutableContext`; it illustrates the entrypoint signature rather than a complete runtime launcher.
+
+`execute(context, path, arguments, standard, spawner).await` looks up VFS statistics, checks execute permissions, opens the character device, obtains the main function, and spawns the program in Task. It returns a `JoinHandle<isize>`: **0 means success and negative values encode nonzero program errors**. Launch/permission failures return `executable::Error` before a join handle is produced.
+
+## Permissions and standard streams
+
+`is_execute_allowed` checks owner, group and other execution bits; even root does **not** bypass a file with no execute bits. The set-user-ID override path is intentionally restrictive and can deny unauthorized transitions. `Standard` carries stdin, stdout, stderr and the `ExecutableContext`, which supplies Task/Users/Time/VFS and optional Network/Graphics capabilities.
+
+`Standard::duplicate()` duplicates the three underlying handles, while `Standard::close(vfs)` closes them. `Standard::read_line` currently reads **one byte at a time**, sleeping 10 ms and retrying when a read returns zero. It does not provide general UTF-8 decoding, line-length limits or EOF termination; consumers should not assume an EOF-only input ends that method promptly.
+
+Mounting is done through `ExecutableWrapper::new` or `mount_executables!`. The latter removes pre-existing mount entries, mounts the device and sets `Permissions::EXECUTABLE`. This is a mounted-native-executable protocol, **not** a general ELF loader and not the Wasmi guest runtime.
+
+### Source and API references
+
+- <CodeReference path="libraries/executable/src/traits.rs" /> — command, context, trait and mount macro.
+- <CodeReference path="libraries/executable/src/lib.rs" /> — permissions and execute.
+- <CodeReference path="libraries/executable/src/standard.rs" /> — stdio ownership and read behavior.
+- <HostReference crate="executable" kind="trait" symbol="ExecutableTrait" /> — executable entrypoint.
 
 ## References
 

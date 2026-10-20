@@ -64,6 +64,35 @@ The earlier `PinData` byte-buffer interface has been removed. Consumers should m
 
 Board-specific adapters remain separate work. A passing mock test does not establish that a particular MCU pin, interrupt, pull resistor or electrical mode is supported. The Espressif integration remains constrained by the target/toolchain work tracked in Core issue #328.
 
+## Integration boundaries and physical pin discovery
+
+This is a digital GPIO **controller trait**, not a mounted device or a protocol bus implementation. A `GpioController` adapter decides which numeric `LineId` values exist and what `LineCapabilities` each reports. A client should query `capabilities(id)` before requesting a borrowed `Input<'a>` or `Output<'a>` handle. The handle retains exclusive line ownership until dropped.
+
+```rust
+use peripherals::gpio::{GpioController, LineId, InputConfig};
+let id = LineId::new(0);
+if let Some(caps) = controller.capabilities(id) {
+    if caps.input {
+        let _input = controller.request_input(id, InputConfig::default())?;
+        // The line is reserved until _input is dropped.
+    }
+}
+```
+
+The example assumes a concrete `controller` implementing `GpioController` and the `gpio` Cargo feature. The controller's `Error` is backend-specific; a caller may need to map it into its own error domain.
+
+## Features, memory and unimplemented capabilities
+
+`peripherals` has **no default features**. Enable `gpio` for the `embedded-hal` digital API; `mock` implies `gpio` and provides a deterministic fixed-size `GpioMock<N>`. The mock supports capability checks, injected physical input levels and simulated exclusive reservation, without heap allocation in its line-state storage.
+
+Analog/ADC modes, PWM, interrupt subscriptions, hardware pin multiplexing, and UART/I²C/SPI discovery are **not part of this GPIO trait**. Likewise a future VFS-backed `/devices/gpio` provider must adapt these controller contracts; it is not automatically exposed by constructing `GpioMock`. Do not advertise host/browser pin mocks as electrical or timing-equivalent hardware.
+
+### Core implementation references
+
+- <CodeReference path="libraries/peripherals/src/gpio.rs" /> — typed digital controller and configurations.
+- <CodeReference path="libraries/peripherals/src/gpio/mock.rs" /> — exclusive fixed-capacity test adapter.
+- <CodeReference path="libraries/peripherals/Cargo.toml" /> — feature gates.
+
 ## Source and API references
 
 - <HostReference crate="peripherals" />

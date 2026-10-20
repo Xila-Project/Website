@@ -58,6 +58,40 @@ The `little_fs` crate is the concrete LittleFS backend that implements Xila's fi
 - Behavior inherits LittleFS semantics and target storage constraints.
 - Relies on callback/config correctness; misconfigured block geometry can fail at runtime.
 
+## Safe mounting and formatting choices
+
+The public constructors have distinct **data-loss implications**:
+
+- `FileSystem::new(device, cache_size)` mounts an existing filesystem and reports errors if it cannot mount.
+- `FileSystem::new_format(device, cache_size)` **formats unconditionally**, then mounts. Use only for deliberately disposable or freshly initialized storage.
+- `FileSystem::get_or_format(device, cache_size)` tries to mount, but **formats whenever that first mount fails**. It does not distinguish a blank disk from a corrupt disk, incompatible geometry or transient I/O failure. This is unsafe as an automatic recovery policy for a persistent user disk.
+- `FileSystem::format(device, cache_size)` explicitly formats the underlying storage without returning a mounted filesystem.
+
+All constructors require an `&'static dyn DirectBlockDevice` and a cache size; they derive physical block size and count from the supplied device and build a LittleFS C configuration. Initialization populates missing root attributes. A transient lock failure during an operation may surface as `RessourceBusy`.
+
+```rust
+// Intentionally format an ephemeral in-memory block device for testing.
+let device = file_system::MemoryDevice::<512>::new_static(512 * 1024);
+let filesystem = little_fs::FileSystem::new_format(device, 256)?;
+```
+
+This example is suitable for **disposable test data only**. For existing flash/OPFS disks, prefer `new` and handle mount failure explicitly, without automatic destruction.
+
+## Handle lifetimes, metadata and failure behavior
+
+The backend wraps the mounted `littlefs::lfs_t` in `MutexMountWrapper<CriticalSectionRawMutex, _>`. Open file/directory contexts use shared `Arc<Mutex<...>>` state rather than duplicating raw LittleFS C caches. `operation_with_context` verifies the stored type and uses `try_lock`; a mismatch yields `InvalidParameter`, and contention yields `RessourceBusy`.
+
+`writable_attributes()` advertises the specific `InternalAttributes::PERSISTED_ATTRIBUTE_FLAGS`. This is important: LittleFS cannot necessarily store every VFS-provided timestamp or metadata field. The backend translates file/directory operations through `lfs_*` and maps LittleFS error codes to `file_system::Error`.
+
+A target storage driver must provide correct block geometry, read/program/erase semantics and durability on flush. Cache size and driver alignment need to fit the underlying device; using a correctly mounted VFS cannot compensate for a broken block callback.
+
+### Source and API references
+
+- <CodeReference path="libraries/little_fs/src/file_system.rs" /> — constructors, mount wrapper and attributes.
+- <CodeReference path="libraries/little_fs/src/configuration.rs" /> — LittleFS geometry and callbacks.
+- <CodeReference path="libraries/little_fs/src/attributes.rs" /> — persisted metadata flags.
+- <HostReference crate="little_fs" kind="struct" symbol="FileSystem" /> — concrete backend.
+
 ## References
 
 - <HostReference crate="little_fs" />

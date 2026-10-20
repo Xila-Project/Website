@@ -55,6 +55,36 @@ Registration uses `OnceLock`: the first context remains installed for the proces
 
 Extend definitions and declarations together, regenerate headers, and preserve signature/layout/error-code compatibility. Use explicit Rust manager references inside services and confine runtime-context access to the C boundary.
 
+## Concrete FFI contract
+
+`abi_declarations` uses generated declarations from `OUT_DIR/declarations.generated.rs`; the public header is maintained in `libraries/abi/xila.h`. `abi_definitions` exports the actual symbols and their adapters, grouped into file-system, memory, string, task, time and user families. The declaration and definition crates must evolve together so C integer widths, pointer mutability, structures and command identifiers remain compatible.
+
+A final binary installs `RuntimeContext` once. The context contains `&'static virtual_file_system::VirtualFileSystem` and `&'static time::Manager<'static>`, so the binary must keep both alive for the lifetime of any C caller. Subsequent calls to `initialize` do not replace the first context. Calls to context-dependent exported functions before that initialization panic.
+
+```rust
+abi_definitions::initialize(abi_definitions::RuntimeContext {
+    virtual_file_system: vfs,
+    time_manager: clock,
+});
+```
+
+Here, `vfs` and `clock` are already constructed `'static` references. This is **process-wide FFI wiring**, not a replacement for passing explicit managers to native Rust libraries.
+
+## ABI stability and incomplete operations
+
+- **Pointer and layout safety:** raw C memory must be validated against each exported function's contract. A safe wrapper cannot infer buffer lengths or lifetimes from an arbitrary pointer.
+- **Return conventions:** check each exported symbol's numeric error mapping before treating an integer return as a Rust `Result`; not every category has identical return types.
+- **Task identity:** VFS-facing C functions may require an explicit logical task ID, which is not equivalent to the Wasmi guest's per-execution descriptor table.
+- **Incomplete coverage:** unimplemented `todo!()` functions remain in the ABI tree; the existence of a header declaration does not imply a usable implementation.
+- **Compatibility:** the file-system ABI and Wasmi host imports are separate surfaces and should be tested independently.
+
+### Source and API details
+
+- <CodeReference path="libraries/abi/declarations/src/lib.rs" /> — generated declarations entry point.
+- <CodeReference path="libraries/abi/xila.h" /> — C header.
+- <CodeReference path="libraries/abi/definitions/src/lib.rs" /> — runtime context and exported families.
+- <HostReference crate="abi_definitions" kind="struct" symbol="RuntimeContext" /> — C runtime capabilities.
+
 ## References / See also
 
 - <CodeReference path="libraries/abi/definitions/src/lib.rs" />

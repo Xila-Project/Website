@@ -69,6 +69,28 @@ cargo run -p drivers_native --features audio --example audio
 
 The example emits a short 440 Hz square wave when a host audio device is available. Tests of core buffers and mixing do not prove audible output on a particular device. Web Audio and generic guest descriptor controls are available; ESP32 I2S and system sounds remain follow-up work.
 
+## Choosing a playback API
+
+There are two distinct entrypoints, and neither constructs a global audio daemon:
+
+- **One device:** `PlaybackBuffer<N>::new().split(configuration)` returns an `OutputDevice` producer and a `Renderer` consumer borrowing the same caller-owned storage. `N` must be nonzero, bounded to `u32::MAX` bytes and divisible by the chosen PCM frame size. A new split resets state and starts paused.
+- **Several streams and outputs:** `AudioSystem::new()` creates a fixed pool whose `STREAM_BYTES` and `SINK_BYTES` capacities must be multiples of an interleaved stereo F32 frame (8 bytes). Each sink must hold a full `MIX_FRAMES` block. A value with invalid capacities returns `InvalidParameter`.
+
+The per-stream `StreamHandle` exposes `start`, `stop`, `write`, `writable`, `flush`, `set_volume` and `volume`. On an `AudioSystem`, `set_master_volume` and `mix_next_block` control mixing. These operations **do not wait for the audio callback**: contention returns `RessourceBusy`, and PCM writes may be short.
+
+## Lifetime rules and platform boundary
+
+Pin an `AudioSystem` **before** calling `open_output` or `mix_next_block`. A split output ring has a unique producer and consumer; the audio backend must not keep a consumer alive after releasing its matching `OutputReservation`. The unsafe `into_consumer_with_reservation` transfer is an explicit contract and needs careful teardown ordering.
+
+The library implements PCM storage, format conversion and mixer plumbing, not decoding or audio-device discovery. Native `cpal` output, Web Audio output, and future ESP32/I2S drivers are **platform adapters**. Playback availability and host device format negotiation are therefore target-specific, even with identical Xila PCM streams.
+
+### Core implementation references
+
+- <CodeReference path="libraries/audio/src/playback.rs" /> — borrowed single-device split.
+- <CodeReference path="libraries/audio/src/system.rs" /> — pinned mixer, output reservations and short writes.
+- <CodeReference path="libraries/audio/src/command.rs" /> — command values and directions.
+- <HostReference crate="audio" kind="struct" symbol="AudioSystem" /> — fixed-capacity mixer.
+
 ## Source and API references
 
 - <HostReference crate="audio" />

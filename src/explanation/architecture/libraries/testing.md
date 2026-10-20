@@ -57,6 +57,40 @@ The `testing` crate assembles a host integration runtime so tests can run agains
 - Fast-fail setup simplifies test diagnosis but is less granular than layered setup APIs.
 - Integration realism increases coverage while making initialization heavier than unit-test stubs.
 
+## Entry point and required environment
+
+`testing::initialize(graphics_enabled, network_enabled).await` returns `executable::Standard<'static>` carrying a populated `ExecutableContext`. It is an **integration test fixture**: it leaks boxed runtime managers into `'static` storage, installs the global logger and invokes the Task test-harness manager. Consequently it is not intended to construct multiple independent production OS instances in one process.
+
+```rust
+let mut standard = testing::initialize(false, false).await;
+let task = standard.context.task_manager.get_current_task_identifier().await;
+let vfs = standard.context.virtual_file_system;
+assert!(vfs.get_statistics(&"/devices/null").await.is_ok());
+```
+
+This is an integration-harness example. A suitable test executor/spawner, global allocator and host driver environment must already be configured; the initializer does not install all of them in an otherwise empty process.
+
+## Fixture composition and feature-dependent behavior
+
+The fixture creates a **512 KiB in-memory block device** with `MemoryDevice::<512>::new_static`, formats LittleFS with a cache size of 256 bytes, mounts it as the VFS root and creates the default hierarchy. It exposes random/time/hash/null/console/CPU-information devices. The seeded administrator has group and user ID 1000 and is created with an **empty password**; this is test-only behavior, not a production default.
+
+- When graphics is enabled, it starts an 800 × 600 native window, creates the Graphics manager and spawns both LVGL and screen runner tasks.
+- When networking is enabled, it uses the platform TUN/TAP driver, configures a tunnel interface and mounts HTTP/HTTPS client devices. This requires host networking support and permissions.
+- The returned Standard streams expose the same live devices and managers to launched executables.
+
+The function signature accepts `graphics_enabled` even when the crate's `graphics` Cargo feature is disabled; check the configured feature set before assuming graphics types and setup exist. The fixture intentionally uses `unwrap`/`expect` on setup failures so tests fail immediately rather than returning a recoverable configuration error.
+
+## Isolation and cleanup limitations
+
+Managers and devices are leaked for lifetime convenience. Global logger state and the Task test harness can affect later tests in the same process. Prefer **separate test processes** for scenarios that mutate global runtime state, and use narrower mocks (`GpioMock`, a memory device, etc.) for small deterministic unit tests.
+
+### Source and API references
+
+- <CodeReference path="libraries/testing/src/lib.rs" /> — precise bootstrap order and mounted endpoints.
+- <HostReference crate="testing" /> — fixture API.
+- [File system](/explanation/architecture/libraries/file_system) — test block device and backend interfaces.
+- [Executable](/explanation/architecture/libraries/executable) — returned Standard context.
+
 ## References
 
 - <HostReference crate="testing" /> — generated Rust API documentation.
