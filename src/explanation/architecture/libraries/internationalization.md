@@ -6,7 +6,7 @@ description: Understand Xila's build-time locale selection and external embedded
 
 # Internationalization
 
-Xila uses the external `embedded-i18n` dependency for build-time localization. Core re-exports it as `xila::internationalization`; the former `modules/internationalization` crate is no longer in the workspace.
+Xila uses the external `embedded-i18n` dependency for build-time localization. Core re-exports it as `xila::internationalization`; there is no separate `internationalization` crate under the new `libraries/` tree.
 
 ## Build-time language selection
 
@@ -21,6 +21,35 @@ The selected translations are embedded in the build. This avoids carrying a dyna
 The font generator uses the selected locale and fallback's character ranges from `embedded-i18n` to generate the required glyphs. Locale choice therefore also affects generated graphics assets and their size.
 
 Tolgee extraction and synchronization are configured in `tolgee.config.ts` and `tolgee.extractor.mjs`. Use [Core's localization guide](https://github.com/Xila-Project/Core/blob/main/docs/localization.md) for exact locale build steps, matching seeded applications and language-specific validation. The [development command reference](/reference/development-commands#core-tasks) lists the translation tasks; their implementation remains in Core's Makefile.
+
+## Compile-time integration contract
+
+Xila does not currently maintain a separate `internationalization` crate in `libraries/`. Instead, its entrypoint re-exports the external `embedded-i18n` crate and the project provides locale catalogs and build tooling. This page describes that **cross-cutting build integration**, not a runtime manager.
+
+Use the build-time locale and fallback consistently across host binaries, WebAssembly guests, generated fonts and reference seed images. Locale strings are compiled into the binaries, so changing the preferred language **requires rebuilding compatible artifacts**; there is no persistent per-user runtime language selector.
+
+`embedded_i18n::track_locales!()` declares the translation integration for crates with catalogs, while `translate!` selects the appropriate compiled key. Pluralized strings need the CLDR categories supported by each locale: missing `few` or `many` variants are especially noticeable in Polish.
+
+## End-to-end update workflow
+
+1. Add or edit a string in the executable/library source using the existing localization macros.
+2. Add translations under that crate's `locales/<locale>.json`, preserving the intended namespace and plural categories.
+3. Run the Core translation extractor/validation configured by `tolgee.config.ts` and `tolgee.extractor.mjs`; review diffs rather than deleting apparently unused keys during a namespace migration.
+4. Regenerate locale-dependent fonts and build **host, guests and seeded disk content for the same locale**.
+5. Check text truncation, symbol availability and UI layout in Graphics.
+
+The Graphics font generator lives under `subsystems/graphics/fonts_generator`, because its output is part of the graphics service build. It is not an additional localization subsystem.
+
+## Limitations and references
+
+English fallback prevents missing-key failures but does not guarantee appropriate terminology or glyph coverage. Language completeness needs review on the actual display and guest programs.
+
+- <CodeReference path="src/lib.rs" /> — public re-export.
+- <CodeReference path=".cargo/config.toml" /> — locale defaults.
+- <CodeReference path="subsystems/graphics/fonts_generator/src/main.rs" /> — glyph generation.
+- <CodeReference path="docs/localization.md" /> — build and translation instructions.
+- [Graphics](/explanation/architecture/subsystems/graphics) — runtime text rendering.
+
 
 ## Related documentation
 
