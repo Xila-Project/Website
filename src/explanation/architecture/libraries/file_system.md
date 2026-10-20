@@ -98,7 +98,6 @@ assert_eq!(item.as_str(), "/data/config.json");
 - <CodeReference path="libraries/file_system/src/devices/memory_device.rs" /> — test block storage.
 - <HostReference crate="file_system" kind="trait" symbol="FileSystemOperations" /> — backend contract.
 
-
 ## References
 
 - <HostReference crate="file_system" />
