@@ -30,6 +30,7 @@ const componentGroups: DefaultTheme.SidebarItem[] = [
       ["Authentication", "authentication"],
       ["Bootsplash", "bootsplash"],
       ["Device", "device"],
+      ["Debug protocol", "debug_protocol"],
       ["Executable", "executable"],
       ["File system", "file_system"],
       ["Internationalization", "internationalization"],
