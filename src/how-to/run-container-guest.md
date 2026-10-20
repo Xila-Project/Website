@@ -1,51 +1,68 @@
 ---
 layout: doc
 docType: how-to
-description: Run an existing WASI module in Xila's headless OCI runtime with explicit read-only host access.
+description: Launch Xila's CLI shell or a WASI guest in a persistent headless Docker runtime.
 ---
 
-# Run a WASI guest in a container
+# Run Xila with Docker
 
-Use the Xila runtime image to execute a compiled `wasm32-wasip1` application with a persistent Xila disk and access only to directories you explicitly mount. This procedure targets **Linux/amd64** with Docker and does not run graphical guests.
+The `ghcr.io/xila-project/xila-runtime` image **runs Xila**, instead of supplying build tools. You can open Xila's interactive command-line shell or run an existing `wasm32-wasip1` guest. This guide uses Docker on **Linux/amd64**. This image is headless: it does not provide the graphical desktop.
 
 ## Before you begin
 
-- Install a working Docker Engine and have permission to run containers.
-- Have a compatible `app.wasm` WASI guest file available on the host.
-- Use an image successfully published from [Core's container workflow](https://github.com/Xila-Project/Core/actions/workflows/container.yml). The `latest` tag follows `main`, so pin a SHA or release tag for reproducibility.
+- Install Docker and ensure you can start containers.
+- Use a published image from [Core's container workflow](https://github.com/xila-project/core/actions/workflows/container.yml). `latest` follows `main`; pin a release or commit-SHA tag for reproducible runs.
+- To run a guest, have a compatible `app.wasm` file compiled for `wasm32-wasip1`.
 
-## Prepare the host directories
+## 1. Pull the runtime and prepare persistent state
 
-From a host terminal, in a new working directory:
+From a **host terminal**:
 
 ```sh
-mkdir -p xila-state fixtures
-cp /path/to/app.wasm fixtures/app.wasm
-sudo chown 10001:10001 xila-state
+docker pull ghcr.io/xila-project/xila-runtime:latest
+docker volume create xila-state
 ```
 
-The state directory must be writable by container UID 10001. The fixture directory is exposed read-only.
+The named volume persists `/var/lib/xila/drive.img` between container runs. On its first start, Xila imports the image's reference filesystem; subsequent starts reuse the existing data and credentials. The image runs as non-root UID/GID **10001**.
 
-## Run the guest
-
-Still in that directory, run:
+## 2. Launch the interactive Xila shell
 
 ```sh
-docker run --rm --read-only \
+docker run --rm -it --network none --read-only \
   --tmpfs /tmp:rw,noexec,nosuid,size=16m \
-  --mount "type=bind,src=$PWD/xila-state,dst=/var/lib/xila" \
+  --mount type=volume,src=xila-state,dst=/var/lib/xila \
+  ghcr.io/xila-project/xila-runtime:latest
+```
+
+By default the image executes `xila-runtime shell --network=none`: this opens **Xila's own command-line shell**, not the container's Linux `bash`. On a fresh installation, log in as **administrator** with an empty password. Try `pwd` or `echo hello`, then `exit` to quit.
+
+You may append `shell --network=none` after the image name to select this mode explicitly. The `-it` flags attach an interactive terminal, while Docker's `--network none` disables container networking independently of Xila's network setting.
+
+## 3. Run an existing WASI guest instead
+
+From the **host working directory**, prepare the guest:
+
+```sh
+mkdir -p fixtures
+cp /path/to/app.wasm fixtures/app.wasm
+```
+
+Launch the guest with the same persistent disk:
+
+```sh
+docker run --rm --network none --read-only \
+  --tmpfs /tmp:rw,noexec,nosuid,size=16m \
+  --mount type=volume,src=xila-state,dst=/var/lib/xila \
   --mount "type=bind,src=$PWD/fixtures,dst=/mnt/xila/fixtures,readonly" \
   ghcr.io/xila-project/xila-runtime:latest run --network=none \
   --mount host=/mnt/xila/fixtures,xila=/fixtures,ro \
-  -- /binaries/wasm /fixtures/app.wasm
+  -- /applications/executables/wasm /fixtures/app.wasm
 ```
 
-The first run imports the image's read-only seed into `xila-state/drive.img`. Later runs reuse that disk and its data. The host guest module remains visible to Xila at `/fixtures/app.wasm`.
+The Docker bind mount exposes the file to the **runtime process**. The separate Xila `--mount` grants its VFS **read-only** access at `/fixtures`. Arguments after `app.wasm` go to the guest, and a nonzero guest exit status propagates to Docker.
 
-The container's filesystem mount is not enough on its own: `--mount host=...,xila=...,ro` grants the second, explicit VFS capability. Omit a writable mount unless the guest genuinely needs it.
+## Check your result
 
-## Check the result
+In shell mode, confirm the login prompt works and a command executes inside Xila. In guest mode, inspect the application's output and exit code. The volume survives `--rm` and holds the existing disk; do not delete `xila-state` if it contains data you wish to keep.
 
-Check the guest's standard output/error and process exit status. A zero status indicates a successful guest exit; nonzero guest statuses propagate out of the runtime. Confirm that the `xila-state` directory contains the disk image after execution.
-
-The example does not demonstrate network access, a GUI or arbitrary compatibility with third-party WASI modules. For the full command contract and persistence limits, see the [headless runtime reference](/reference/container-runtime).
+For bind-mounted state instead of a named volume, grant write permission to UID/GID 10001. See the [headless runtime reference](/reference/container-runtime) for disk/seed paths, additional read-write mounts, and explicit guest environment options.

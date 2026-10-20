@@ -1,63 +1,75 @@
 ---
 layout: doc
 docType: how-to
-description: Install Core's pinned Devbox toolchains and dependencies on x86_64 Linux.
+description: Set up Core's pinned Docker or Podman build tools without Devbox.
 ---
 
 # Set up a development environment
 
-Prepare Core's pinned tools for development and the same host/guest checks used by CI.
+Use the separate [Xila development-environment repository](https://github.com/xila-project/development-environment) for Core's pinned Rust, WASM, Node.js, Cargo tooling, and native dependencies. This **build container** is different from the `xila-runtime` Docker image that executes Xila.
 
 ## Before you begin
 
-Use x86_64 Linux, Git, and internet access. Install [Devbox](https://www.jetify.com/docs/devbox/installing_devbox/) at the version recorded in Core's `.devbox-version`. A native GUI additionally needs a Wayland desktop with working GPU drivers; Windows uses x86_64 WSL2/WSLg and needs a GUI check.
+Install Git and Docker or Podman, with permission to run containers and internet access for the initial pull. Core's native desktop workflow targets x86_64 Linux with Wayland; the wrapper also forwards X11 if Wayland is unavailable.
 
 ## Set up the checkout
 
-In a host terminal:
+In a **host terminal**, clone both repositories side by side:
 
-```bash
-git clone https://github.com/Xila-Project/Core.git
-cd Core
-devbox shell
-devbox run setup
+```sh
+git clone https://github.com/xila-project/development-environment.git
+git clone https://github.com/xila-project/core.git
+cd core
+../development-environment/scripts/xila-dev pull
+../development-environment/scripts/xila-dev shell
 ```
 
-Setup installs the pinned stable/nightly Rust toolchains, Rust components, both WASM targets, and npm dependencies. Devbox installs Nix if required and supplies the native tools listed in <CodeReference path="devbox.json" />.
+The wrapper is in `development-environment/scripts/xila-dev`, **not Core**. It mounts Core at `/workspace`, runs as your host UID/GID, and keeps removable Cargo/npm caches under `.dev-environment/`.
 
-Keep native display/session variables by entering without `--pure`. Leave the shell with `exit` when done. `.dev-environment/` and `.devbox/` hold removable local caches.
+In the **container shell**, from Core's root:
 
-## Verify completion
-
-Inside the Devbox shell, from Core's root:
-
-```bash
-devbox run check
+```sh
+npm ci
+cargo make check
 ```
 
-Both the Linux host and guest-library checks should complete successfully. To verify GUI operation, run `devbox run gui` from the Wayland session and check rendering, input, and window closing. The native example's tuntap interface also requires host device access.
+Exit with `exit`. To run the checks without an interactive shell, use `../development-environment/scripts/xila-dev check` in Core's **host** directory after preparing npm dependencies.
+
+## Run with a display or host device
+
+For native GUI work, start a **new shell from the host**, opting into display forwarding:
+
+```sh
+../development-environment/scripts/xila-dev --gui shell
+```
+
+The `--gui` flag must precede the subcommand. It forwards the Wayland socket or X11 fallback; no display forwarding occurs by default. See [Run Xila natively](/tutorials/native) for preparing the boot disk and launching Xila.
+
+When hardware access is required, add `--device /dev/...` before `shell`, only for the specific device you need.
+
+## Wrapper commands
+
+These run from the **host Core directory** after cloning development-environment beside it:
+
+```sh
+../development-environment/scripts/xila-dev doctor
+../development-environment/scripts/xila-dev check
+../development-environment/scripts/xila-dev run -- cargo --version
+../development-environment/scripts/xila-dev --print --gui shell
+```
+
+To use a different checkout, specify `--workspace PATH` before the subcommand. The wrapper supports Docker/Podman selection, local images, reusable caches, and opt-in display/device access. See its [README](https://github.com/xila-project/development-environment#using-scriptsxila-dev).
 
 ## Manual setup
 
-Install the tools listed in `devbox.json` separately: Rust/rustup, cargo-make, Node.js, Trunk, Clang/libclang, multilib support, Mold, pkg-config, CMake/Ninja, Wayland/graphics libraries, Taplo, and coverage tooling as needed. Install the toolchain components/targets used by your tasks, then run `npm ci` from Core's root.
-
-Cargo-make defaults to stable outside Devbox. For the pinned workflow, use the values in `development/toolchains.env`; its nightly is used by the browser example workflow.
+Instead of the image, manually install Rust/rustup, `cargo-make`, Node/npm, Trunk, Clang/libclang, CMake/Ninja, pkg-config, and graphics/system dependencies appropriate for your target. Use the environment repository's [packages.txt](https://github.com/xila-project/development-environment/blob/main/packages.txt) and [toolchains.env](https://github.com/xila-project/development-environment/blob/main/toolchains.env) as a reference, then run `npm ci` from Core. Manual configurations are not guaranteed to match CI.
 
 ## Embedded target setup
 
-Leave Devbox before configuring ESP-IDF tools. Follow the esp-rs [Xtensa](https://docs.esp-rs.org/book/installation/riscv-and-xtensa.html) or [RISC-V](https://docs.esp-rs.org/book/installation/riscv.html) guide for the target. Flashing and serial permissions require separate setup.
-
-## Troubleshooting
-
-| Symptom                        | Action                                                                                                                          |
-| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------- |
-| Missing tools or targets       | Run `devbox run setup` and resolve its reported error. For manual builds, install the target for the toolchain actually in use. |
-| Font generation fails          | Confirm Node.js/npm dependencies are available, then run `cargo make generate-fonts` inside the shell.                          |
-| Native window cannot open      | Check Wayland, inherited display/session variables, and GPU drivers.                                                            |
-| Native network interface fails | Check tuntap device access and the configuration in <CodeReference path="drivers/std/src/tuntap/mod.rs" />.                     |
+ESP-IDF toolchains, flashing, and serial permissions require separate setup. Follow the esp-rs [Xtensa](https://docs.esp-rs.org/book/installation/riscv-and-xtensa.html) or [RISC-V](https://docs.esp-rs.org/book/installation/riscv.html) guide for the target.
 
 ## Related documentation
 
-- [Development environments and targets](/explanation/development-environments) for toolchain ownership and platform validation limits.
+- [Development environments and targets](/explanation/development-environments).
 - [Development command reference](/reference/development-commands).
-- [Run Xila natively](/tutorials/native) for a first guided run.
+- [Run Xila natively](/tutorials/native).
