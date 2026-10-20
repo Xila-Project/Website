@@ -10,7 +10,7 @@ This tutorial introduces browser-hosted Xila through Calculator. You will build 
 
 ## Before you begin
 
-- Use the x86_64 Linux [development environment](/how-to/setup-development). Devbox provides Trunk and the pinned Rust toolchains.
+- Use the x86_64 Linux [development environment](/how-to/setup-development). Its build image provides Trunk and the pinned Rust toolchains.
 - Use a browser supporting OPFS, `FileSystemFileHandle.createWritable`, and Web Locks on localhost or HTTPS.
 - Close another Xila tab only when it is using the same browser disk you intend to open. Different tabs may use different images.
 - Keep guest artifacts in Core's default `target` directory; the browser build embeds them from there.
@@ -20,13 +20,15 @@ This tutorial introduces browser-hosted Xila through Calculator. You will build 
 In a host terminal:
 
 ```bash
-git clone https://github.com/Xila-Project/Core.git
-cd Core
-devbox shell
-devbox run setup
+git clone https://github.com/xila-project/development-environment.git
+git clone https://github.com/xila-project/core.git
+cd core
+../development-environment/scripts/xila-dev pull
+../development-environment/scripts/xila-dev shell
+npm ci
 ```
 
-When setup returns successfully, keep the shell open in Core's root. If you already completed setup in this checkout, enter its Devbox shell and continue.
+Keep the development container shell open in Core's root. If the image and npm dependencies are already installed, enter the same container shell and continue.
 
 ## 2. Build the bundled WASI applications
 

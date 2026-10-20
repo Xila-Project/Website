@@ -14,7 +14,7 @@ Use a configured [development environment](./setup-development) with the WASI ta
 
 ## Build an existing application
 
-From Core's root, inside its Devbox shell:
+From Core's root, inside its [development container shell](./setup-development):
 
 ```bash
 cargo build -p calculator --target wasm32-wasip1 --release
