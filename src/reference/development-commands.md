@@ -12,7 +12,7 @@ Core's task definitions are in <CodeReference path="Makefile.toml" />. Run `carg
 
 | Task                                       | Behavior                                                                                                              |
 | ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------- |
-| `install-tools`                            | Runs `npm install` for tooling. The recommended checkout setup uses `npm ci`.                                                  |
+| `install-tools`                            | Runs `npm install` for tooling. The recommended checkout setup uses `npm ci`.                                         |
 | `generate-fonts`                           | Generates LVGL fonts through `fonts_generator`.                                                                       |
 | `format-rust`                              | Runs `cargo fmt --all`; accepts forwarded arguments.                                                                  |
 | `format-toml`                              | Runs Taplo formatting; accepts forwarded arguments.                                                                   |
