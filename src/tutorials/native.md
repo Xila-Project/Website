@@ -35,22 +35,22 @@ The `xila-dev` wrapper lives in the **development-environment** repository, not 
 From Core's root, **inside that container shell**:
 
 ```sh
+export CARGO_TARGET_DIR=target
 npm ci
 cargo make check
 ```
 
-The container already has the pinned Rust toolchains, WASM targets, native libraries, and `cargo-make`. The checks cover the host and guest-library configurations, not interactive GUI behavior.
+The container already has the pinned Rust toolchains, WASM targets, native libraries, and `cargo-make`. The `CARGO_TARGET_DIR` override keeps the native image task and the preceding checks on the same Cargo output path. The checks cover the host and guest-library configurations, not interactive GUI behavior.
 
 ## 3. Build the reference disk
 
-Native Xila boots from a reference disk containing prebuilt WASI applications. Core's `prepare-native-image` task uses fixed `target/` paths, whereas `xila-dev` normally places Cargo outputs in `.dev-environment/target`. Before building the disk, choose the task's expected target directory:
+Native Xila boots from a reference disk containing prebuilt WASI applications. Core's `prepare-native-image` task uses fixed `target/` paths, whereas `xila-dev` normally places Cargo outputs in `.dev-environment/target`. The override in step 2 selects the task's expected target directory:
 
 ```sh
-export CARGO_TARGET_DIR=target
 cargo make prepare-native-image
 ```
 
-This generates `target/seed/native/seed.img` and builds the bundled applications. The new `target/` directory is ignored by Git. This override is currently necessary for the image-preparation task; it may rebuild artifacts that were previously compiled into `.dev-environment/target`.
+This generates `target/seed/native/seed.img` and builds the bundled applications. The new `target/` directory is ignored by Git. This override is currently necessary for the image-preparation task; using it from the start avoids rebuilding the checks' artifacts in a second target directory.
 
 ## 4. Launch Xila's graphical desktop
 

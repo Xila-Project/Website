@@ -25,28 +25,21 @@ git clone https://github.com/xila-project/core.git
 cd core
 ../development-environment/scripts/xila-dev pull
 ../development-environment/scripts/xila-dev shell
+export CARGO_TARGET_DIR=target
 npm ci
 ```
 
-Keep the development container shell open in Core's root. If the image and npm dependencies are already installed, enter the same container shell and continue.
+Keep the development container shell open in Core's root. The `CARGO_TARGET_DIR` override aligns Cargo outputs with the relative `target/` paths used by the browser seed-image task. If the image and npm dependencies are already installed, enter the same container shell and continue.
 
-## 2. Build the bundled WASI applications
+## 2. Build the bundled WASI applications and reference image
 
-The browser host embeds Calculator, Clock, and Pixel Painter, so build all three before Trunk compiles the host:
+The browser runtime loads applications from a separate seed image. Build the guest applications and generate that image before starting Trunk:
 
-```bash
-cargo build -p calculator -p clock -p pixel_painter --target wasm32-wasip1 --release
+```sh
+cargo make prepare-wasm-image
 ```
 
-After the build succeeds, these files should exist:
-
-```text
-target/wasm32-wasip1/release/calculator.wasm
-target/wasm32-wasip1/release/clock.wasm
-target/wasm32-wasip1/release/pixel_painter.wasm
-```
-
-These are guest programs interpreted by Xila's Wasmi runtime; they are distinct from the browser-hosted Xila binary.
+The command builds `wasm32-wasip1` applications including Calculator, Clock, and Pixel Painter, then writes `target/seed/wasm/seed.img`. For example, Calculator's guest binary is `target/wasm32-wasip1/release/calculator.wasm`. These guests are interpreted by Xila's Wasmi runtime; they are distinct from the browser-hosted Xila binary.
 
 ## 3. Start browser-hosted Xila
 
@@ -54,7 +47,7 @@ Still in Core's root:
 
 ```bash
 cargo make generate-fonts
-(cd examples/wasm && RUSTUP_TOOLCHAIN="$XILA_NIGHTLY_TOOLCHAIN" trunk serve)
+(cd examples/wasm && RUSTUP_TOOLCHAIN=stable trunk serve)
 ```
 
 Open the local URL printed by Trunk. Keep the server running while you use the example. The **Xila Help** panel lists the current origin's saved disks and lets you create or select another image before using the desktop.
@@ -65,7 +58,7 @@ When boot succeeds, the Xila login screen should appear.
 
 On a fresh disk, log in as **administrator** with an empty password. If the selected image already contains Xila data, use that disk's saved credentials.
 
-Open the application drawer with the Xila button in the dock and select **Calculator**. Its window should appear. Startup placed the bundled guest in the VFS and installed its shortcut. Clock and Pixel Painter are installed the same way and should also appear on a fresh disk.
+Open the application drawer with the Xila button in the dock and select **Calculator**. Its window should appear. The reference disk already contains the bundled guests and their shortcuts. Clock and Pixel Painter should also appear on a fresh disk; existing browser disks are not automatically updated when the seed changes.
 
 ## 5. Evaluate an expression
 

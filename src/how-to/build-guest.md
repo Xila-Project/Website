@@ -20,7 +20,7 @@ From Core's root, inside its [development container shell](./setup-development):
 cargo build -p calculator --target wasm32-wasip1 --release
 ```
 
-Use the package name of your application for other workspace guests. Keep Calculator's artifact in the default `target` directory if you are building the browser example.
+Use the package name of your application for other workspace guests. Inside `xila-dev`, the default artifact location is `.dev-environment/target/wasm32-wasip1/release/calculator.wasm`. For the browser's seed-generation task, set `CARGO_TARGET_DIR=target` before building, as shown in the [browser tutorial](/tutorials/browser).
 
 ## Add graphics bindings
 
@@ -37,9 +37,9 @@ Core's `xila` package has no `wasm` feature. Command guests require `_start: () 
 
 ## Verify completion
 
-The build should exit successfully and produce `target/wasm32-wasip1/release/calculator.wasm` for the Calculator example. Compilation does not verify runtime compatibility: [run the guest](./run-guest) in Xila to check its actual behavior.
+The build should exit successfully and produce `$CARGO_TARGET_DIR/wasm32-wasip1/release/calculator.wasm` when `CARGO_TARGET_DIR` is set (or `target/wasm32-wasip1/release/calculator.wasm` with Cargo's default). Compilation does not verify runtime compatibility: [run the guest](./run-guest) in Xila to check its actual behavior.
 
-Rebuild Calculator before rebuilding the browser example whenever the guest changes. It is embedded at browser build time.
+Before serving the browser example after a guest changes, regenerate its seed image with `cargo make prepare-wasm-image`. Existing browser disks are not upgraded from a newer seed.
 
 ## Related documentation
 
