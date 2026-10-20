@@ -24,8 +24,8 @@ The `file_system` crate is the architectural contract layer for storage nodes, f
 - `fundamentals/`: path, identifiers, permissions, statistics, flags, entry/type primitives.
 - `operations/`: core trait families (`FileSystemOperations`, `BaseOperations`, `DirectoryOperations`, ...).
 - `devices/`: character/block device abstractions and direct operations.
-- `mbr/` and `partition/`: partition table and partition-device helpers.
-- `memory_device.rs`: in-memory block device implementation.
+- `mbr/`: partition tables and partition helpers; `devices/partition_device.rs` implements partition-device access.
+- `devices/memory_device.rs`: in-memory block device implementation.
 
 ## Runtime interaction
 
@@ -59,6 +59,45 @@ The `file_system` crate is the architectural contract layer for storage nodes, f
 
 - Intentionally broad contract surface increases flexibility, but requires careful implementer conformance.
 - Policy decisions (mount precedence, path traversal context, async scheduling) live outside this crate.
+
+## Operation contracts and wake-up semantics
+
+`FileSystemOperations` extends `FileOperations`, `DirectoryOperations` and `MountOperations`; a concrete backend implements path lookup/create/remove/rename and attribute access without assuming a global namespace. The VFS owns mounts, caller identity, path routing and authorization; a standalone `FileSystemOperations` backend does not.
+
+The device side supports both **contextual** `BaseOperations` (per-open `Context`) and **direct** devices, plus typed control commands. `BaseOperations::read`, `write`, `flush` and `control` return `Poll<file_system::Result<T>>`:
+
+- `Poll::Pending` means the backend has registered a **race-free waker** and will signal readiness. It must not retain pointers to the caller's buffers or task context.
+- `Poll::Ready(Err(Error::RessourceBusy))` is an immediate busy failure, not a request for the caller to spin.
+- Synchronous `*_sync` adapters make a **single attempt**; if the operation would be pending they cancel the registration and return a busy error.
+- Short reads/writes are permitted. Callers must not assume a successful result consumes the entire buffer.
+
+The `ready(|| ...)` helper wraps a synchronous operation into `Poll::Ready` exactly once, without a hidden retry loop.
+
+## Metadata capability negotiation
+
+`FileSystemOperations::writable_attributes()` reports which `AttributeFlags` can be stored by the backend. `get_attributes` only sets requested fields it can actually supply, and must not invent data to satisfy a mask. `set_attributes` must reject unsupported requested attributes **before modifying supported fields**. A later I/O failure may still leave earlier supported attributes changed: it does not guarantee transactional rollback.
+
+`Path` is a lightweight borrowed, `no_std` path type, while `PathOwned` owns its string. Permission flags, user/group identifiers, timestamp attributes and item statistics are shared across backends; they should not be reinterpreted in a driver-specific ABI.
+
+## Implementer checklist and tests
+
+A new backend should validate path operations; propagate `UnsupportedOperation` rather than silently succeeding; maintain per-open `Context` state; support appropriate Poll/Waker cancellation; implement consistent attribute masks; and document geometry, concurrency and unmount constraints. The generic file-system tests in `operations/file_system.rs` can exercise CRUD, rename, directory iteration, positioned I/O, attributes and invalid-path handling.
+
+```rust
+use file_system::{Path, PathOwned};
+let root = Path::from_str("/data");
+let item: PathOwned = root.join(Path::from_str("config.json")).unwrap();
+assert_eq!(item.as_str(), "/data/config.json");
+```
+
+### Source and API references
+
+- <CodeReference path="libraries/file_system/src/operations/base.rs" /> — device polling and sync boundary.
+- <CodeReference path="libraries/file_system/src/operations/file_system.rs" /> — backend trait and conformance tests.
+- <CodeReference path="libraries/file_system/src/fundamentals/path/path_reference.rs" /> — borrowed path rules.
+- <CodeReference path="libraries/file_system/src/devices/memory_device.rs" /> — test block storage.
+- <HostReference crate="file_system" kind="trait" symbol="FileSystemOperations" /> — backend contract.
+
 
 ## References
 
