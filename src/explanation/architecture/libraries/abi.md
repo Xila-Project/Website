@@ -85,7 +85,6 @@ Here, `vfs` and `clock` are already constructed `'static` references. This is **
 - <CodeReference path="libraries/abi/definitions/src/lib.rs" /> — runtime context and exported families.
 - <HostReference crate="abi_definitions" kind="struct" symbol="RuntimeContext" /> — C runtime capabilities.
 
-
 ## References / See also
 
 - <CodeReference path="libraries/abi/definitions/src/lib.rs" />
