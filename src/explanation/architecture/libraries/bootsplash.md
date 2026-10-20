@@ -79,7 +79,6 @@ The library owns a boxed `lv_anim_t` and a Graphics `Logo`, but the animation is
 - <CodeReference path="libraries/bootsplash/src/lib.rs" /> — actual animation and stop sequence.
 - <HostReference crate="bootsplash" kind="struct" symbol="Bootsplash" /> — construction/teardown API.
 
-
 ## References
 
 - <HostReference crate="bootsplash" /> — generated Rust API documentation.
