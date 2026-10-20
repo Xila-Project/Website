@@ -43,6 +43,41 @@ Alerts are visual and remain active while the Clock process runs, even if anothe
 
 Normal display updates happen once per second; the visible stopwatch refreshes at tenths of a second. Retained laps and event work are bounded. Alarm/timer delivery depends on executor scheduling and is not a real-time guarantee.
 
+## Timing contract and alarm edge cases
+
+The `clock` crate keeps the timing models separate from the graphical interface:
+
+- `Stopwatch` measures elapsed **monotonic milliseconds**, accumulating time across pause/resume. It stores at most `MAX_LAPS = 32` cumulative readings.
+- `Timer` stores a duration, remaining time and optional monotonic deadline. Its `start` rejects zero duration and overflow; `tick` marks completion once the deadline has passed.
+- `Alarm::new(hour, minute, weekdays)` accepts UTC clock values, with Monday through Sunday represented by seven weekday bits (0 indicates a one-shot alarm). The scheduler searches up to seven days ahead and coalesces missed triggers rather than emitting a burst.
+- `AlarmAlert` handles the visible ringing state and a **five-minute** snooze. It does not register a kernel timer or start another service.
+
+Wall-clock changes can affect when an alarm fires. Stopwatch and countdown deadlines are not recalculated from wall time, so they avoid that particular drift. The guest must still run and be scheduled; none of these types schedules an interrupt or wakes a powered-down device.
+
+## Settings encoding and recovery
+
+`Settings::encode` produces a **26-byte** versioned `CLK1` payload containing the time-format flag, optional alarm and schedule metadata. `storage::Store` prefixes an **8-byte generation counter** and adds a **4-byte checksum** to create **38-byte** records. Its two rotating slots (`settings.0`/`settings.1`) are selected by generation parity.
+
+On load the store validates record length, checksum and logical alarm fields, then chooses the latest valid generation. If one slot is corrupt it can recover from the other; if no valid slot remains but a corrupted record exists, loading returns an error instead of silently replacing settings. The store does **not** persist stopwatch laps, active timer, or snooze.
+
+```rust
+use clock::{Alarm, Settings};
+let mut alarm = Alarm::new(7, 30, 0).expect("valid UTC hour");
+alarm.arm(1_700_000_000);
+let settings = Settings { twelve_hour: false, alarm: Some(alarm) };
+let encoded = settings.encode();
+assert_eq!(encoded.len(), clock::SETTINGS_SIZE);
+```
+
+This is a data-model example; `storage::Store` performs actual file I/O on guest/host storage. A successful `flush()` does not guarantee power-loss durability, because the current WASI backend lacks the required durable sync/rename sequence.
+
+### Source references
+
+- <CodeReference path="executables/clock/src/lib.rs" /> — Stopwatch, Timer, Alarm, Settings.
+- <CodeReference path="executables/clock/src/storage.rs" /> — alternating records and checksums.
+- <CodeReference path="executables/clock/src/interface.rs" /> — GUI, event cadence and notifications.
+- <CodeReference path="executables/clock/src/install.rs" /> — shortcut installation.
+
 ## References
 
 - <CodeReference path="executables/clock" />

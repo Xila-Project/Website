@@ -47,6 +47,46 @@ Object handles and retained map strings have fixed limits so an execution's host
 
 Extend the shared catalog and checked dispatch together, and keep the Wasmi adapter thin. Validate memory and handle behavior before adding a supported call. Native adapter and lifetime tests exercise cleanup; the portable translation tests separately cover guest-memory boundaries and word widths.
 
+## Exact boundary between generation and runtime
+
+Graphics bindings are generated from a shared LVGL catalog in `subsystems/graphics/bindings_generator`, but **the Wasmi executable** owns guest memory translation, handle tables and host dispatch. A generated function ID is not an unrestricted LVGL function pointer. The generated host `Function` table contains signatures and supported-call metadata; the guest and host must use matching LVGL versions and generated catalogs.
+
+`host/graphics/wasmi.rs` installs exactly one graphics entrypoint under the import pair `("host", "xila_graphics_call")`. Each invocation supplies a function ID, **up to seven machine-word arguments**, the argument count and a result address. Before dispatch, the adapter checks that the current `ExecutableContext.graphics_manager` is the manager granted to that VM and obtains the current Wasmi linear memory view.
+
+`dispatch` checks the function ID, expected argument count, result pointer, handle kinds and value domains, then takes the Graphics lock before calling supported LVGL operations. Missing graphics capabilities or unsupported calls return explicit numeric error statuses rather than granting direct host pointers.
+
+## Memory, object and retained-string limits
+
+The graphics bridge stores VM-local object capabilities in a bounded `GraphicsState`. It allows **256 object slots**, assigning monotonically increasing nonzero handles. Deletion invalidates the object without reassigning that handle to another object in the same VM. A graphics object is tied to a window tree; VM teardown deletes owned windows and releases retained maps/canvases.
+
+`GuestMemory` decodes little-endian ABI values by value and validates address ranges with checked multiplication and addition. No Rust references into guest linear memory may survive a guest-memory growth or a host async suspension. Typed values are not reconstructed with unchecked host-native struct layout.
+
+The current marshaller has explicit limits:
+
+- **Object slots:** 256 per VM.
+- **Ordinary NUL-terminated strings:** 1,024 bytes including the terminator.
+- **Textarea strings:** 4,097 bytes including the terminator.
+- **Button-map entries:** 64, counting the end sentinel.
+- **Retained button-map storage:** 8,192 bytes including strings and sentinel.
+
+Button-map strings and pointer arrays are **copied into stable VM-owned host storage** before LVGL retains them. Ordinary label text is copied synchronously by LVGL. Unsupported native callback pointers and arbitrary binary structure layouts remain outside the guest API.
+
+## Extending safely
+
+Add the function signature to the shared catalog, implement checked dispatch, then update the guest wrapper generation and tests. Preserve unsupported IDs when changing the catalog to avoid accidental renumbering, but **do not promise binary compatibility across independently built LVGL revisions**.
+
+Run host-side object deletion tests and guest memory32/memory64 translation tests; verify handle invalidation, bad pointer rejection, event-queue cleanup and resource-cap enforcement before considering a new binding supported.
+
+### Source references
+
+- <CodeReference path="subsystems/graphics/bindings_generator" /> — API catalog and function selection.
+- <CodeReference path="executables/wasm/src/host/graphics/wasmi.rs" /> — Wasmi import registration.
+- <CodeReference path="executables/wasm/src/host/graphics/dispatch.rs" /> — checked host dispatch.
+- <CodeReference path="executables/wasm/src/host/graphics/objects.rs" /> — VM-local object registry.
+- <CodeReference path="executables/wasm/src/host/graphics/marshal.rs" /> — retained strings and map bounds.
+- <CodeReference path="executables/wasm/src/host/translation/memory.rs" /> — borrowed guest-memory view.
+- [Bindings reference](/reference/graphics-bindings) — supported call list and status codes.
+
 ## References / See also
 
 - <CodeReference path="subsystems/graphics/bindings_generator" />

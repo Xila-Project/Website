@@ -18,10 +18,12 @@ This section maps executable crates that run through the [Executable runtime cra
 - [Command line shell](/explanation/architecture/executables/command_line_shell): bounded parser/executor with composition, built-ins, and mounted-binary dispatch.
 - [Terminal](/explanation/architecture/executables/terminal): graphical terminal device surface that launches the command-line shell.
 
+The [Debug executable](/explanation/architecture/executables/debug) is a native diagnostics service for bounded task/memory inspection, UI snapshots and synthetic input. Its `/devices/debug/transport` endpoint must be protected by the hosting environment.
+
 ### Session and UI shell executables
 
 - [Graphical shell](/explanation/architecture/executables/graphical_shell): login and desktop session shell.
-- [Settings](/explanation/architecture/executables/settings): tab-based configuration UI (general/password/network/about).
+- [Settings](/explanation/architecture/executables/settings): tab-based configuration UI (general/appearance/password/network/about).
 - [File manager](/explanation/architecture/executables/file_manager): VFS-backed graphical file browser.
 
 ### Bundled WASM applications

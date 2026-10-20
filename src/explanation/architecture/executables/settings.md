@@ -39,7 +39,7 @@ The Settings executable is a tab-based graphical configuration application. It n
 
 ## Concurrency and event-loop model
 
-- Single periodic event loop (`sleep(50 ms)`) at executable level.
+- **Event-driven** executable loop: `Settings::handle_events()` drains the owning window's events and suspends on its registered window waker. It does not sleep at a fixed 50 ms cadence.
 - Tab handlers perform async operations when triggered by UI events; no internal worker task fan-out in top-level loop.
 
 ## Failure semantics
@@ -56,13 +56,35 @@ The Settings executable is a tab-based graphical configuration application. It n
 ## Operational limitations
 
 - Tab set is compile-time fixed.
-- Event polling interval is fixed and can impact perceived UI responsiveness.
+- Window-event processing is waker-driven. However, refreshing the Network tab is currently checked while events are being handled; its 30-second threshold does not create an independent periodic timer.
 
 ## Appearance and per-user homes
 
 The Appearance tab supports light/dark mode and five primary/secondary color presets. The Zinc-based palette updates existing windows immediately, including contrasting text colors.
 
 Each user has a private home directory at `/users/<uid>` (mode `0700`). Appearance preferences are stored in a small versioned record at `/users/<uid>/.appearance` (mode `0600`) and restored on login. The native and browser examples also restore the root user's appearance for the login screen. Changes are saved through a temporary-file replacement strategy; invalid records are rejected.
+
+## Tab composition and event scheduling
+
+`SettingsExecutable::new(vfs, task).await` installs `/configuration/shared/shortcuts/settings.json`. At launch, `Settings::new(context).await` creates an `OwnedWindow` and exactly five `Tab` variants: General, Appearance, Password, Network and About. The tab list is fixed at compile time.
+
+`Settings::handle_events()` acquires the graphics lock, dispatches an event to tabs until one handles it and then suspends on the window's registered waker. Window close/delete ends the task. There is no background worker for tab refresh.
+
+## Appearance, password and network contracts
+
+- Appearance reads the current task's user preferences from `/users/<uid>/.appearance` via `graphics::appearance::Appearance`. The tab applies colors to live windows before attempting to persist the versioned record. **Saving can fail after the UI change has already taken effect**, in which case an error status is shown.
+- The password tab gets the current task identity from Task and Users, checks the current password through `authentication::authenticate_user`, then persists the replacement through `change_user_password`. The current UI requires a non-empty current password, a non-empty new password, matching confirmation and **at least four characters**. This is UI validation, not a strong password-policy implementation; it means a seeded user with an empty password cannot use this screen without first addressing that flow.
+- The Network tab enumerates `/devices/network` and issues typed controls such as `GET_KIND` and `IS_LINK_UP`. Its refresh threshold is **30 seconds**, but it is evaluated within `handle_event`, not by a separate periodic timer.
+
+The graphical shell provisions user homes with restrictive permissions and restores appearance after login. The executable assumes the current VFS credentials permit reading and writing the relevant files.
+
+### Source and API references
+
+- <CodeReference path="executables/settings/src/settings.rs" /> — event loop and tab array.
+- <CodeReference path="executables/settings/src/tabs/appearance.rs" /> — immediate theme application and persistence.
+- <CodeReference path="executables/settings/src/tabs/password.rs" /> — password verification and mutation.
+- <CodeReference path="executables/settings/src/tabs/network/mod.rs" /> — VFS interface enumeration.
+- [Authentication library](/explanation/architecture/libraries/authentication) — password storage semantics.
 
 ## References
 

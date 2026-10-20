@@ -70,6 +70,7 @@ const componentGroups: DefaultTheme.SidebarItem[] = [
       ["Calculator", "calculator"],
       ["Clock", "clock"],
       ["Command line shell", "command_line_shell"],
+      ["Debug", "debug"],
       ["File manager", "file_manager"],
       ["Graphical shell", "graphical_shell"],
       ["Pixel Painter", "pixel_painter"],

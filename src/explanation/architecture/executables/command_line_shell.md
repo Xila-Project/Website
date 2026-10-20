@@ -61,6 +61,40 @@ Shell-owned syntax and streaming resources have explicit limits: a 4096-byte sou
 
 For exact syntax, statuses, limits, and built-in discovery, see the [shell reference](/reference/shell).
 
+## User-facing command invocation
+
+The shell treats each mode differently. With no arguments it reads an interactive prompt and parses input lines. With `-c` it treats exactly the following argument as a **shell source string**. Otherwise it receives already separated arguments and executes them **literally**, without reparsing metacharacters as shell syntax.
+
+```text
+command_line_shell -c "echo hello | grep hello"
+command_line_shell echo "hello world"
+```
+
+The first form parses a pipeline; the second supplies literal argument words. The `-c` mode requires exactly two arguments (the flag and the command source). Invalid UTF-8 input and oversized interactive lines return status 2.
+
+## Implementation boundaries
+
+- `tokenizer.rs` implements borrowed tokens and differentiates single quotes, double quotes, escapes, variable expansion and comments.
+- `parser.rs` validates all tokens before execution, with **4096 input bytes**, **256 tokens**, **32 commands** and **8 pipeline stages** as limits.
+- `execution.rs` handles conditions, streams, redirection and background tasks. Its **8192-byte** per-command expansion/output buffer bound and **512-byte** pipes provide backpressure.
+- `resolver.rs` scans configured `Paths` directories in order; the **first matching filename** wins. It is not equivalent to a host OS PATH lookup.
+- `commands/` contains the built-in dispatch table, including filesystem/network commands. Parent-shell state changes apply only to foreground built-ins; a pipeline or background command runs in its own child Shell.
+
+For example, a background command gets duplicated output/error streams but its stdin is redirected to `/devices/null`; the parent prompt can continue without blocking on that job. Background handles are reaped and the shell joins remaining jobs before exiting.
+
+## Status and failure details
+
+`$?` reflects the previous foreground status. Shell parsing failures return status 2, unknown commands 127, and most built-in errors 1. In a pipeline, the last stage's status wins after joining all stages; there is **no pipefail mode**. The shell does not offer globbing, command substitution, POSIX here-documents, shell-variable assignment statements or file-backed scripts.
+
+### Source and API references
+
+- <CodeReference path="executables/shell/command_line/src/lib.rs" /> — entrypoint and invocation modes.
+- <CodeReference path="executables/shell/command_line/src/tokenizer.rs" /> — tokenization and quoting.
+- <CodeReference path="executables/shell/command_line/src/parser.rs" /> — syntax validation and limits.
+- <CodeReference path="executables/shell/command_line/src/execution.rs" /> — composition and child tasks.
+- <CodeReference path="executables/shell/command_line/src/resolver.rs" /> — path lookup and precedence.
+- [Executable library](/explanation/architecture/libraries/executable) — native launch contract.
+
 ## References
 
 - <CodeReference path="executables/shell/command_line" />

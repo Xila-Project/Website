@@ -37,7 +37,7 @@ The terminal executable provides a graphical terminal window exposed as a charac
 ## Concurrency and event-loop model
 
 - Terminal executable runs a periodic loop with `sleep(20 ms)` while polling `handle_events`.
-- Device read/write paths use lock-protected terminal inner state (`RwLock<CriticalSectionRawMutex, Inner>`).
+- The GUI owns `RwLock<CriticalSectionRawMutex, Inner>` state. Reads also use a per-open `Waiter` and a bounded `WaitQueue<16>` to register wakers instead of repeatedly polling when input is empty.
 
 ## Failure semantics
 
@@ -51,8 +51,25 @@ The terminal executable provides a graphical terminal window exposed as a charac
 
 ## Operational limitations
 
-- Input is newline-validated; no advanced terminal emulation (PTY, ANSI parser state machine) is implemented here.
+- The input queue receives a line when Enter is pressed; no PTY or full ANSI terminal emulator is implemented. Output recognizes **a small subset** of ANSI-like clear/home sequences (`ESC[2J` and `ESC[H`) but not a general cursor/style parser.
 - UI/event loop cadence is fixed and may affect responsiveness under heavy output.
+
+## Device polling, input ownership and cleanup
+
+`TerminalExecutable::new(vfs, task)` installs the desktop shortcut. At runtime, `Terminal::new(graphics::ffi_manager())` creates the window and text widgets, and the launcher leaks the resulting `Terminal` into `'static` storage before mounting it as a character device at `/devices/terminal`. The launcher opens the same device three times through `Standard::open` for stdin, stdout and stderr, then calls `executable::execute(..., "/binaries/command_line_shell", ...)`.
+
+**I/O contract:** the device is a **contextual** `BaseOperations` + `CharacterDevice`, not a direct character device. Each open context gets its own `Waiter`. An empty blocking read registers a waker in `WaitQueue<16>` and returns `Poll::Pending`; cancellation and close unregister pending reads. When Enter is pressed, input bytes plus `\n` enter the queue and registered readers are notified. Output runs through `shared::utf8_chunks`; invalid UTF-8 bytes are skipped rather than preserved byte for byte.
+
+The terminal UI sleeps **20 ms** between event-processing calls while the command-line shell is scheduled independently. `print` uses try-locks and returns `RessourceBusy` under contention; the device maps this to `file_system::Error::RessourceBusy`.
+
+**Current lifecycle limitation:** the main executable ignores the returned shell `JoinHandle`; closing the window ends the terminal's outer event loop, but this code does not explicitly unmount `/devices/terminal`, free the leaked `Terminal` allocation, or join/terminate the shell child. Treat repeated mounts and window teardown as areas requiring dedicated lifecycle tests.
+
+### Source and API references
+
+- <CodeReference path="executables/terminal/src/lib.rs" /> — mount/open/launch sequence.
+- <CodeReference path="executables/terminal/src/device.rs" /> — polling, cancellation and stream operations.
+- <CodeReference path="executables/terminal/src/terminal.rs" /> — UI, input validation and output handling.
+- <CodeReference path="executables/terminal/src/executable.rs" /> — shortcut and trait wrapper.
 
 ## References
 
