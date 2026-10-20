@@ -19,6 +19,10 @@ This section maps executable crates that run through the [Executable runtime cra
 - [Terminal](/explanation/architecture/executables/terminal): graphical terminal device surface that launches the command-line shell.
 - [Debug](/explanation/architecture/executables/debug): live task/memory diagnostics, screenshots and synthetic UI input through a mounted debug transport.
 
+### Diagnostics executable
+
+- [Debug](/explanation/architecture/executables/debug): task and memory diagnostics, screen capture and remote UI input.
+
 ### Session and UI shell executables
 
 - [Graphical shell](/explanation/architecture/executables/graphical_shell): login and desktop session shell.
