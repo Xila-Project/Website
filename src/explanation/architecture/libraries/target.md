@@ -53,6 +53,38 @@ The `target` crate provides typed build-target introspection from Cargo-provided
 - Strict mappings catch unsupported targets early, but panic rather than returning recoverable errors.
 - Designed for compile target identity, not runtime device capability negotiation.
 
+## Public API and environment boundary
+
+`Target::get_current()` constructs a value with four typed dimensions: `Architecture`, `OperatingSystem`, `Family` and `Vendor`. `Target` exposes `get_architecture()`, `get_operating_system()` and `get_family()`; the individual enums expose `get()` and `get_raw()`. The vendor field is stored on `Target` but currently has no corresponding public `Target::get_vendor()` accessor.
+
+```rust
+// Intended for Cargo-driven build tooling with CARGO_CFG_TARGET_* set.
+let target = target::Target::get_current();
+let arch = target.get_architecture();
+let os = target.get_operating_system();
+```
+
+The implementation uses `std::env::var("CARGO_CFG_TARGET_ARCH")` and the matching OS/family/vendor variables at **function call time**, not `cfg!` or `option_env!`. These are supplied to build scripts by Cargo; they are not guaranteed to be present when executing an ordinary target binary. Calling `get_current` at runtime without those variables currently panics.
+
+## Supported variants and parsing behavior
+
+- `Architecture`: `X86`, `X86_64`, `Arm`, `Aarch64`, `Xtensa`, `RiscV`, `WASM32`, `WASM64`.
+- `OperatingSystem`: `Windows`, `Linux`, `MacOS`, `EspIdf`, `WASI`.
+- `Family`: `Unix`, `Windows`, `Wasm`.
+- `Vendor`: `Espressif` or `Unknown` for other strings.
+
+Unknown architecture, OS or family values panic in their `From<String>` implementations. This is intentionally strict but means the helper must be updated when supporting new target triples. Vendor parsing is more tolerant; it should not be used to assert precise chip identity.
+
+The crate depends on `std` and **is not a portable `no_std` runtime hardware detector**. Device discovery and feature negotiation belong to driver/platform integration.
+
+### Source and API references
+
+- <CodeReference path="libraries/target/src/lib.rs" /> — aggregate target.
+- <CodeReference path="libraries/target/src/architecture.rs" /> — architecture mapping.
+- <CodeReference path="libraries/target/src/operating_system.rs" /> — OS mapping.
+- <HostReference crate="target" kind="struct" symbol="Target" /> — typed build metadata.
+
+
 ## References
 
 - <HostReference crate="target" /> — generated Rust API documentation.
