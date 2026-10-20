@@ -63,6 +63,44 @@ For example, startup calls `authentication::load_all_users_and_groups(&context).
 - Hash algorithm selection is currently hardwired to SHA-512 device command path.
 - Storage format is file-per-user/group JSON; this is simple and inspectable but not optimized for large account sets.
 
+## Public API and account lifecycle
+
+Each operation receives `&authentication::Context`, which borrows the VFS, Task manager, Users manager and caller's `TaskIdentifier`. The core entrypoints are `load_all_users_and_groups`, `initialize_seeded`, `authenticate_user`, `create_user`, `create_group`, `change_user_password`, and `change_user_name`. Unlike a user-session manager, this library does not own a long-running authentication service.
+
+```rust
+let context = authentication::Context {
+    virtual_file_system: vfs,
+    task_manager,
+    users_manager,
+    task: task_id,
+};
+authentication::load_all_users_and_groups(&context).await?;
+let user = authentication::authenticate_user(&context, "alice", password).await?;
+```
+
+The example assumes the referenced services exist, and the caller has permission to access the account files and hash device. Each user and group has a JSON file under `/system/users` or `/system/groups`. Bulk loading imports **groups before users** so primary group memberships can be restored. Malformed entries encountered while reading are skipped, but failures to add a successfully parsed record to the in-memory manager are propagated.
+
+## First-install provisioning
+
+`initialize_seeded(&context)` checks the exact `application_metadata::PENDING_CONTENT` bytes at `/system/.seed-pending`, then loads existing groups and users. **An unmarked disk only loads records**; it does not create or replace the administrator account. When marked, it checks the expected administrator identifiers, provisions missing records through temporary files and rename, and removes the marker after success. Invalid or conflicting pre-existing identifiers are errors rather than a reason to overwrite credentials.
+
+## Security and consistency boundaries
+
+The current password construction concatenates password and salt, then asks `/devices/hasher` to produce a **SHA-512 digest**. Salt generation reads 16 bytes from `/devices/random` and maps each byte modulo 26 to a lowercase letter. It stores 16 characters, with **modulo bias and at most 26 choices per character**. This is a salted fast hash, **not** a modern deliberately slow, memory-hard password KDF such as Argon2id. Do not present it as equivalent to a hardened production password database.
+
+`create_user` and `create_group` update the in-memory Users manager **before** writing the persistent file. If hashing or storage subsequently fails, the function has no comprehensive transactional rollback; runtime state and disk may disagree. User/group names are used in filesystem path construction, so provisioning code must enforce its own trusted naming policy.
+
+The `users::Manager::check_credentials` placeholder is **not** used as password verification here: call `authenticate_user` when verifying a stored password. Reading malformed non-UTF-8 JSON currently reaches an `unwrap()` in some parsers, so input corruption can panic rather than returning a typed parsing error.
+
+### Source and API references
+
+- <CodeReference path="libraries/authentication/src/lib.rs" /> — Context and bulk loading.
+- <CodeReference path="libraries/authentication/src/seed.rs" /> — guarded administrator provisioning.
+- <CodeReference path="libraries/authentication/src/user.rs" /> — authentication and account mutation.
+- <CodeReference path="libraries/authentication/src/hash.rs" /> — actual salt/hash construction.
+- <HostReference crate="authentication" kind="struct" symbol="Context" /> — explicit capabilities.
+
+
 ## References
 
 - <HostReference crate="authentication" />
