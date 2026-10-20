@@ -92,7 +92,6 @@ A target storage driver must provide correct block geometry, read/program/erase 
 - <CodeReference path="libraries/little_fs/src/attributes.rs" /> — persisted metadata flags.
 - <HostReference crate="little_fs" kind="struct" symbol="FileSystem" /> — concrete backend.
 
-
 ## References
 
 - <HostReference crate="little_fs" />
