@@ -13,16 +13,16 @@ This section maps executable crates that run through the [Executable runtime cra
 ### Runtime and dispatch executables
 
 - [Bindings](/explanation/architecture/executables/bindings): guest/host graphics memory and handle translation within the executable runtime.
-- [Debug](/explanation/architecture/executables/debug): live task/memory diagnostics, screenshots and synthetic UI input through a mounted debug transport.
 
 - [WASM](/explanation/architecture/executables/wasm): Wasmi interpreter, WASI execution, cooperative scheduling, guest loading and guest-side API facade.
 - [Command line shell](/explanation/architecture/executables/command_line_shell): bounded parser/executor with composition, built-ins, and mounted-binary dispatch.
 - [Terminal](/explanation/architecture/executables/terminal): graphical terminal device surface that launches the command-line shell.
+- [Debug](/explanation/architecture/executables/debug): live task/memory diagnostics, screenshots and synthetic UI input through a mounted debug transport.
 
 ### Session and UI shell executables
 
 - [Graphical shell](/explanation/architecture/executables/graphical_shell): login and desktop session shell.
-- [Settings](/explanation/architecture/executables/settings): tab-based configuration UI (general/password/network/about).
+- [Settings](/explanation/architecture/executables/settings): tab-based configuration UI (general/appearance/password/network/about).
 - [File manager](/explanation/architecture/executables/file_manager): VFS-backed graphical file browser.
 
 ### Bundled WASM applications
