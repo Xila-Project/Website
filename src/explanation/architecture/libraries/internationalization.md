@@ -50,7 +50,6 @@ English fallback prevents missing-key failures but does not guarantee appropriat
 - <CodeReference path="docs/localization.md" /> — build and translation instructions.
 - [Graphics](/explanation/architecture/subsystems/graphics) — runtime text rendering.
 
-
 ## Related documentation
 
 - <HostReference crate="embedded_i18n" />
