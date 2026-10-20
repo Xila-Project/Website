@@ -56,6 +56,30 @@ The `bootsplash` crate provides a focused startup animation layer around the gra
 - Uses `std::os::raw::c_void` and LVGL callback ABI, so the implementation is intentionally low-level.
 - Animation is tightly tied to current logo part layout and not exposed as a generic animation graph.
 
+## Construction, animation and teardown
+
+`Bootsplash::new(graphics_manager: &'static graphics::Manager).await` obtains the Graphics lock, reads the active LVGL screen size, scales the logo to **30%** of the current screen dimension and picks its foreground from the screen's main text color. It constructs a `Logo` and starts a repeating LVGL opacity animation.
+
+The current animation uses values 64–255, **500 ms forward and 500 ms reverse**, an ease-in/out callback and an effectively indefinite repeat count. The callback cycles the four logo parts. Those exact values are design parameters, not part of the general Graphics contract.
+
+`Bootsplash::stop(self, graphics_manager).await` consumes the splash, takes the Graphics lock, deletes the matching animation callback/variable pair and then lets Rust drop the logo. **Call `stop` explicitly** before releasing the logo or ending the graphics runtime: simply dropping an active splash does not execute the animation-deletion path shown in `stop`.
+
+```rust
+let splash = bootsplash::Bootsplash::new(graphics_manager).await?;
+// Continue initializing the runtime while the graphics loop renders.
+splash.stop(graphics_manager).await?;
+```
+
+The example assumes the Graphics service is running and `graphics_manager` has a `'static` lifetime. An initialized screen and progressing LVGL timer handler are prerequisites for visible animation.
+
+## Ownership and portability caveats
+
+The library owns a boxed `lv_anim_t` and a Graphics `Logo`, but the animation is registered through an unsafe C callback and a static mutable animation-part index. It is therefore **not a reentrant generic animation component**: multiple concurrent splashes and arbitrary LVGL lifecycle resets require care. Its `std::os::raw::c_void` import means the implementation is not universally `no_std` even though many Xila libraries are.
+
+- <CodeReference path="libraries/bootsplash/src/lib.rs" /> — actual animation and stop sequence.
+- <HostReference crate="bootsplash" kind="struct" symbol="Bootsplash" /> — construction/teardown API.
+
+
 ## References
 
 - <HostReference crate="bootsplash" /> — generated Rust API documentation.
