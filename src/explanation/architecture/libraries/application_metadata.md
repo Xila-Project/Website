@@ -41,4 +41,3 @@ There is no singleton or mutable registry; all returned shortcut strings are own
 - <CodeReference path="libraries/application_metadata/src/lib.rs" /> — inventories, seed constants and JSON format.
 - [Authentication](/explanation/architecture/libraries/authentication) — reads the seed marker.
 - [Executable](/explanation/architecture/libraries/executable) — consumes launch paths.
-
