@@ -42,7 +42,7 @@ The graphical shell executable is the session shell that transitions from login 
 
 - Argument parse failures are printed to stderr and return non-zero.
 - Environment-variable update failures propagate via `Error::FailedToSetEnvironmentVariable`.
-- UI initialization failures (`Layout::new`, `Login::new`, `Desk::new`, `Home::new`) propagate as executable error.
+- Desk/Home creation and session environment failures propagate as executable errors. **Layout and Login constructors are currently unwrapped in `Shell::new` and can panic** during initialization.
 
 ## Contract vs implementation
 
@@ -52,7 +52,34 @@ The graphical shell executable is the session shell that transitions from login 
 ## Operational limitations
 
 - Loop cadence is fixed (50 ms sleep), which trades responsiveness for predictable CPU usage.
-- Session state is task-environment-based; cross-task session propagation relies on external task model behavior.
+- Login updates the **current task's user identity**, its `HOME` directory and `User` environment variable. Inheritance to child tasks follows the Task manager, not a global session registry.
+
+## Authentication and session ownership
+
+`ShellExecutable` implements the native `ExecutableTrait` interface. `GraphicalShellArguments` is parsed with `getargs`, including `--show-keyboard` (`-k`). `--help` and `--version` print to stdout and exit successfully; invalid options report a nonzero status.
+
+The login widget verifies username/password with `authentication::authenticate_user`. Upon success it:
+
+1. Uses `VirtualFileSystem::ensure_user_home(task, user)` to create or locate the private home directory.
+2. Sets the Task environment's `HOME` and changes the current task's user ID.
+3. Restores appearance through `graphics::appearance::restore_appearance`.
+4. Resolves the username and stores it as the task's `User` environment variable.
+5. Constructs the Desktop (`Desk`) and Home-button overlay (`Home`) before dropping the login UI.
+
+`Desk` discovers desktop launchers from the shortcuts directory under `/configuration/shared/shortcuts` and launches them with the executable runtime. Its dock reflects live windows and supports window-management actions. The desktop and Home bar hold LVGL object pointers and register C callbacks; Graphics locking and window ownership are required for safe lifecycle transitions.
+
+## Scheduling and failure boundaries
+
+The outer session loop sleeps **50 ms** between handling layout, login and desktop events. Most work is event-driven within that loop; the shell itself does not implement a preemptive UI scheduler. Layout/Login construction currently uses `unwrap`; distinguish that panic path from the typed errors returned by subsequent Desk/Home construction.
+
+Login is not an external authorization service: account persistence and password verification belong to Authentication, task identity to Task/Users, and file permissions to VFS.
+
+### Source and API references
+
+- <CodeReference path="executables/shell/graphical/src/lib.rs" /> — CLI, session transition and cadence.
+- <CodeReference path="executables/shell/graphical/src/login.rs" /> — authentication, HOME and task identity.
+- <CodeReference path="executables/shell/graphical/src/desk.rs" /> — shortcut loading, dock and window handling.
+- <CodeReference path="executables/shell/graphical/src/home.rs" /> — Home gesture and overlay.
 
 ## References
 
