@@ -50,6 +50,52 @@ The native and browser examples now start from pre-seeded LittleFS images contai
 
 Exact option defaults and constraints live in the [runtime reference](/reference/wasm-runtime#execution-limits).
 
+## Runner command and guest entrypoint contract
+
+The native `WasmExecutable` implements `ExecutableTrait` and normally runs as the mounted `/binaries/wasm` program. Its arguments are parsed by `getargs`:
+
+```text
+wasm /binaries/calculator
+wasm --install /binaries/calculator
+wasm --instruction-limit 50000 /binaries/clock
+wasm /binaries/tool -- first-argument --guest-option
+```
+
+`--install` selects the typed `__install: () -> ()` guest export rather than the normal `_start: () -> ()`; installers are optional per application. A literal `--` separates runner options from guest arguments, which become WASI `argv` after the guest's path. `--help`/`--version` exit successfully; parsing errors return nonzero status.
+
+`--instruction-limit` defaults to **100,000** and must be a nonzero `u32`. It is a **cooperative instruction quantum**, not a total instruction budget or an execution timeout. `--stack-size` defaults to 4096 but is currently a **legacy parsed option with no effect**: the code explicitly discards its value and Wasmi manages stack allocation.
+
+## Per-execution ownership and WASI descriptors
+
+Each invocation creates a new Wasmi engine/module/linker/store; there is no shared module cache. The engine enables fuel consumption and **eager** translation, avoiding suspended execution during lazy callee compilation. The store embeds `GlobalStore` with a dedicated `WasiContext`, optional `GraphicsState`, the caller's `ExecutableContext`, and pending suspension state.
+
+The guest receives `fd 0/1/2` from duplicated `Standard` streams. If opening the VFS root directory succeeds, it is preopened as `fd 3` with name `/`, and the next allocated descriptor is 4; otherwise the preopen is absent. Descriptor IDs increase monotonically and are not reused by `WasiContext` until a new execution.
+
+The host registers a subset of WASI Preview 1: process/exit, environment/args, file/directory/path I/O, time, random, scheduling and clock-only `poll_oneoff`. This is **not** a complete POSIX or WASI implementation: arbitrary FD readiness, start-section yielding and unrestricted native graphics pointers remain unsupported.
+
+## Cooperative suspension, time and exit values
+
+`execution::run` resumes a typed Wasmi call. On `OutOfFuel`, it yields to the Task scheduler, replenishes fuel to at least the amount needed by a single bulk operation, then resumes. Supported host suspension includes a yield import and clock-poll events; a pending clock poll sleeps in chunks capped at **50 ms** to check for shutdown and deadlines.
+
+The monotonic WASI clock is sourced from `embassy_time::Instant`, **not** by subtracting Xila's mutable wall clock. This prevents wall-clock corrections from shifting monotonic poll deadlines. A clock device failure on the wall-time side becomes a Wasmi clock error.
+
+`proc_exit(0)` succeeds; positive guest exit statuses propagate, clamped to **1–255** at the external executable boundary. Module loading/validation, missing exports, instantiation and traps produce runtime errors. VM-local graphics state is reclaimed on teardown, including trap paths.
+
+## Build modes and integration testing
+
+Cargo features distinguish `host` (Wasmi), `guest` (guest-side imports), optional `graphics`, `memory_32`/`memory_64`, and `c_bindings`/`default_guest`. The host runs on both native targets and inside the browser's **host** environment; being in the browser does not make host Wasmi code a guest.
+
+Graphics calls are versioned with the LVGL configuration used to generate the bindings. Guest applications and reference disks must be rebuilt with matching host-side bindings after ABI changes.
+
+### Source references
+
+- <CodeReference path="executables/wasm/src/host/main.rs" /> — options, modules and descriptor setup.
+- <CodeReference path="executables/wasm/src/host/execution.rs" /> — resumable calls, fuel and clock polling.
+- <CodeReference path="executables/wasm/src/host/wasi/context.rs" /> — descriptor table and ownership.
+- <CodeReference path="executables/wasm/src/host/wasi/register.rs" /> — implemented WASI imports.
+- <CodeReference path="executables/wasm/Cargo.toml" /> — host/guest/graphics feature gates.
+- [Graphics bindings](/explanation/architecture/executables/bindings) — checked guest UI boundary.
+
 ## References
 
 - <HostReference crate="wasm" /> — host-side interpreter and integration APIs.
