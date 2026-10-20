@@ -100,7 +100,6 @@ The `users::Manager::check_credentials` placeholder is **not** used as password 
 - <CodeReference path="libraries/authentication/src/hash.rs" /> — actual salt/hash construction.
 - <HostReference crate="authentication" kind="struct" symbol="Context" /> — explicit capabilities.
 
-
 ## References
 
 - <HostReference crate="authentication" />
