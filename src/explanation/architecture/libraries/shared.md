@@ -85,7 +85,6 @@ These helpers do not register global services and their data lifetimes remain wi
 - <CodeReference path="libraries/shared/src/utf8.rs" /> — lossy UTF-8 iteration.
 - <HostReference crate="shared" kind="struct" symbol="AnyByLayout" /> — device-control payload helper.
 
-
 ## References
 
 - <HostReference crate="shared" />
