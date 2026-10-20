@@ -22,11 +22,11 @@ The separate `ghcr.io/xila-project/xila-runtime` image contains the **headless X
 
 ## Three different execution contexts
 
-| Context      | What executes                                                 | Relevant target                                     |
-| ------------ | ------------------------------------------------------------- | --------------------------------------------------- |
-| Native host  | Xila linked with native drivers in a Linux process            | Current host checks use `x86_64-unknown-linux-gnu`. |
-| WASI guest   | An application interpreted inside Xila's Wasmi runtime        | Application builds use `wasm32-wasip1`.             |
-| Browser host | Xila itself running in the browser, also hosting WASI guests  | Example builds use `wasm32-unknown-unknown`.        |
+| Context      | What executes                                                | Relevant target                                     |
+| ------------ | ------------------------------------------------------------ | --------------------------------------------------- |
+| Native host  | Xila linked with native drivers in a Linux process           | Current host checks use `x86_64-unknown-linux-gnu`. |
+| WASI guest   | An application interpreted inside Xila's Wasmi runtime       | Application builds use `wasm32-wasip1`.             |
+| Browser host | Xila itself running in the browser, also hosting WASI guests | Example builds use `wasm32-unknown-unknown`.        |
 
 The `wasm` package's `host` feature means it hosts guest programs; it does not imply that every host runtime is a desktop application. Guest-library checks use `wasm32-unknown-unknown` with defaults disabled and `default_guest` enabled; these complement actual `wasm32-wasip1` application builds.
 
