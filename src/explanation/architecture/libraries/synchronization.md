@@ -86,7 +86,6 @@ The no-atomic fallback allocates an `ArcInner<T>` on the heap. Its reference cou
 - <CodeReference path="libraries/synchronization/src/arc/arc_lock.rs" /> — reference-counted fallback.
 - <HostReference crate="synchronization" /> — Rustdoc of re-exported primitives.
 
-
 ## References
 
 - <HostReference crate="synchronization" />
