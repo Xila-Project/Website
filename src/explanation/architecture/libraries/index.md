@@ -13,13 +13,14 @@ Libraries expose reusable contracts, types, protocols, algorithms, adapters and 
 - [Shared](/explanation/architecture/libraries/shared): portable shared types and helpers. <HostReference crate="shared" />.
 - [Synchronization](/explanation/architecture/libraries/synchronization): synchronization abstractions. <HostReference crate="synchronization" />.
 - [Target](/explanation/architecture/libraries/target): target/build configuration utilities. <HostReference crate="target" />.
-- [Internationalization](/explanation/architecture/libraries/internationalization): external `embedded-i18n` integration and build-time locales. <HostReference crate="internationalization" />.
+- [Internationalization](/explanation/architecture/libraries/internationalization): external `embedded-i18n` integration and build-time locales. <HostReference crate="embedded_i18n" />.
 
 ## Contracts and implementations
 
 - [File system](/explanation/architecture/libraries/file_system): filesystem, path and device I/O contracts. <HostReference crate="file_system" />.
-- [LittleFS](/explanation/architecture/libraries/little_fs): concrete embedded filesystem implementation. <HostReference crate="littlefs" />.
+- [LittleFS](/explanation/architecture/libraries/little_fs): concrete embedded filesystem implementation. <HostReference crate="little_fs" />.
 - [Device](/explanation/architecture/libraries/device): device-control and backend-independent neural-network inference contracts. <HostReference crate="device" />.
+- [Debug protocol](/explanation/architecture/libraries/debug_protocol): headless diagnostics requests, UI input and screenshot frame validation. <HostReference crate="debug_protocol" />.
 - [Peripherals](/explanation/architecture/libraries/peripherals): embedded-hal GPIO contract and fixed-capacity mock. <HostReference crate="peripherals" />.
 - [Audio](/explanation/architecture/libraries/audio): bounded PCM device contract, buffers and mixer implementation. <HostReference crate="audio" />.
 
@@ -33,3 +34,11 @@ Libraries expose reusable contracts, types, protocols, algorithms, adapters and 
 - [Testing](/explanation/architecture/libraries/testing): test assembly helpers.
 
 See [Subsystems](/explanation/architecture/subsystems/) for runtime owners, [Drivers](/explanation/architecture/drivers/) for target implementations and [Executables](/explanation/architecture/executables/) for launched programs and Wasmi integration.
+
+## Library API boundaries
+
+Each page describes **what code may rely on**, **how resources and lifetimes are managed**, and **what remains incomplete**. Distinguish the named Cargo crate from the runtime owner: for example, `audio` manages caller-owned PCM streams while [Graphics](/explanation/architecture/subsystems/graphics) owns the active LVGL runtime.
+
+For code links, the Core repository uses `libraries/<crate>/` after [Core #457](https://github.com/xila-project/core/pull/457). The eight runtime-owned services instead live under `subsystems/`. Internationalization is an **external embedded-i18n integration**, not a separate first-party crate, so use its page for build-time locale workflows.
+
+When extending one of these APIs, check the direct source links in its page and the generated host Rustdoc for exact method names, feature gates, preconditions, error types and ownership constraints.
