@@ -89,6 +89,27 @@ graph TD
 - Runtime operations return typed `graphics::Error` for invalid window identifiers and object failures.
 - Event queue and object pointer misuse can surface as runtime failures if ownership rules are violated.
 
+## Runtime inspection and synthetic input
+
+The manager installs **graphics-owned virtual pointer and keypad devices** even without a physical input device. This enables diagnostics and UI automation through the same LVGL runtime as normal applications.
+
+- `get_resolution()` reads the active display resolution. `inject_pointer_move(point)` rejects negative positions and coordinates beyond the right or bottom edge.
+- `inject_pointer_button(state)`, `inject_key(key, state)` and `inject_text(text)` enqueue input events; text injection is limited to **printable ASCII**.
+- `inspect_ui_tree(max_elements, max_depth)` returns a bounded tree snapshot with a truncation indicator. Its element IDs are **snapshot-local indexes**, not persistent LVGL object handles.
+- `capture_screen()` captures the active screen into an owned RGBA8888 snapshot. Inspection and capture report `NotAvailable` when their required UI/display state is missing.
+
+These operations acquire the graphics lock. Callers should neither retain raw LVGL pointers across calls nor reuse snapshot indexes after a new snapshot.
+
+### Example: inspect the UI
+
+```rust
+let resolution = graphics_manager.get_resolution().await?;
+let snapshot = graphics_manager.inspect_ui_tree(128, 8).await?;
+let screenshot = graphics_manager.capture_screen().await?;
+```
+
+This snippet assumes an initialized `graphics_manager` with an active display. The graphics loop must still be scheduled to process LVGL timers and queued input. See Rustdoc for the concrete snapshot types.
+
 ## Extension points
 
 - Add additional input devices at runtime.
@@ -111,4 +132,7 @@ graph TD
 ## References / See also
 
 - <HostReference crate="graphics" />
+- <HostReference crate="graphics" kind="struct" symbol="Manager" /> — runtime API.
+- <CodeReference path="subsystems/graphics/src/manager.rs" /> — lifecycle, inspection and synthetic input.
+- <CodeReference path="subsystems/graphics/src/window.rs" /> — window ownership and events.
 - [File system](/explanation/architecture/libraries/file_system)

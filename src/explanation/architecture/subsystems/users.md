@@ -105,6 +105,22 @@ graph TD
 
 Persistent groups are loaded before users. Registering a restored user tolerates primary-group membership already present in the saved group; duplicate user identifiers and names still fail.
 
+## Registry invariants and implementation caveats
+
+The manager stores users and groups in `BTreeMap` collections behind an asynchronous `RwLock<CriticalSectionRawMutex, _>`; each group's membership is a `BTreeSet<UserIdentifier>`. `Manager::new()` creates the root user and root group. Identifier allocation helpers scan from their minimum value until an unused identifier is found and report `TooManyUsers` or `TooManyGroups` at the limit.
+
+`add_user(id, name, primary_group)` rejects duplicate user IDs and names. The implementation inserts the user into the map before resolving the primary group. **A missing primary group therefore returns `InvalidGroupIdentifier` after the user record was inserted**, so callers should validate that the group exists before calling `add_user`. The group membership insertion is idempotent to support restoration of previously loaded membership. The initial root group is constructed with an empty membership set, so `is_in_group(UserIdentifier::ROOT, GroupIdentifier::ROOT)` does not automatically return true solely because the root user has that primary group.
+
+`add_group(id, name, users)` rejects duplicate group IDs and names, and initializes membership from the supplied slice. `add_to_group()` checks group existence, then inserts a user identifier; it does not itself verify that the user exists. Membership queries read the group sets, not a separately maintained reverse index.
+
+`check_credentials()` currently returns `true` unconditionally. **Do not treat it as an authentication or authorization boundary.** Credential verification and session policy must be provided by the appropriate authentication component. The registry itself is in-memory; persistence is handled by surrounding system integration rather than automatically by `Manager`.
+
+### Implementation references
+
+- <CodeReference path="subsystems/users/src/manager.rs" />
+- <HostReference crate="users" kind="struct" symbol="Manager" />
+- [Authentication library](/explanation/architecture/libraries/authentication)
+
 ## References / See also
 
 - <HostReference crate="users" />

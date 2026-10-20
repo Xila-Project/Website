@@ -97,6 +97,16 @@ That puts an important responsibility on backend implementations: they must pres
 
 The module also does not own platform heap discovery or linker-region setup. Those are established by the target/platform integration and then presented through the allocator implementation.
 
+## Concrete API and edge cases
+
+`unsafe allocate(CapabilityFlags, Layout)` returns a raw pointer and deliberately returns **null for a zero-sized layout**. Null also signals allocation failure. `unsafe deallocate(pointer, layout)` ignores null, while a non-null pointer must come from the same allocator and use its original layout.
+
+`unsafe reallocate(pointer, old_layout, new_size)` retains the original alignment; a null old pointer instead allocates with empty capabilities. The wrapper currently falls back to the old layout if constructing a new layout fails, so a caller must not assume an invalid size request was honored. The trait's default reallocation copies overlapping bytes to a new allocation, releasing the original only on success.
+
+The reported `get_used()`, `get_free()`, and `get_total_size()` counters describe the **selected backend's accounting**, not necessarily all memory in the device. `ManagerTrait` defaults to a 4096-byte page size and no-op cache flushes; an embedded backend must override those hooks when hardware requires other behavior.
+
+This wrapper does not make raw pointers safe: layout, ownership, and lifetime invariants remain the responsibility of caller and backend.
+
 ## Contract and implementation boundary
 
 Code outside Memory should rely on allocation/deallocation semantics, `Layout`, capability requirements, statistics, and cache/page hooks. It should not rely on one allocator algorithm, one heap layout, or one synchronization strategy being universal across Xila targets.
@@ -106,6 +116,7 @@ Code outside Memory should rely on allocation/deallocation semantics, `Layout`, 
 - <HostReference crate="memory" /> — complete host-side Memory Rustdoc.
 - <HostReference crate="memory" kind="trait" symbol="ManagerTrait" /> — allocator backend contract.
 - <HostReference crate="memory" kind="struct" symbol="Manager" /> — runtime and `GlobalAlloc` wrapper.
-- <CodeReference path="subsystems/memory" /> — current module implementation.
+- <CodeReference path="subsystems/memory/src/manager.rs" /> — allocation and global allocator wrapper.
+- <CodeReference path="subsystems/memory/src/trait.rs" /> — backend contract and cache hooks.
 - [Drivers](/explanation/architecture/drivers) — where target-specific mechanisms meet portable contracts.
 - [Synchronization](/explanation/architecture/libraries/synchronization) — synchronization primitives used across Core.

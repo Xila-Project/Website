@@ -23,6 +23,6 @@ The contract does **not** provide inference kernels, production backends, model 
 ## References
 
 - <HostReference crate="device" />
-- <CodeReference path="modules/device/src/hash.rs" />
-- <CodeReference path="modules/device/src/neural_network.rs" />
+- <CodeReference path="libraries/device/src/hash.rs" />
+- <CodeReference path="libraries/device/src/neural_network.rs" />
 - [Drivers](/explanation/architecture/drivers)

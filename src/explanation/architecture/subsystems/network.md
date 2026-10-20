@@ -110,6 +110,25 @@ Protocol-specific failures are translated from `smoltcp` into the Network module
 
 Scheduling is another boundary. Because the runner executes cooperatively, a starved runner delays protocol progress and therefore increases socket latency. The module does not provide preemptive guarantees beyond what the configured task executors can deliver.
 
+## Public API and lifecycle caveats
+
+A manager is constructed with references to Task, VFS, Time and a random device. `mount_interface(task, name, device, controller_device, spawner)` requires a `smoltcp::phy::Device` and a `DirectCharacterDevice` control endpoint. An optional spawner selects the runner's executor. Interface names must be unique within one manager.
+
+TCP and other socket constructors require explicit buffer capacities:
+
+```rust
+let socket = network_manager.new_tcp_socket(2048, 2048, None).await?;
+let addresses = network_manager
+    .resolve("example.org", network::DnsQueryKind::A, true, None)
+    .await?;
+```
+
+`None` selects the first **available** interface. TCP send/receive buffers are allocated on creation; size them consciously on embedded targets. UDP and ICMP also require packet-metadata buffer capacities. An IP literal passed to `resolve` returns immediately without a DNS lookup.
+
+The current `mount_interface` starts its runner **before** creating and mounting the VFS control endpoint, and appends the stack to the manager list only after a successful mount. If a subsequent VFS step fails, the method does not explicitly roll back the runner. Report partial mount failures rather than assuming cleanup.
+
+`get_smoltcp_time` expects the time-device read to succeed; a failed read currently panics at that conversion boundary rather than returning a network error.
+
 ## Extension points and trade-offs
 
 A new platform can integrate networking by providing a `smoltcp::phy::Device` plus its controller device; the Network manager above that pair remains the same. New typed socket wrappers can be layered over the stack/socket-set abstraction, and the device command family can grow as portable control needs evolve.
@@ -120,7 +139,8 @@ Capability still varies by backend. A portable command can only be as meaningful
 
 - <HostReference crate="network" /> — complete host-side Network Rustdoc.
 - <HostReference crate="network" kind="struct" symbol="Manager" /> — interface and socket manager API.
-- <CodeReference path="subsystems/network" /> — current module implementation.
+- <CodeReference path="subsystems/network/src/manager/mod.rs" /> — mount and socket APIs.
+- <CodeReference path="subsystems/network/src/manager/runner.rs" /> — interface runner.
 - [Virtual file system](/explanation/architecture/subsystems/virtual_file_system) — the namespace hosting interface control devices.
 - [Task](/explanation/architecture/subsystems/task) — the cooperative runner execution model.
 - [Std driver](/explanation/architecture/drivers/std) and [WASM driver](/explanation/architecture/drivers/wasm) — examples of target adaptation around the portable services.

@@ -67,5 +67,5 @@ Board-specific adapters remain separate work. A passing mock test does not estab
 ## Source and API references
 
 - <HostReference crate="peripherals" />
-- <CodeReference path="modules/peripherals/src/gpio.rs" />
+- <CodeReference path="libraries/peripherals/src/gpio.rs" />
 - [Drivers](/explanation/architecture/drivers)

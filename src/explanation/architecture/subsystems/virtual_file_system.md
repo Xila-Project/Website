@@ -74,7 +74,7 @@ Resolving a path is not the end of the VFS's job. Open files/directories and mou
 
 An unmount can therefore report a busy resource while references are alive. A forced unmount deliberately overrides that protection. This is an architectural consequence of exposing long-lived typed handles rather than copying every operation into a stateless path request.
 
-For async operations that encounter a temporarily busy backend, the VFS `poll(...)` helper cooperatively yields through Task and retries. A handle opened with the non-blocking state instead surfaces the busy condition rather than waiting for it to clear.
+For async file reads, writes, flushes and controls, an operation-specific `poll_fn` waits for the backend to signal progress; cancellation unregisters pending operations. The separate VFS `poll(...)` helper for synchronous metadata is a one-shot call and **does not** retry a busy backend. A file opened with the non-blocking state surfaces the busy condition instead of registering an asynchronous waiter.
 
 ## Under the hood
 
@@ -121,7 +121,7 @@ Those collection choices, lock boundaries, inode maps, and reference-count strat
 - `/system` — system-owned data such as `/system/users` and `/system/groups`;
 - `/temporary` — temporary data expected to be cleared across reboot/runtime recreation.
 
-The root backend provides the base tree, while additional file systems and devices can be mounted into that namespace later.
+The root backend provides the base tree, while additional file systems and devices can be mounted into that namespace later. `create_default_hierarchy` creates directories and applies baseline permissions; it does **not** itself implement automatic temporary-directory cleanup or log rotation.
 
 ## Failure and policy boundaries
 
@@ -130,6 +130,32 @@ A path can fail before the backend is called: the path may be invalid, its mount
 This distinction is useful when debugging: `PermissionDenied` is a policy decision made before backend execution, while a backend `NotFound`/IO failure describes what happened after routing to the selected implementation.
 
 Device cleanup helpers intentionally tolerate stale device identifiers in expected cleanup cases, making repeated startup cleanup more idempotent. By contrast, live-reference protection on unmount is deliberately strict unless force is requested.
+
+## Async operation semantics and cancellation
+
+The current VFS explicitly distinguishes operations that can be polled from synchronous metadata calls:
+
+- `File::read`, `File::write`, `File::flush` and typed `File::control` use `core::future::poll_fn` through the operation layer in blocking mode. A device can return `Pending` and arrange wake-up.
+- Dropping one of those futures drops an operation guard that calls `cancel_operation`, detaching its device registration. This is important when a guest exits, cancels work or abandons an async file call.
+- Files opened with `StateFlags::NonBlocking` instead issue synchronous attempts and return available data or busy/error directly.
+- `virtual_file_system::poll(operation)` is currently a **one-shot call**, not a busy-retry loop. It runs the supplied closure exactly once and returns its result. Metadata operations using it can surface `RessourceBusy` immediately.
+
+### Example: read a named file
+
+```rust
+let mut file = virtual_file_system::File::open(
+    vfs,
+    task_id,
+    file_system::Path::from_str("/data/config.json"),
+    file_system::Flags::new(file_system::AccessFlags::Read, None, None),
+)
+.await?;
+let mut bytes = [0u8; 256];
+let count = file.read(&mut bytes).await?;
+file.close(vfs).await?;
+```
+
+This is an integration example: `vfs` and `task_id` come from the assembled runtime, and errors must be handled for absent files, permissions or unsupported operations. Like other reads, the result may be shorter than the supplied buffer.
 
 ## Limitations and trade-offs
 
@@ -145,7 +171,11 @@ New file systems can be integrated by implementing the file-system contracts and
 - <HostReference crate="virtual_file_system" kind="struct" symbol="VirtualFileSystem" /> — namespace and mount manager API.
 - <HostReference crate="virtual_file_system" kind="struct" symbol="File" /> — async file handle API.
 - <HostReference crate="file_system" kind="trait" symbol="FileSystemOperations" /> — backend contract consumed by the VFS.
-- <CodeReference path="subsystems/virtual_file_system" /> — current VFS implementation.
+- <CodeReference path="subsystems/virtual_file_system/src/file_system/mod.rs" /> — mount and path routing.
+- <CodeReference path="subsystems/virtual_file_system/src/file.rs" /> — async file API.
+- <CodeReference path="subsystems/virtual_file_system/src/operation.rs" /> — poll and cancellation guard.
+- <CodeReference path="subsystems/virtual_file_system/src/lib.rs" /> — one-shot metadata poll.
+- <CodeReference path="subsystems/virtual_file_system/src/hierarchy.rs" /> — actual default directory tree.
 - [File-system crate](/explanation/architecture/libraries/file_system) — shared storage/device contracts beneath the VFS.
 - [Network](/explanation/architecture/subsystems/network) — an example of a module exposing control devices through the namespace.
 - [Task](/explanation/architecture/subsystems/task) and [Users](/explanation/architecture/subsystems/users) — identity context used by VFS policy.

@@ -93,6 +93,31 @@ graph TD
 - Accuracy/monotonic behavior depends entirely on device implementation.
 - Wire contract currently assumes compatible `Duration` representation at device boundary.
 
+## Implementation details and clock semantics
+
+The current manager is a small adapter around a borrowed `DirectCharacterDevice + Send + Sync`. Construction reads the device once and stores that `Duration` as `start_time`. Each `get_current_time()` call reads a fresh `Duration` directly from the device at offset zero; it does not cache or interpolate between reads.
+
+`get_current_time_since_startup()` returns `current_time.abs_diff(start_time)`. This is **not an independently monotonic clock**: if the underlying clock moves backwards, the reported elapsed value can still increase because the implementation uses an absolute difference. Callers requiring monotonic deadlines must use a separate monotonic time source.
+
+The device read uses the in-memory representation of `core::time::Duration` as a byte buffer. This makes the driver/manager boundary dependent on the expected representation and exact read behavior; it is not a stable cross-platform serialized timestamp format.
+
+`Manager::new(&device)` returns an owned manager borrowing the device, while `initialize(&'static device)` is a compatibility constructor returning `Manager<'static>`, **not** a global singleton. Construction and reads propagate device errors.
+
+### Example
+
+```rust
+let clock = time::Manager::new(&device)?;
+let now = clock.get_current_time()?;
+let elapsed = clock.get_current_time_since_startup()?;
+```
+
+The example assumes `device` implements the required direct character-device contract. Timezone names, daylight-saving transitions, persistent wall-clock configuration and NTP synchronization are not handled by this manager.
+
+### Implementation references
+
+- <CodeReference path="subsystems/time/src/manager.rs" />
+- <HostReference crate="time" kind="struct" symbol="Manager" />
+
 ## References / See also
 
 - <HostReference crate="time" />
