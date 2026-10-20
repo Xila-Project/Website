@@ -50,6 +50,33 @@ The calculator executable provides a scientific-expression evaluation UI primari
 - Intended runtime is wasm32; native targets only print fallback message.
 - The guest handles window-close events and exits; the runtime then removes its owned window and children. Calculator is embedded and installed by the browser example and is covered by native headless acceptance tests.
 
+## Evaluation engine and numerical semantics
+
+The expression engine lives in `engine.rs` and delegates parsing/evaluation to **`nanoexpr`**. `evaluate_expression(input, radian_mode) -> Result<Exact<14, 99>, String>` uses an exact-number representation when possible. For example, `0.1 + 0.2` evaluates to the exact fraction `3/10`; an irrational result such as `sqrt(2)` falls back to a limited-precision decimal.
+
+Supported calculator actions include ordinary arithmetic, percent notation, factorial, implicit multiplication and the functions `sqr`, `cube`, `pow10`, `inv`, `sin`, `cos`, `tan`. When radian mode is disabled, the engine converts degree arguments using π/180 before trigonometric evaluation. The expression evaluator is depth-bounded (`Evaluator::<_, 4>`), so it is intentionally not a full symbolic algebra environment.
+
+```rust
+// From executables/calculator/src/engine.rs, enabled in WASM builds/tests.
+let result = evaluate_expression("1 / 3 + 1 / 6", true)?;
+assert_eq!(result.to_string(), "1/2");
+```
+
+The code assumes access to the internal `engine` module: it illustrates the evaluator's contract, **not an exported crate-level API**. Parsing or domain errors include localized explanations and source spans, such as `Division by zero (0..5)`.
+
+## Guest lifecycle and graphics boundary
+
+On `wasm32`, the main function creates `Interface` and enters its LVGL event loop; non-WASM builds display an informational message instead of launching the UI. The guest uses checked graphics calls, button-matrix events and owned temporary expression strings. The host must expose a compatible subset of the graphics ABI; arbitrary LVGL calls are not automatically available to the guest.
+
+Calculator does not write its expression history to VFS. It depends on the window and the guest runtime's event scheduling, and the `main` path currently uses `unwrap` for UI setup/run failures.
+
+### Source references
+
+- <CodeReference path="executables/calculator/src/engine.rs" /> — numerical model, supported functions and tests.
+- <CodeReference path="executables/calculator/src/interface.rs" /> — button matrix, event handling and display.
+- <CodeReference path="executables/calculator/src/main.rs" /> — target-specific startup.
+- <CodeReference path="executables/calculator/src/install.rs" /> — launcher shortcut installation.
+
 ## References
 
 - <CodeReference path="executables/calculator" />
