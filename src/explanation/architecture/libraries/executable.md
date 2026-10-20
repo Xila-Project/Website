@@ -102,7 +102,6 @@ Mounting is done through `ExecutableWrapper::new` or `mount_executables!`. The l
 - <CodeReference path="libraries/executable/src/standard.rs" /> — stdio ownership and read behavior.
 - <HostReference crate="executable" kind="trait" symbol="ExecutableTrait" /> — executable entrypoint.
 
-
 ## References
 
 - <HostReference crate="executable" />
