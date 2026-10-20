@@ -63,13 +63,11 @@ The graphics bridge stores VM-local object capabilities in a bounded `GraphicsSt
 
 The current marshaller has explicit limits:
 
-| Resource | Limit |
-| --- | ---: |
-| Per-VM object slots | 256 |
-| Ordinary NUL-terminated string | 1,024 bytes including NUL |
-| Textarea string | 4,097 bytes including NUL |
-| Button-map entries | 64 including sentinel |
-| Retained button-map storage | 8,192 bytes including strings and sentinel |
+- **Object slots:** 256 per VM.
+- **Ordinary NUL-terminated strings:** 1,024 bytes including the terminator.
+- **Textarea strings:** 4,097 bytes including the terminator.
+- **Button-map entries:** 64, counting the end sentinel.
+- **Retained button-map storage:** 8,192 bytes including strings and sentinel.
 
 Button-map strings and pointer arrays are **copied into stable VM-owned host storage** before LVGL retains them. Ordinary label text is copied synchronously by LVGL. Unsupported native callback pointers and arbitrary binary structure layouts remain outside the guest API.
 
