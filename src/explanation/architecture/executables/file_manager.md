@@ -35,13 +35,13 @@ The file manager executable provides a graphical VFS browser with directory navi
 
 ## Concurrency and event-loop model
 
-- Single event-processing loop with periodic sleep (`50 ms`) in top-level executable.
-- Event handlers run async and mutate local state; no multi-task background workers are created.
+- The top-level event loop **does not poll every 50 ms**. `FileManager::handle_events()` drains events under the graphics lock, registers the window's waker with `task::suspend`, and wakes when the window signals new activity.
+- Event handlers run asynchronously and mutate local state; there are no separately spawned application worker tasks. Graphics and VFS remain independently scheduled.
 
 ## Failure semantics
 
-- UI object creation failures return typed `Error` and abort startup.
-- VFS open/read failures propagate through executable error mapping.
+- UI creation failures return typed `Error` and abort startup.
+- During event handling, directory-read and invalid-path errors are **logged and the event loop continues**, rather than automatically ending the executable.
 - Invalid path text input logs error and retains current path.
 
 ## Contract vs implementation
@@ -53,6 +53,22 @@ The file manager executable provides a graphical VFS browser with directory navi
 
 - Operations are currently browse-oriented; edit/copy/move/delete workflows are not implemented in top-level flow.
 - Path input accepts raw text and relies on `PathOwned` validation.
+
+## Exact API, input handling and ownership
+
+`FileManagerExecutable::new(vfs, task)` registers a desktop shortcut in `/configuration/shared/shortcuts/file_manager.json` using `application_metadata::shortcut("file_manager")`. Launch uses the shared `ExecutableTrait` contract and a `'static ExecutableContext`; it creates an `OwnedWindow` with a toolbar, path text area and LVGL list.
+
+`FileManager::new(context).await` begins at `PathOwned::root()` (`/`). `load_directory` opens the current directory with the current task identifier, iterates VFS entries, skips `.` and `..`, and sorts **directories first**, with names in ascending lexicographic order in each group. A `FileItem` contains name, kind and size. Navigation is handled through Home, Up, Refresh, Go and directory-item clicks.
+
+`handle_events().await -> bool` returns false after a close/delete event on the owning window; while waiting, it registers a **window waker**, avoiding a busy-polling UI loop. The event handler logs recoverable errors rather than terminating the process.
+
+The application navigates directories and displays file metadata; it does **not** currently open arbitrary documents in another program or expose copy/move/delete commands. LVGL object pointers are owned by the current window and must only be manipulated under the Graphics lock.
+
+### Source and API references
+
+- <CodeReference path="executables/file_manager/src/lib.rs" /> — executable registration and launch.
+- <CodeReference path="executables/file_manager/src/file_manager.rs" /> — navigation, sorting, event wake-up and UI.
+- <HostReference crate="file_manager" /> — native Rust API.
 
 ## References
 
