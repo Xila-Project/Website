@@ -93,7 +93,6 @@ Analog/ADC modes, PWM, interrupt subscriptions, hardware pin multiplexing, and U
 - <CodeReference path="libraries/peripherals/src/gpio/mock.rs" /> — exclusive fixed-capacity test adapter.
 - <CodeReference path="libraries/peripherals/Cargo.toml" /> — feature gates.
 
-
 ## Source and API references
 
 - <HostReference crate="peripherals" />
