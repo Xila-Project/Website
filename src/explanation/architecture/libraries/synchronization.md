@@ -55,6 +55,38 @@ The `synchronization` crate standardizes synchronization primitives used across 
 - Behavior still inherits cooperative runtime assumptions from executor usage patterns.
 - Fallback Arc prioritizes portability over lock-free performance.
 
+## Choosing an abstraction
+
+The crate is `#![no_std]`, re-exports **`embassy_sync`** and provides `synchronization::Arc`/`Weak`. Choose primitives according to the execution context:
+
+- `mutex::Mutex` and `rwlock::RwLock` support async tasks sharing state; avoid holding a guard across lengthy operations that block protocol progress.
+- `blocking_mutex` and its `CriticalSectionRawMutex` are for short synchronous critical sections. A critical section does **not** automatically mean independent threads or interrupts may block arbitrarily.
+- `signal`, channels and `once_lock` provide task notification and one-time publication, used by Task, VFS and other services.
+- `Arc`/`Weak` manage heap-backed shared ownership, not scheduling or resource cleanup policy.
+
+## Portability and memory model
+
+When `target_has_atomic = "ptr"`, `Arc` and `Weak` come directly from `alloc::sync`. Otherwise Xila exports a custom `arc_lock` implementation using `CriticalSectionRawMutex` and interior-mutable reference counts. Both expose `Arc::new`, `clone`, `downgrade`, `Weak::upgrade`, `strong_count`, `weak_count`, `get_mut` and `ptr_eq` style APIs.
+
+```rust
+use synchronization::Arc;
+let data = Arc::new(42);
+let another = Arc::clone(&data);
+assert!(Arc::ptr_eq(&data, &another));
+```
+
+The no-atomic fallback allocates an `ArcInner<T>` on the heap. Its reference counters are checked for overflow (which panics) and protected by critical-section locks, so cloning/dropping has a different performance cost from atomics. `get_mut` only returns mutable access when the allocation has a unique strong owner with no conflicting weak ownership.
+
+`Arc` only provides **shared ownership**. Access to mutable `T` must still use synchronization appropriate for the target, and dropping the last reference is not a substitute for explicitly closing a VFS file, stopping a graphics animation, or tearing down a device context.
+
+### Source and API references
+
+- <CodeReference path="libraries/synchronization/src/lib.rs" /> — re-export surface.
+- <CodeReference path="libraries/synchronization/src/arc/mod.rs" /> — target gate.
+- <CodeReference path="libraries/synchronization/src/arc/arc_lock.rs" /> — reference-counted fallback.
+- <HostReference crate="synchronization" /> — Rustdoc of re-exported primitives.
+
+
 ## References
 
 - <HostReference crate="synchronization" />
