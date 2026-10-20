@@ -17,11 +17,8 @@ This section maps executable crates that run through the [Executable runtime cra
 - [WASM](/explanation/architecture/executables/wasm): Wasmi interpreter, WASI execution, cooperative scheduling, guest loading and guest-side API facade.
 - [Command line shell](/explanation/architecture/executables/command_line_shell): bounded parser/executor with composition, built-ins, and mounted-binary dispatch.
 - [Terminal](/explanation/architecture/executables/terminal): graphical terminal device surface that launches the command-line shell.
-- [Debug](/explanation/architecture/executables/debug): live task/memory diagnostics, screenshots and synthetic UI input through a mounted debug transport.
 
-### Diagnostics executable
-
-- [Debug](/explanation/architecture/executables/debug): task and memory diagnostics, screen capture and remote UI input.
+The [Debug executable](/explanation/architecture/executables/debug) is a native diagnostics service for bounded task/memory inspection, UI snapshots and synthetic input. Its `/devices/debug/transport` endpoint must be protected by the hosting environment.
 
 ### Session and UI shell executables
 
@@ -39,22 +36,6 @@ This section maps executable crates that run through the [Executable runtime cra
 - [Weather](/explanation/architecture/executables/weather): network-dependent Open-Meteo demonstration guest.
 
 New native and browser seed images bundle Calculator, Clock, Pixel Painter, Synth, Weather, and Text Editor through `/binaries/wasm` where the matching image build includes them. Existing persistent disks keep their previous binaries; a newer seed does not automatically upgrade an installed filesystem. Other guest applications can use the same runtime without being part of the default bundle.
-
-## Choosing a runtime model
-
-The executable directory contains **several kinds of programs**. The distinction matters for deployment and ownership:
-
-- **Native mounted programs** (`command_line_shell`, `graphical_shell`, `terminal`, `settings`, `file_manager`, `debug`, `wasm`) expose an `ExecutableTrait` entrypoint through `/binaries/*`. The launcher owns task startup and the `Standard` streams, and each program receives an explicit `ExecutableContext`.
-- **WASM guests** (`calculator`, `clock`, `pixel_painter`, `synth`, `text_editor`, `weather`) are installed as files under `/binaries` and executed **through** the Wasmi program. Most optionally expose `__install` for shortcut registration.
-- **Graphics bindings** are the generated and validated boundary between guest linear memory and host LVGL; they are part of the Wasmi integration rather than a separately launched application.
-
-For source links, the Core tree preserves `executables/` after the [#457 migration](https://github.com/xila-project/core/pull/457). The executable runtime *contract* itself is a separate reusable library under `libraries/executable/`.
-
-## Integration and failure checklist
-
-Before integrating an executable, verify its startup mode (native mount or guest binary), required capabilities (VFS, graphics, network, audio), ownership of opened files/windows/tasks, exit status and cleanup behavior. Documentation distinguishes recoverable errors from panics, frame-buffer limits from guest allocations, and persistent data from in-memory session state.
-
-The Debug executable does not implement network authentication; access to its `/devices/debug/transport` endpoint must be restricted by the hosting environment. WASM guests are isolated by Wasmi's import/linear-memory contracts, but still receive the rights of the VFS descriptors and imports granted at launch.
 
 ## Shared executable model
 
