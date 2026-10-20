@@ -91,7 +91,6 @@ The library implements PCM storage, format conversion and mixer plumbing, not de
 - <CodeReference path="libraries/audio/src/command.rs" /> — command values and directions.
 - <HostReference crate="audio" kind="struct" symbol="AudioSystem" /> — fixed-capacity mixer.
 
-
 ## Source and API references
 
 - <HostReference crate="audio" />
