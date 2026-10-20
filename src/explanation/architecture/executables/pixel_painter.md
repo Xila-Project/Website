@@ -47,6 +47,37 @@ The guest keeps 16 KB of pixels plus a 16 KB undo snapshot and temporarily uses 
 
 The graphics runtime caps indexed-canvas storage at 65,536 pixels per VM. Host buffers are reclaimed after native object deletion or VM teardown.
 
+## Rasterization and bounded undo
+
+`Drawing` owns a `Vec<u8>` of `WIDTH * HEIGHT = 16,000` palette indices plus one equally sized snapshot for **single-step Undo**. Each new stroke takes one snapshot; successive pointer positions are connected by an integer line rasterizer with a bounded square brush. The logical viewport maps input positions back to the 160×100 grid while maintaining letterboxing on rotated or resized screens.
+
+```rust
+// The executable's drawing module is usable by its unit tests.
+let mut drawing = Drawing::new();
+drawing.begin_stroke(20, 30, 3, 5);
+drawing.continue_stroke(35, 40, 3, 5);
+drawing.end_stroke();
+assert!(drawing.is_dirty());
+assert!(drawing.undo());
+```
+
+The snippet assumes `Drawing` has been imported from the application's internal module. This is not an API exposed by the WASI runtime itself. `Clear` also creates an undo snapshot; Undo does not implement a multi-level history.
+
+## XPNT validation and persistence
+
+The file format is exactly **16,008 bytes**: an 8-byte header (`XPNT`, version 1, width 160, height 100, reserved 0) followed by 16,000 palette indices. The loader limits reads to **16,009 bytes** so oversized input is detectable, and `Drawing::replace_from_bytes` rejects wrong lengths, mismatched headers and palette indices outside 0–7 **before** replacing the current canvas.
+
+The default filename is `/configuration/shared/pixel_painter/drawing.xpnt`. A provided initial path must be absolute and permitted by VFS. Save creates/truncates the selected file and writes it directly; a short or failed write can leave a partial file. The guest keeps its in-memory pixels for retry but does not provide atomic file replacement or guaranteed power-loss persistence.
+
+The checked graphics host mirrors the guest drawing into an indexed canvas with separate host-owned image storage. Per-VM canvas pixel capacities and handle limits are enforced by the Graphics bridge, not by the XPNT file format.
+
+### Source references
+
+- <CodeReference path="executables/pixel_painter/src/drawing.rs" /> — palette, rasterization, viewport and XPNT format.
+- <CodeReference path="executables/pixel_painter/src/storage.rs" /> — bounded file I/O and durability.
+- <CodeReference path="executables/pixel_painter/src/interface.rs" /> — UI event and pointer mapping.
+- <CodeReference path="executables/wasm/src/host/graphics/canvas.rs" /> — host indexed-canvas storage.
+
 ## References
 
 - <CodeReference path="executables/pixel_painter" />
