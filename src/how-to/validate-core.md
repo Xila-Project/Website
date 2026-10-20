@@ -6,7 +6,7 @@ description: Select formatting, host/guest, runtime, and browser checks for a Co
 
 # Validate a Core change
 
-Run the checks that exercise the behavior and targets your change affects. Unless stated otherwise, run commands from Core's root inside its configured Devbox shell.
+Run the checks that exercise the behavior and targets your change affects. Unless stated otherwise, run commands from Core's root inside its configured development container shell.
 
 ## Before you begin
 

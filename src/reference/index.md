@@ -12,5 +12,5 @@ Use these pages to look up exact interfaces and constraints. For instructions, u
 - [Shell](./shell): composition syntax, expansion, statuses, resource limits, and built-in command inventory.
 - [Development commands](./development-commands): cargo-make tasks, targets, version sources, and website commands.
 - [WASM runtime](./wasm-runtime): command options, Cargo features, execution limits, and browser capabilities.
-- [Headless container runtime](./container-runtime): OCI image, VFS mounts, options, and isolation boundaries.
+- [Headless container runtime](./container-runtime): OCI image, shell and guest modes, VFS mounts, and isolation boundaries.
 - [Graphics bindings](./graphics-bindings): supported calls, checked helpers, status codes, resource limits, and compatibility.

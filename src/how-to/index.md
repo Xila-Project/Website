@@ -18,7 +18,7 @@ Use these guides when you know what you want to accomplish. For a guided first e
 
 - [Build a guest application](./build-guest).
 - [Run a guest from Xila's terminal](./run-guest).
-- [Run a WASI guest in a container](./run-container-guest).
+- [Run Xila with Docker](./run-container-guest) (shell or WASI guest).
 - [Manage browser disks](./reset-browser-storage).
 
 ## Documentation

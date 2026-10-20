@@ -6,13 +6,13 @@ description: Cargo-make tasks, validation targets, toolchain version sources, an
 
 # Development commands
 
-Core's task definitions are in <CodeReference path="Makefile.toml" />. Run `cargo make <task>` from Core's root inside its configured development shell. The Makefile initializes font generation before its tasks.
+Core's task definitions are in <CodeReference path="Makefile.toml" />. Run `cargo make <task>` from Core's root inside the `xila-dev` development container shell. The Makefile initializes font generation before its tasks.
 
 ## Core tasks
 
 | Task                                       | Behavior                                                                                                              |
 | ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------- |
-| `install-tools`                            | Runs `npm install` for tooling. Standard Devbox setup uses `npm ci`.                                                  |
+| `install-tools`                            | Runs `npm install` for tooling. The recommended checkout setup uses `npm ci`.                                         |
 | `generate-fonts`                           | Generates LVGL fonts through `fonts_generator`.                                                                       |
 | `format-rust`                              | Runs `cargo fmt --all`; accepts forwarded arguments.                                                                  |
 | `format-toml`                              | Runs Taplo formatting; accepts forwarded arguments.                                                                   |
@@ -40,22 +40,24 @@ Core's task definitions are in <CodeReference path="Makefile.toml" />. Run `carg
 | Application guest build | `wasm32-wasip1`            | Application package, such as `calculator`                          |
 | Browser example build   | `wasm32-unknown-unknown`   | `wasm_example` through Trunk; Calculator release artifact required |
 
-Cargo-make uses `XILA_RUST_TOOLCHAIN`, defaulting to stable outside Devbox. The Devbox/CI browser workflow uses `XILA_NIGHTLY_TOOLCHAIN`.
+Cargo-make uses `XILA_RUST_TOOLCHAIN`, defaulting to stable if unset. The development image and CI provide pinned stable and nightly toolchains.
 
-## Version sources and Devbox scripts
+## Toolchain versions and development wrapper
 
-| Source                        | Defines                                            |
-| ----------------------------- | -------------------------------------------------- |
-| `.devbox-version`             | Devbox CLI version                                 |
-| `devbox.json` / `devbox.lock` | Native tool selection and pins                     |
-| `development/toolchains.env`  | `XILA_RUST_TOOLCHAIN` and `XILA_NIGHTLY_TOOLCHAIN` |
-| `package-lock.json`           | npm dependency resolution                          |
+The [development-environment repository](https://github.com/xila-project/development-environment) owns the pinned build image and its `scripts/xila-dev` wrapper. Core's `development/toolchains.env` records the Rust versions expected by its workflows, while `package-lock.json` pins its npm dependencies.
 
-| Devbox command     | Behavior                                                                              |
-| ------------------ | ------------------------------------------------------------------------------------- |
-| `devbox run setup` | Installs Rust toolchains/components/targets and runs `npm ci`; requires x86_64 Linux. |
-| `devbox run check` | Runs `cargo make check`.                                                              |
-| `devbox run gui`   | Runs `cargo make run -p native_example`.                                              |
+From the **host** in Core's root, with the development-environment repository checked out beside it:
+
+```sh
+../development-environment/scripts/xila-dev pull
+../development-environment/scripts/xila-dev shell
+../development-environment/scripts/xila-dev check
+../development-environment/scripts/xila-dev --gui shell
+```
+
+`pull` downloads the image, `shell` opens the pinned toolchain (run `npm ci` there), `check` runs `cargo make check` in a new container, and `--gui shell` forwards the host display. The global `--gui` option must precede the subcommand.
+
+The wrapper sets `CARGO_TARGET_DIR` to `.dev-environment/target`. Some native image-building recipes assume relative `target/` paths; follow the [native tutorial](/tutorials/native) for the necessary override.
 
 ## Website commands
 

@@ -117,7 +117,7 @@ const documentationSidebar: DefaultTheme.SidebarItem[] = [
       { text: "Build a guest", link: "/how-to/build-guest" },
       { text: "Run a guest", link: "/how-to/run-guest" },
       {
-        text: "Run a guest in a container",
+        text: "Run Xila with Docker",
         link: "/how-to/run-container-guest",
       },
       { text: "Validate Core", link: "/how-to/validate-core" },
