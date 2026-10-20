@@ -50,7 +50,6 @@ No production inference kernels, accelerator discovery, background inference or 
 - <CodeReference path="libraries/device/src/neural_network.rs" /> — model, workspace, tensor and lifecycle contracts.
 - <HostReference crate="device" kind="trait" symbol="NeuralNetworkDevice" /> — backend adapter trait.
 
-
 ## References
 
 - <HostReference crate="device" />
