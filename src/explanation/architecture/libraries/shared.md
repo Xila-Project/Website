@@ -53,6 +53,39 @@ The `shared` crate is the low-level cross-cutting utility layer used by modules,
 - Broad reuse increases API stability pressure.
 - Keeping scope strictly "shared only" avoids coupling but may require small wrappers in consumer crates.
 
+## Core public helpers and borrowing rules
+
+The library is `no_std` with `alloc`. `AnyByLayout` is a borrowed byte-layout wrapper used by typed VFS/device controls. `AnyByLayout::from(&value)` and `from_mutable(&mut value)` expose bytes of a live Rust value; `cast::<T>()` and `cast_mutable::<T>()` attempt to recover a typed reference. The unsafe `from_raw_parts` form requires a valid, correctly aligned raw buffer for its entire lifetime.
+
+```rust
+use shared::AnyByLayout;
+let value: u32 = 42;
+let raw = AnyByLayout::from(&value);
+assert_eq!(raw.get_size(), core::mem::size_of::<u32>());
+assert_eq!(raw.cast::<u32>(), Some(&42));
+```
+
+**Do not treat this as arbitrary wire deserialization.** The byte layout is the compiler's in-memory representation and may include padding or architecture-dependent details. Typed command contracts still need exact type, size, alignment and initialization guarantees; untrusted bytes should be validated through explicit parsing instead.
+
+## Additional utilities
+
+- `Url::parse("https://example.com/path")` splits the borrowed scheme, host and path and defaults to `"/"` when no path is supplied. It is a **small structural helper**, not a full URL parser/validator, so do not use it as an origin-security boundary.
+- `utf8_chunks(&bytes)` iterates valid UTF-8 fragments and **skips malformed bytes**; it may also yield empty strings where invalid bytes were encountered. It is intended for lossy text presentation, not for validating configuration or filenames.
+- `BijectiveMap` and size/unit/time helpers reduce duplicate representations across consumers, while the `shadow_type` module provides reusable typed wrappers.
+- Generic HTTP request/response helpers are data utilities; this library does not own sockets, network routing or an HTTP server.
+
+## Ownership and limitations
+
+These helpers do not register global services and their data lifetimes remain with the caller. Prefer domain-specific types inside subsystem public APIs rather than growing `shared` into a catch-all that forces unrelated crates to couple.
+
+### Source and API references
+
+- <CodeReference path="libraries/shared/src/any.rs" /> — byte layout and casts.
+- <CodeReference path="libraries/shared/src/http/url.rs" /> — compact URL parsing.
+- <CodeReference path="libraries/shared/src/utf8.rs" /> — lossy UTF-8 iteration.
+- <HostReference crate="shared" kind="struct" symbol="AnyByLayout" /> — device-control payload helper.
+
+
 ## References
 
 - <HostReference crate="shared" />
