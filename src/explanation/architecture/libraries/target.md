@@ -84,7 +84,6 @@ The crate depends on `std` and **is not a portable `no_std` runtime hardware det
 - <CodeReference path="libraries/target/src/operating_system.rs" /> — OS mapping.
 - <HostReference crate="target" kind="struct" symbol="Target" /> — typed build metadata.
 
-
 ## References
 
 - <HostReference crate="target" /> — generated Rust API documentation.
