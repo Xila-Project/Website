@@ -18,6 +18,12 @@ Only dirty disks are saved. Saves are serialized and atomic, with at most one ad
 
 The browser example validates existing MBR/LittleFS data and stops on mount errors instead of reformatting a saved image. See [Browser storage](/explanation/browser-storage) for the cache/autosave model and [Reset the browser disk](/how-to/reset-browser-storage) for a deliberate reset.
 
+## Canvas color conversion
+
+When Xila renders a dirty rectangle to browser Canvas `ImageData`, its little-endian XRGB8888 buffer must be converted from byte order BGRA-like (`B,G,R,X`) to the Canvas `R,G,B,A` order. The SIMD converter now handles trailing complete pixels after 16-byte vector chunks instead of copying their bytes unchanged (Core #403). This matters for rectangles whose pixel count is not divisible by four; it does not change the guest graphics ABI or introduce a new graphics capability.
+
+- <CodeReference path="drivers/wasm/src/devices/graphics/canvas_screen.rs" /> — browser framebuffer conversion and dirty rectangles.
+
 ## Browser audio
 
 The browser example mounts `/devices/audio/playback` only after an explicit **Enable audio** user gesture. This starts the Web Audio context in accordance with browser autoplay restrictions. The [Synth guest](/explanation/architecture/executables/synth) can retry audio initialization without requiring an OS restart.
