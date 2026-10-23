@@ -94,15 +94,15 @@ These limits bound shell-owned parsing and pipe storage. They do not bound alloc
 
 The current built-in registry contains:
 
-| Area              | Commands                                                               |
-| ----------------- | ---------------------------------------------------------------------- |
-| Shell/state       | `true`, `false`, `exit`, `cd`, `pwd`, `clear`, `help`                  |
-| Environment       | `export`, `unset`, `printenv`, `which`                                 |
+| Area              | Commands                                                                     |
+| ----------------- | ---------------------------------------------------------------------------- |
+| Shell/state       | `true`, `false`, `exit`, `cd`, `pwd`, `clear`, `help`                        |
+| Environment       | `export`, `unset`, `printenv`, `which`                                       |
 | Files/directories | `ls`, `cat`, `stat`, `mkdir`, `rm`, `rmdir`, `realpath`, `touch`, `mv`, `cp` |
-| Text/streams      | `echo`, `grep`, `wc`, `head`, `tail`, `tree`                           |
-| Timing            | `sleep`                                                                |
-| Permissions       | `chmod`                                                                |
-| Network           | `web_request`, `dns_resolve`, `ping`, `ip`                             |
+| Text/streams      | `echo`, `grep`, `wc`, `head`, `tail`, `tree`                                 |
+| Timing            | `sleep`                                                                      |
+| Permissions       | `chmod`                                                                      |
+| Network           | `web_request`, `dns_resolve`, `ping`, `ip`                                   |
 
 Selected recent utilities:
 
