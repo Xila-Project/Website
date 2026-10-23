@@ -43,7 +43,7 @@ long-running-command > /temporary/result & echo foreground
 
 `|` binds more tightly than `&&` and `||`. The two conditional operators have equal precedence and evaluate left to right. Redirections belong to one command, are applied left to right, and override a pipeline endpoint when they target the same stream.
 
-Background input is `/devices/null`. Output and error inherit the shell's streams unless redirected and may interleave with foreground output. The shell supports up to eight active background lists; job listing, cancellation, and foreground/background switching are not implemented.
+Background input is `/devices/standard_io/null`. Output and error inherit the shell's streams unless redirected and may interleave with foreground output. The shell supports up to eight active background lists; job listing, cancellation, and foreground/background switching are not implemented.
 
 ## Quoting and expansion
 
@@ -98,7 +98,7 @@ The current built-in registry contains:
 | ----------------- | ---------------------------------------------------------------------- |
 | Shell/state       | `true`, `false`, `exit`, `cd`, `pwd`, `clear`, `help`                  |
 | Environment       | `export`, `unset`, `printenv`, `which`                                 |
-| Files/directories | `ls`, `cat`, `stat`, `mkdir`, `rm`, `rmdir`, `realpath`, `touch`, `mv` |
+| Files/directories | `ls`, `cat`, `stat`, `mkdir`, `rm`, `rmdir`, `realpath`, `touch`, `mv`, `cp` |
 | Text/streams      | `echo`, `grep`, `wc`, `head`, `tail`, `tree`                           |
 | Timing            | `sleep`                                                                |
 | Permissions       | `chmod`                                                                |
@@ -113,6 +113,7 @@ Selected recent utilities:
 - `chmod MODE PATH` accepts octal permissions from `000` through `777`, optionally with a leading zero.
 - `tree [-L N] [PATH]` streams a hierarchy without collecting sibling entries; depth is bounded to 32.
 - `mv SOURCE DESTINATION` renames within one mounted filesystem and uses the exact destination path.
+- `cp SOURCE DESTINATION` streams a regular file into a newly created or truncated destination with a fixed 512-byte buffer. If the destination is an existing directory, the source filename is appended. It does not copy directory trees and rejects directory sources and copies onto the same path.
 
 Use `help COMMAND` for the authoritative option syntax of built-ins not detailed here.
 
