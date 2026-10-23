@@ -10,18 +10,18 @@ The `wasm` package's optional `graphics` feature provides the supported `xila_gr
 
 ## Supported calls
 
-| Family          | Supported operations                                            |
-| --------------- | --------------------------------------------------------------- |
-| Windows         | Creation, icon, event retrieval, pointer-aware event retrieval  |
-| Objects         | Creation/deletion, geometry getters/setters, alignment, flex, flags, padding |
-| Labels          | Creation and text                                               |
-| Button matrices | Creation, map, selected button                                  |
-| Text areas      | Checked text copy                                               |
-| Keyboards       | Checked keyboard attachment                                     |
-| Indexed canvas  | Host-owned indexed image creation and pixel/palette upload      |
-| Geometry        | Percentage conversion, position/size, layout updates and checked grid tracks/cells |
+| Family          | Supported operations                                                                                |
+| --------------- | --------------------------------------------------------------------------------------------------- |
+| Windows         | Creation, icon, event retrieval, pointer-aware event retrieval                                      |
+| Objects         | Creation/deletion, geometry getters/setters, alignment, flex, flags, padding                        |
+| Labels          | Creation and text                                                                                   |
+| Button matrices | Creation, map, selected button                                                                      |
+| Text areas      | Checked text copy                                                                                   |
+| Keyboards       | Checked keyboard attachment                                                                         |
+| Indexed canvas  | Host-owned indexed image creation and pixel/palette upload                                          |
+| Geometry        | Percentage conversion, position/size, layout updates and checked grid tracks/cells                  |
 | Local styling   | RGB888 background/text/border colors, opacity, radius, border sides, text alignment and size bounds |
-| Theme and fonts | Four semantic theme surfaces and six host-owned ROM font roles |
+| Theme and fonts | Four semantic theme surfaces and six host-owned ROM font roles                                      |
 
 The build-time `GraphicsRegistry` exposes only host-supported Rust/C wrappers and host metadata; unsupported discovered LVGL calls are omitted from guest APIs without changing legacy catalog IDs. It writes `graphics_abi_inventory.json` under Cargo `OUT_DIR` for build-time inspection, not as runtime ABI negotiation. The merged Grid/Flex and local style/font slice supports 59 host-dispatched calls in the current Core revision; it does not imply full coverage of the LVGL widget families.
 
