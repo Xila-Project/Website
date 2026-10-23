@@ -10,8 +10,8 @@ Launch a guest already present in Xila's virtual filesystem, or invoke its insta
 
 ## Before you begin
 
-- Start an Xila runtime with `/binaries/wasm` mounted, such as the native or browser example.
-- Place a compatible guest in the VFS as a regular file. The browser example includes `/binaries/calculator`; it has no general guest upload mechanism.
+- Start an Xila runtime with `/applications/executables/wasm` mounted, such as the native or browser example.
+- Place a compatible guest in the VFS as a regular file. The browser example includes `/applications/executables/calculator`; it has no general guest upload mechanism.
 - Check the guest's required imports against the [runtime](/reference/wasm-runtime) and [graphics](/reference/graphics-bindings) references.
 
 ## Launch the application
@@ -19,10 +19,10 @@ Launch a guest already present in Xila's virtual filesystem, or invoke its insta
 Open Xila's graphical terminal and enter an absolute VFS path:
 
 ```text
-/binaries/wasm /binaries/calculator
+/applications/executables/wasm /applications/executables/calculator
 ```
 
-For another guest, replace `/binaries/calculator` with its path in Xila's VFS. This command runs in **Xila's terminal**, not your host shell.
+For another guest, replace `/applications/executables/calculator` with its path in Xila's VFS. This command runs in **Xila's terminal**, not your host shell.
 
 Normal execution calls `_start: () -> ()`. The loader reads the supplied path directly; use an absolute VFS path rather than relying on `Current_directory` resolution inside the WASM loader.
 
@@ -31,7 +31,7 @@ Normal execution calls `_start: () -> ()`. The loader reads the supplied path di
 For a guest providing `__install: () -> ()`:
 
 ```text
-/binaries/wasm --install /binaries/calculator
+/applications/executables/wasm --install /applications/executables/calculator
 ```
 
 The browser example runs Calculator's installer during boot, so its application-drawer shortcut is normally already present. A missing or incorrectly typed installer export fails without launching the application's main entrypoint.
