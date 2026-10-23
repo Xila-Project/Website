@@ -6,14 +6,13 @@ description: Cargo-make tasks, validation targets, toolchain version sources, an
 
 # Development commands
 
-Core's task definitions are in <CodeReference path="Makefile.toml" />. Run `cargo make <task>` from Core's root inside the `xila-dev` development container shell. The Makefile initializes font generation before its tasks.
+Core's task definitions are in <CodeReference path="Makefile.toml" />. Run `cargo make <task>` from Core's root inside the `xila-dev` development container shell. Font C files are now generated and compiled by the Graphics crate's `build.rs` when Cargo builds the crate, rather than by a preliminary cargo-make task. Install the Core workspace's Node dependencies with `npm ci` before graphics builds.
 
 ## Core tasks
 
 | Task                                       | Behavior                                                                                                              |
 | ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------- |
 | `install-tools`                            | Runs `npm install` for tooling. The recommended checkout setup uses `npm ci`.                                         |
-| `generate-fonts`                           | Generates LVGL fonts through `fonts_generator`.                                                                       |
 | `format-rust`                              | Runs `cargo fmt --all`; accepts forwarded arguments.                                                                  |
 | `format-toml`                              | Runs Taplo formatting; accepts forwarded arguments.                                                                   |
 | `format-json`                              | Writes JSON formatting with Prettier.                                                                                 |
