@@ -11,7 +11,7 @@ The `file_system` crate is the architectural contract layer for storage nodes, f
 ## Role
 
 - Defines fundamental types (`Path`, flags, permissions, metadata, errors, identifiers).
-- Defines operation traits consumed by VFS and implemented by concrete backends/devices.
+- Defines operation traits consumed by VFS and implemented by concrete backends/devices, including optional symbolic-link operations.
 - Provides reusable helpers for memory devices, partitions, and MBR handling.
 
 ## Boundaries
@@ -72,6 +72,10 @@ The device side supports both **contextual** `BaseOperations` (per-open `Context
 - Short reads/writes are permitted. Callers must not assume a successful result consumes the entire buffer.
 
 The `ready(|| ...)` helper wraps a synchronous operation into `Poll::Ready` exactly once, without a hidden retry loop.
+
+## Symbolic-link backend contract
+
+`FileSystemOperations` exposes `create_symlink(target, link)` and `read_symlink(link, buffer)`; their default implementations return `UnsupportedOperation`. A backend can implement native links, or the VFS can store a target path in the file payload and label the entry with persistent `Kind::SymbolicLink` metadata where that capability exists. The VFS—not this library—resolves links and enforces caller permissions. Link support therefore depends on backend capabilities, not merely on the existence of the trait methods.
 
 ## Metadata capability negotiation
 
