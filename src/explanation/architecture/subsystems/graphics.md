@@ -110,6 +110,12 @@ let screenshot = graphics_manager.capture_screen().await?;
 
 This snippet assumes an initialized `graphics_manager` with an active display. The graphics loop must still be scheduled to process LVGL timers and queued input. See Rustdoc for the concrete snapshot types.
 
+## Build-time graphics and font assets
+
+The runtime graphics crate explicitly enables `lvgl_rust_sys/build-lvgl` to compile the native LVGL C archive, while guest/bindgen-only dependencies need not compile LVGL. The graphics `build.rs` uses the selected locale and fallback to generate font C sources and compile them into a separate `font_assets` static archive in Cargo `OUT_DIR`. Font-only changes can therefore rebuild the font archive without rebuilding LVGL C sources. The old standalone `fonts_generator` executable and eager `generate-fonts` task have been removed. This separation landed in Core #505; #506 restored the runtime C linkage and corrected upstream bindgen include paths.
+
+The generated fonts are compile-time assets, not dynamically loaded fonts. Node.js and `lv_font_conv` (installed through Core's `npm ci`) are required during generation. As of #506, the complete workspace test suite still has a failing `graphics_lifetimes` assertion, so successful link checks should not be read as proof of every runtime lifetime invariant.
+
 ## Extension points
 
 - Add additional input devices at runtime.
@@ -135,4 +141,5 @@ This snippet assumes an initialized `graphics_manager` with an active display. T
 - <HostReference crate="graphics" kind="struct" symbol="Manager" /> — runtime API.
 - <CodeReference path="subsystems/graphics/src/manager.rs" /> — lifecycle, inspection and synthetic input.
 - <CodeReference path="subsystems/graphics/src/window.rs" /> — window ownership and events.
+- <CodeReference path="subsystems/graphics/build.rs" /> — locale-aware font generation and archive build.
 - [File system](/explanation/architecture/libraries/file_system)
