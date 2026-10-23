@@ -10,7 +10,7 @@ Xila's graphics bindings connect guest WebAssembly imports to the context-provid
 
 ## Architecture and ownership
 
-- `graphics_bindgen` discovers and orders the shared catalog. Unsupported calls keep their IDs, and the supported-call table checks complete C signatures.
+- `graphics_bindgen` discovers and orders the shared catalog. A build-time support registry filters guest wrappers and host metadata to implemented calls without renumbering legacy IDs; unsupported calls retain catalog IDs but are not generated as guest APIs. The registry emits a build-only JSON ABI inventory in `OUT_DIR`.
 - Guest wrappers import `xila_graphics_call`; `default_guest` also emits C wrappers and `xila_graphics.h` in the build output directory. Generation does not rewrite guest source files.
 - `dispatch`, `objects`, and `marshal` use explicit graphics state and checked borrowed memory, without Wasmi types or global graphics-manager lookup.
 - `graphics/wasmi.rs` handles store/memory access, import registration, and context capability checks.
@@ -37,7 +37,11 @@ The catalog requires guest and host bindings built from the same LVGL revision a
 
 Calculator exercises the supported graphics subset; Weather still requires calls beyond it. The [graphics reference](/reference/graphics-bindings#supported-calls) lists the exact operations and compatibility requirements.
 
-Calls involving arbitrary native structure layouts, guest callbacks, retained guest pointers, fonts/images/charts, or other unsupported LVGL functions return an unsupported status. Guest memory is never interpreted as a typed host reference.
+Calls involving arbitrary native structure layouts, guest callbacks, retained guest pointers, raw LVGL fonts/styles, native images/charts, or other unsupported LVGL functions are not offered as safe guest wrappers. Unsupported numeric IDs still return an unsupported status. Guest memory is never interpreted as a typed host reference.
+
+## Layout and semantic styling
+
+The merged graphics ABI covers scalar object geometry, built-in Flex/Grid layouts, validated grid track arrays and cell placement, local RGB888 style properties, four semantic theme surfaces and six host-owned ROM font roles. Grid arrays are copied into host-owned allocations rather than retained in guest memory (31 tracks per axis, 512 retained descriptors per VM). A guest receives checked IDs instead of raw `lv_style_t` or `lv_font_t` pointers. This remains a partial LVGL surface; other widgets and ABI capability/version negotiation are follow-up work.
 
 ## Bounded state
 
@@ -49,7 +53,7 @@ Extend the shared catalog and checked dispatch together, and keep the Wasmi adap
 
 ## Exact boundary between generation and runtime
 
-Graphics bindings are generated from a shared LVGL catalog in `subsystems/graphics/bindings_generator`, but **the Wasmi executable** owns guest memory translation, handle tables and host dispatch. A generated function ID is not an unrestricted LVGL function pointer. The generated host `Function` table contains signatures and supported-call metadata; the guest and host must use matching LVGL versions and generated catalogs.
+Graphics bindings are generated from a shared LVGL catalog in `subsystems/graphics/bindings_generator`, but **the Wasmi executable** owns guest memory translation, handle tables and host dispatch. A generated function ID is not an unrestricted LVGL function pointer. The generated host `Function` table contains signatures and supported-call metadata from the shared build-time registry; the guest and host must use matching LVGL versions and generated catalogs.
 
 `host/graphics/wasmi.rs` installs exactly one graphics entrypoint under the import pair `("host", "xila_graphics_call")`. Each invocation supplies a function ID, **up to seven machine-word arguments**, the argument count and a result address. Before dispatch, the adapter checks that the current `ExecutableContext.graphics_manager` is the manager granted to that VM and obtains the current Wasmi linear memory view.
 

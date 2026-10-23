@@ -35,11 +35,11 @@ The [Debug executable](/explanation/architecture/executables/debug) is a native 
 - [Synth](/explanation/architecture/executables/synth): eight-voice WASM instrument using the audio playback device.
 - [Weather](/explanation/architecture/executables/weather): network-dependent Open-Meteo demonstration guest.
 
-New native and browser seed images bundle Calculator, Clock, Pixel Painter, Synth, Weather, and Text Editor through `/binaries/wasm` where the matching image build includes them. Existing persistent disks keep their previous binaries; a newer seed does not automatically upgrade an installed filesystem. Other guest applications can use the same runtime without being part of the default bundle.
+New native and browser seed images bundle Calculator, Clock, Pixel Painter, Synth, Weather, and Text Editor through `/applications/executables/wasm` where the matching image build includes them. Existing persistent disks keep their previous binaries; a newer seed does not automatically upgrade an installed filesystem. Other guest applications can use the same runtime without being part of the default bundle.
 
 ## Shared executable model
 
-- Host executable crates generally implement `ExecutableTrait` and are mounted as `/binaries/*` character devices.
+- Host executable crates generally implement `ExecutableTrait` and are mounted under `/applications/executables/*` as character devices.
 - Launch is performed through `executable::execute(context, ...)`, which handles permission checks and task spawn using explicit managers. Mounted wrappers and `Standard` carry the same `ExecutableContext`.
 - WASM applications expose an optional `__install` entry point; the runtime's `--install` mode uses it to create launcher/configuration integration before normal `_start` execution.
 - Several UI executables install launcher shortcuts under `/configuration/shared/shortcuts/*.json`.

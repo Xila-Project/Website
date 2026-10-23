@@ -113,15 +113,21 @@ Those collection choices, lock boundaries, inode maps, and reference-count strat
 
 `create_default_hierarchy(...)` gives a newly assembled runtime a conventional set of locations. The exact tree is useful because these paths communicate intent across modules, but it should be read as a namespace convention rather than a statement about one physical disk:
 
-- `/binaries` — executable files;
-- `/configuration` — user-space configuration, including `/configuration/shared`;
-- `/data` — application data, including `/data/shared`;
-- `/devices` — mounted device endpoints, including `/devices/network`;
-- `/logs` — system/application logs;
-- `/system` — system-owned data such as `/system/users` and `/system/groups`;
-- `/temporary` — temporary data expected to be cleared across reboot/runtime recreation.
+- `/system` — system-owned accounts (`/system/accounts/users` and `/system/accounts/groups`), executables, libraries and services;
+- `/configuration` — configuration for system, applications and shared use;
+- `/applications` — application executables and libraries;
+- `/data` — system and application data, with logs under `/data/system/logs`;
+- `/devices` — device endpoints organized by kind (including `/devices/network` and `/devices/standard_io`);
+- `/users` — per-user home data;
+- `/temporary` — caches and sessions intended for cleanup across runtime startup.
 
 The root backend provides the base tree, while additional file systems and devices can be mounted into that namespace later. `create_default_hierarchy` creates directories and applies baseline permissions; it does **not** itself implement automatic temporary-directory cleanup or log rotation.
+
+## Symbolic links and resolution
+
+The VFS now supports symbolic links (Core #479). A link stores a target path and can point to an absent entry or cross mount boundaries. Path resolution follows intermediate links and, according to the operation, can either follow or preserve the final link. Reading a link returns its stored target without following it; removing or renaming a link acts on the link itself. Resolution and link creation remain subject to VFS path validation and permissions.
+
+Where a backend persists `Kind::SymbolicLink` metadata, the VFS writes the target into a staged file and publishes the typed entry by rename. Backends without that metadata capability can use their native symlink interface; backend support is not universal. This does **not** make the current WASI preopen implementation a security boundary against symlink traversal: Core #479 explicitly leaves WASI symlink-aware confinement and `path_open`/`readlink` semantics as follow-up work. Do not assume untrusted WASI guests are confined by lexical path checks alone.
 
 ## Failure and policy boundaries
 
@@ -161,7 +167,7 @@ This is an integration example: `vfs` and `task_id` come from the assembled runt
 
 Centralizing namespace and permission policy gives all callers consistent semantics, but it also means shared VFS metadata locks can become contention points under heavy parallel access.
 
-Symbolic-link and advisory file-locking behavior is not implemented in the current surface, and the C/ABI filesystem layer still has incomplete entry points such as some symlink, timestamp, and truncate operations. That ABI incompleteness should not be confused with the full set of internal Rust VFS capabilities.
+Symbolic links are implemented at the VFS level but their backend support and WASI translation/confinement semantics remain incomplete. Advisory file locking and some C/ABI filesystem entry points (including timestamps and truncate) also remain incomplete. Internal Rust VFS capabilities should not be confused with the guest ABI.
 
 New file systems can be integrated by implementing the file-system contracts and mounting them; new devices can implement the direct character/block contracts and be placed at namespace paths. Callers should depend on those semantics rather than on internal collection types or initialization helpers.
 
@@ -176,6 +182,7 @@ New file systems can be integrated by implementing the file-system contracts and
 - <CodeReference path="subsystems/virtual_file_system/src/operation.rs" /> — poll and cancellation guard.
 - <CodeReference path="subsystems/virtual_file_system/src/lib.rs" /> — one-shot metadata poll.
 - <CodeReference path="subsystems/virtual_file_system/src/hierarchy.rs" /> — actual default directory tree.
+- <CodeReference path="subsystems/virtual_file_system/src/file_system/mod.rs" /> — symlink creation, lookup and readback.
 - [File-system crate](/explanation/architecture/libraries/file_system) — shared storage/device contracts beneath the VFS.
 - [Network](/explanation/architecture/subsystems/network) — an example of a module exposing control devices through the namespace.
 - [Task](/explanation/architecture/subsystems/task) and [Users](/explanation/architecture/subsystems/users) — identity context used by VFS policy.

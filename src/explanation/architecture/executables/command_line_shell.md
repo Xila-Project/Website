@@ -57,7 +57,9 @@ Shell-owned syntax and streaming resources have explicit limits: a 4096-byte sou
 
 - **Contract**: a bounded command shell with built-ins, executable discovery, composition, streaming pipes, redirection, quoting, and environment expansion.
 - **Current implementation**: intentionally not a complete POSIX shell. It does not provide script files, multiline grammar, command substitution, globbing, subshells, descriptor duplication such as `2>&1`, here-documents, or shell assignment syntax.
-- Built-ins are registered in one discoverable table used by both dispatch and `help`; recent utilities include `grep`, `realpath`, `touch`, `sleep`, `chmod`, `tree`, and `mv` alongside the existing filesystem/network commands.
+- Built-ins are registered in one discoverable table used by both dispatch and `help`; recent utilities include `grep`, `realpath`, `touch`, `sleep`, `chmod`, `tree`, `mv`, and `cp` alongside the existing filesystem/network commands.
+
+`cp SOURCE DESTINATION` copies a regular file through the VFS using a fixed 512-byte buffer. It creates or truncates the target (or appends the source filename when the target is a directory); it does not recursively copy directories.
 
 For exact syntax, statuses, limits, and built-in discovery, see the [shell reference](/reference/shell).
 

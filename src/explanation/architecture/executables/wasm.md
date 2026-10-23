@@ -6,7 +6,7 @@ description: "The WASM executable loads guest programs from Xila's VFS and runs 
 
 # WASM (executable)
 
-The WASM executable loads guest programs from Xila's VFS and runs them using Wasmi 2. Both the native and browser examples mount it at `/binaries/wasm`.
+The WASM executable loads guest programs from Xila's VFS and runs them using Wasmi 2. Both the native and browser examples mount it at `/applications/executables/wasm`.
 
 ## Role and feature selection
 
@@ -52,13 +52,13 @@ Exact option defaults and constraints live in the [runtime reference](/reference
 
 ## Runner command and guest entrypoint contract
 
-The native `WasmExecutable` implements `ExecutableTrait` and normally runs as the mounted `/binaries/wasm` program. Its arguments are parsed by `getargs`:
+The native `WasmExecutable` implements `ExecutableTrait` and normally runs as the mounted `/applications/executables/wasm` program. Its arguments are parsed by `getargs`:
 
 ```text
-wasm /binaries/calculator
-wasm --install /binaries/calculator
-wasm --instruction-limit 50000 /binaries/clock
-wasm /binaries/tool -- first-argument --guest-option
+wasm /applications/executables/calculator
+wasm --install /applications/executables/calculator
+wasm --instruction-limit 50000 /applications/executables/clock
+wasm /applications/executables/tool -- first-argument --guest-option
 ```
 
 `--install` selects the typed `__install: () -> ()` guest export rather than the normal `_start: () -> ()`; installers are optional per application. A literal `--` separates runner options from guest arguments, which become WASI `argv` after the guest's path. `--help`/`--version` exit successfully; parsing errors return nonzero status.

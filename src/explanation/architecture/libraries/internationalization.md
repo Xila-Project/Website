@@ -18,7 +18,7 @@ The selected translations are embedded in the build. This avoids carrying a dyna
 
 ## Graphics assets and translation tooling
 
-The font generator uses the selected locale and fallback's character ranges from `embedded-i18n` to generate the required glyphs. Locale choice therefore also affects generated graphics assets and their size.
+The Graphics crate's `build.rs` uses the selected locale and fallback's character ranges from `embedded-i18n` to generate the required glyphs and compile a separate `font_assets` static archive in Cargo `OUT_DIR`. The former standalone `fonts_generator` executable is no longer part of the build. Locale choice therefore also affects generated graphics assets and their size.
 
 Tolgee extraction and synchronization are configured in `tolgee.config.ts` and `tolgee.extractor.mjs`. Use [Core's localization guide](https://github.com/Xila-Project/Core/blob/main/docs/localization.md) for exact locale build steps, matching seeded applications and language-specific validation. The [development command reference](/reference/development-commands#core-tasks) lists the translation tasks; their implementation remains in Core's Makefile.
 
@@ -35,10 +35,10 @@ Use the build-time locale and fallback consistently across host binaries, WebAss
 1. Add or edit a string in the executable/library source using the existing localization macros.
 2. Add translations under that crate's `locales/<locale>.json`, preserving the intended namespace and plural categories.
 3. Run the Core translation extractor/validation configured by `tolgee.config.ts` and `tolgee.extractor.mjs`; review diffs rather than deleting apparently unused keys during a namespace migration.
-4. Regenerate locale-dependent fonts and build **host, guests and seeded disk content for the same locale**.
+4. Build **host, guests and seeded disk content for the same locale**. Cargo regenerates and compiles the locale-dependent graphics font archive as needed; install the Core workspace's Node dependencies with `npm ci` before building graphics.
 5. Check text truncation, symbol availability and UI layout in Graphics.
 
-The Graphics font generator lives under `subsystems/graphics/fonts_generator`, because its output is part of the graphics service build. It is not an additional localization subsystem.
+The Graphics font inputs live in `subsystems/graphics/fonts/` and generation is handled by `subsystems/graphics/build.rs`, rather than by a separate executable. These build artifacts are not a runtime localization subsystem.
 
 ## Limitations and references
 
@@ -46,7 +46,7 @@ English fallback prevents missing-key failures but does not guarantee appropriat
 
 - <CodeReference path="src/lib.rs" /> — public re-export.
 - <CodeReference path=".cargo/config.toml" /> — locale defaults.
-- <CodeReference path="subsystems/graphics/fonts_generator/src/main.rs" /> — glyph generation.
+- <CodeReference path="subsystems/graphics/build.rs" /> — glyph generation.
 - <CodeReference path="docs/localization.md" /> — build and translation instructions.
 - [Graphics](/explanation/architecture/subsystems/graphics) — runtime text rendering.
 
@@ -54,6 +54,6 @@ English fallback prevents missing-key failures but does not guarantee appropriat
 
 - <HostReference crate="embedded_i18n" />
 - <CodeReference path="src/lib.rs" /> and <CodeReference path=".cargo/config.toml" />.
-- <CodeReference path="subsystems/graphics/fonts_generator/src/main.rs" />.
+- <CodeReference path="subsystems/graphics/build.rs" />.
 - <CodeReference path="tolgee.config.ts" /> and <CodeReference path="tolgee.extractor.mjs" />.
 - [Graphics](/explanation/architecture/subsystems/graphics).

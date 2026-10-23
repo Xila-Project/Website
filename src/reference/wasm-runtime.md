@@ -6,12 +6,12 @@ description: Xila WASM command options, package features, WASI constraints, and 
 
 # WASM runtime
 
-The `wasm` package implements the Wasmi runtime and guest helper APIs. The native and browser examples mount its executable at `/binaries/wasm`. Sources: <CodeReference path="executables/wasm/Cargo.toml" /> and <CodeReference path="executables/wasm/src/host/main.rs" />.
+The `wasm` package implements the Wasmi runtime and guest helper APIs. The native and browser examples mount its executable at `/applications/executables/wasm`. Sources: <CodeReference path="executables/wasm/Cargo.toml" /> and <CodeReference path="executables/wasm/src/host/main.rs" />.
 
 ## Command syntax
 
 ```text
-/binaries/wasm [--install] [--stack-size <bytes>] [--instruction-limit <fuel>] <path>
+/applications/executables/wasm [--install] [--stack-size <bytes>] [--instruction-limit <fuel>] <path>
 ```
 
 The command runs in Xila's terminal. `<path>` must identify a regular guest file in the VFS; the loader reads the supplied path directly and does not perform `Current_directory` resolution. The guest receives its module path as its argument and the task environment as its environment.
@@ -55,25 +55,25 @@ Default features are `host,memory_32`. Guest-only consumers must disable default
 | Startup clock               | Uses Xila's time manager and driver, not a separate hardware monotonic source.                                                                     |
 | WebAssembly start sections  | Suspension is unsupported. WASI command guests should use exported `_start`.                                                                       |
 | WASI/graphics compatibility | Partial WASI coverage and a supported graphics subset, not full compatibility.                                                                     |
-| Graphics ABI                | Guest and host must match the LVGL revision/configuration; Xila-specific checked helpers are append-only within the current ABI catalog.           |
+| Graphics ABI                | Guest and host must match the LVGL revision/configuration; only registry-supported wrappers are generated, with no capability negotiation yet.     |
 
 ## Browser capabilities
 
-| Area            | Browser example behavior                                                                                                                                                       |
-| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Host target     | Xila builds for `wasm32-unknown-unknown`; application guests build for `wasm32-wasip1`.                                                                                        |
-| Storage APIs    | Requires OPFS, `FileSystemFileHandle.createWritable`, and Web Locks on localhost/HTTPS.                                                                                        |
-| Disk format     | The selected disk is a 16 MiB MBR/LittleFS image local to the browser origin.                                                                                                  |
-| Disk names      | `xila_drive.img` remains the legacy/default image. New disks use `xila_YYYY-MM-DD.img` with numeric collision suffixes.                                                        |
-| Disk management | The Xila Help panel lists, creates, selects, and removes managed images. The selected image is remembered for the origin.                                                      |
-| Disk ownership  | One Xila tab can hold a given disk's lifetime Web Lock. Different tabs may use different disks.                                                                                |
-| Disk switching  | New writes stop, pending changes are saved, the current lock is released, and the page reloads on the selected image. An image open elsewhere cannot be removed.               |
-| Saves           | At boot, every second when dirty, and on normal shutdown; synchronous flushes update the memory cache.                                                                         |
-| Memory          | 16 MiB selected-disk cache plus one temporary 16 MiB snapshot and browser buffering during saves. Guest/interpreter/graphics and embedded application bytes add further costs. |
-| Fresh account   | `administrator` with an empty password; created only for a fresh disk. Existing accounts are restored.                                                                         |
-| Bundled guests  | Calculator, Clock, and Pixel Painter are copied to `/binaries/*` and installed at startup; their release artifacts must exist before browser compilation.                      |
-| Guest upload    | No general upload mechanism. Other guests must already be present in the VFS.                                                                                                  |
-| Networking      | No Xila network manager; HTTP uses Fetch under CORS/browser restrictions and does not expose raw sockets.                                                                      |
+| Area            | Browser example behavior                                                                                                                                                                                                                                                        |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Host target     | Xila builds for `wasm32-unknown-unknown`; application guests build for `wasm32-wasip1`.                                                                                                                                                                                         |
+| Storage APIs    | Requires OPFS, `FileSystemFileHandle.createWritable`, and Web Locks on localhost/HTTPS.                                                                                                                                                                                         |
+| Disk format     | The selected disk is a 16 MiB MBR/LittleFS image local to the browser origin.                                                                                                                                                                                                   |
+| Disk names      | `xila_drive.img` remains the legacy/default image. New disks use `xila_YYYY-MM-DD.img` with numeric collision suffixes.                                                                                                                                                         |
+| Disk management | The Xila Help panel lists, creates, selects, and removes managed images. The selected image is remembered for the origin.                                                                                                                                                       |
+| Disk ownership  | One Xila tab can hold a given disk's lifetime Web Lock. Different tabs may use different disks.                                                                                                                                                                                 |
+| Disk switching  | New writes stop, pending changes are saved, the current lock is released, and the page reloads on the selected image. An image open elsewhere cannot be removed.                                                                                                                |
+| Saves           | At boot, every second when dirty, and on normal shutdown; synchronous flushes update the memory cache.                                                                                                                                                                          |
+| Memory          | 16 MiB selected-disk cache plus one temporary 16 MiB snapshot and browser buffering during saves. Guest/interpreter/graphics and embedded application bytes add further costs.                                                                                                  |
+| Fresh account   | `administrator` with an empty password; created only for a fresh disk. Existing accounts are restored.                                                                                                                                                                          |
+| Bundled guests  | Calculator, Clock, Pixel Painter, Synth, Weather, and Text Editor are included in new locale-matched seeded images under `/applications/executables`; matching release guest artifacts are needed for image creation. Existing persistent disks are not upgraded automatically. |
+| Guest upload    | No general upload mechanism. Other guests must already be present in the VFS.                                                                                                                                                                                                   |
+| Networking      | No Xila network manager; HTTP uses Fetch under CORS/browser restrictions and does not expose raw sockets.                                                                                                                                                                       |
 
 Browser-managed storage can be evicted or lost; abrupt termination can lose changes since the last completed save. See [Browser storage](/explanation/browser-storage) for the durability model and [Manage browser disks](/how-to/reset-browser-storage) for user-facing disk operations.
 
