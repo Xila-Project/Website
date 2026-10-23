@@ -55,7 +55,7 @@ Default features are `host,memory_32`. Guest-only consumers must disable default
 | Startup clock               | Uses Xila's time manager and driver, not a separate hardware monotonic source.                                                                     |
 | WebAssembly start sections  | Suspension is unsupported. WASI command guests should use exported `_start`.                                                                       |
 | WASI/graphics compatibility | Partial WASI coverage and a supported graphics subset, not full compatibility.                                                                     |
-| Graphics ABI                | Guest and host must match the LVGL revision/configuration; only registry-supported wrappers are generated, with no capability negotiation yet.    |
+| Graphics ABI                | Guest and host must match the LVGL revision/configuration; only registry-supported wrappers are generated, with no capability negotiation yet.     |
 
 ## Browser capabilities
 
