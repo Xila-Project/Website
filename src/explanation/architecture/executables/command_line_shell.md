@@ -6,7 +6,7 @@ description: "The command-line shell provides bounded parsing, streaming command
 
 # Command line shell (executable)
 
-The command-line shell provides a small, bounded shell language for interactive terminal sessions and explicit `shell -c` command source. It dispatches built-ins or native/WebAssembly executables through Xila's task and virtual filesystem APIs without depending on a hosted POSIX shell.
+The command-line shell provides a small, bounded shell language for interactive terminal sessions and explicit `shell -c` command source or VFS scripts via `shell -s`.  It dispatches built-ins or native/WebAssembly executables through Xila's task and virtual filesystem APIs without depending on a hosted POSIX shell.
 
 ## Role
 
@@ -21,7 +21,7 @@ The command-line shell provides a small, bounded shell language for interactive 
 2. Resolves `User` from the task environment; if absent, runs the interactive authentication flow.
 3. Loads `Paths` and `Host` environment variables.
 4. Runs the interactive line loop when no arguments are supplied.
-5. Executes already-separated arguments literally, or parses shell source only when invoked with `-c`.
+5. Executes already-separated arguments literally, parses shell source with `-c`, or reads and executes lines from a VFS file with `-s`.
 6. Reaps completed background tasks as new jobs start and waits for outstanding jobs when the shell exits.
 
 ## Parsing and execution model
@@ -44,7 +44,7 @@ Pipelines run stages concurrently through bounded asynchronous pipes, so command
 
 - Built-in failures return status 1 unless a command defines another status.
 - Unknown commands return 127.
-- Malformed source passed to `shell -c` returns 2.
+- Malformed source passed to `shell -c`, or invalid script input, returns 2; scripts report the offending path and line.
 - External executable statuses are preserved within 0–255.
 - `$?` expands to the previous foreground status; successfully starting a background list sets it to zero.
 - Command errors are written to standard error without terminating the interactive shell unless the shell itself exits.
@@ -56,8 +56,8 @@ Shell-owned syntax and streaming resources have explicit limits: a 4096-byte sou
 ## Contract vs implementation
 
 - **Contract**: a bounded command shell with built-ins, executable discovery, composition, streaming pipes, redirection, quoting, and environment expansion.
-- **Current implementation**: intentionally not a complete POSIX shell. It does not provide script files, multiline grammar, command substitution, globbing, subshells, descriptor duplication such as `2>&1`, here-documents, or shell assignment syntax.
-- Built-ins are registered in one discoverable table used by both dispatch and `help`; recent utilities include `grep`, `realpath`, `touch`, `sleep`, `chmod`, `tree`, `mv`, and `cp` alongside the existing filesystem/network commands.
+- **Current implementation**: intentionally not a complete POSIX shell. It supports line-oriented VFS scripts, but not multiline grammar, command substitution, globbing, subshells, descriptor duplication such as `2>&1`, here-documents, or shell assignment syntax.
+- Built-ins are registered in one discoverable table used by both dispatch and `help`; recent utilities include `grep`, `realpath`, `touch`, `sleep`, `chmod`, `tree`, `mv`, `cp`, and `find` alongside the existing filesystem/network commands.
 
 `cp SOURCE DESTINATION` copies a regular file through the VFS using a fixed 512-byte buffer. It creates or truncates the target (or appends the source filename when the target is a directory); it does not recursively copy directories.
 
@@ -65,14 +65,21 @@ For exact syntax, statuses, limits, and built-in discovery, see the [shell refer
 
 ## User-facing command invocation
 
-The shell treats each mode differently. With no arguments it reads an interactive prompt and parses input lines. With `-c` it treats exactly the following argument as a **shell source string**. Otherwise it receives already separated arguments and executes them **literally**, without reparsing metacharacters as shell syntax.
+The shell treats each mode differently. With no arguments it reads an interactive prompt. With `-c` it parses exactly one **shell source string**, while `-s PATH` reads one VFS script line at a time. Otherwise it executes already-separated arguments **literally**, without reparsing metacharacters as shell syntax.
 
 ```text
 command_line_shell -c "echo hello | grep hello"
 command_line_shell echo "hello world"
+command_line_shell -s /data/startup.xsh
 ```
 
-The first form parses a pipeline; the second supplies literal argument words. The `-c` mode requires exactly two arguments (the flag and the command source). Invalid UTF-8 input and oversized interactive lines return status 2.
+The first form parses a pipeline; the second supplies literal argument words; the third reads a script file. Script lines support LF/CRLF and retain directory/environment state between lines inside the launched shell task. Script failures normally do not stop subsequent commands, but parsing/read errors stop with status 2. Four nested noninteractive shell invocations are allowed. The `-c` mode requires exactly two arguments (the flag and the command source). Invalid UTF-8 input and oversized interactive lines return status 2.
+
+## Script execution and bounded find
+
+A `shell -s PATH` invocation resolves a path relative to the inherited current directory or uses an absolute VFS path, reading the file while standard input remains independently available to its commands. Each line is bounded to 4096 source bytes, with a 4097-byte buffer allowing for CR before LF. Invalid UTF-8, malformed input, read errors or excessive line length identify the script path and line and stop with status 2. A script returns the last executed command status; `exit` stops script execution. Nested `-c`/`-s` invocations are bounded to four levels.
+
+The `find` built-in walks from its optional starting directory, applies exact `--name` and type filters, streams paths, and limits depth to 32 and paths to 1024 bytes. It reports VFS/output errors instead of silently skipping them. See [the shell reference](/reference/shell) for flags.
 
 ## Implementation boundaries
 
@@ -82,11 +89,11 @@ The first form parses a pipeline; the second supplies literal argument words. Th
 - `resolver.rs` scans configured `Paths` directories in order; the **first matching filename** wins. It is not equivalent to a host OS PATH lookup.
 - `commands/` contains the built-in dispatch table, including filesystem/network commands. Parent-shell state changes apply only to foreground built-ins; a pipeline or background command runs in its own child Shell.
 
-For example, a background command gets duplicated output/error streams but its stdin is redirected to `/devices/null`; the parent prompt can continue without blocking on that job. Background handles are reaped and the shell joins remaining jobs before exiting.
+For example, a background command gets duplicated output/error streams but its stdin is redirected to `/devices/standard_io/null`; the parent prompt can continue without blocking on that job. Background handles are reaped and the shell joins remaining jobs before exiting.
 
 ## Status and failure details
 
-`$?` reflects the previous foreground status. Shell parsing failures return status 2, unknown commands 127, and most built-in errors 1. In a pipeline, the last stage's status wins after joining all stages; there is **no pipefail mode**. The shell does not offer globbing, command substitution, POSIX here-documents, shell-variable assignment statements or file-backed scripts.
+`$?` reflects the previous foreground status. Shell parsing failures return status 2, unknown commands 127, and most built-in errors 1. In a pipeline, the last stage's status wins after joining all stages; there is **no pipefail mode**. The shell does not offer globbing, command substitution, POSIX here-documents, shell-variable assignment statements or POSIX-style multiline scripts.
 
 ### Source and API references
 
