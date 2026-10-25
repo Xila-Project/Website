@@ -1,49 +1,41 @@
 ---
 layout: doc
 docType: explanation
-description: Understand the Xila development container, runtime image, WASM targets, and validation limits.
+description: Understand mise-managed Core development, headless runtime containers, and target-specific validation.
 ---
 
 # Development environments and targets
 
-Xila brings together a Rust workspace, native libraries, generated graphics assets, WASI guest applications, and different execution environments. Keeping build tools separate from the actual Xila runtime makes the workflow easier to understand.
+Xila combines native Rust crates, bundled WASI applications, generated fonts, and a browser-hosted runtime. The development toolchain and the Xila operating-system runtime are different concerns.
 
-## The development image builds Core
+## Local and CI development with mise
 
-Core's standard build environment comes from [xila-project/development-environment](https://github.com/xila-project/development-environment). The published `ghcr.io/xila-project/development-environment:main` image contains pinned Rust stable/nightly toolchains, WASM targets, Clang/libclang, Node/npm, Cargo tools, and native libraries.
+Core #509 replaced Cargo Make and the `xila-dev` build container with [mise](https://mise.jdx.dev/). Its `mise.toml` contains reusable build/check/image tasks and pinned tool versions. The default `development` environment (selected through `.miserc.toml`) adds local tools and formatting commands; `mise.ci.toml` declares per-job tools for GitHub Actions. Each task installs its required tools on demand rather than activating a whole environment globally.
 
-Its `scripts/xila-dev` wrapper works with Docker or Podman, mounts Core at `/workspace`, runs with the host UID/GID, and keeps persistent caches under `.dev-environment/`. Display and hardware-device access are explicitly opt-in. This workflow **replaces Devbox**.
+On Debian/Ubuntu, native dependencies can be provisioned with `mise bootstrap packages apply --manager apt`. Cargo builds use the configured mbx integration; formatting and documentation tasks avoid unrelated tool installation. See [development setup](/how-to/setup-development).
 
-The development-environment repository owns the image's version manifest and dependency list. Core also records the Rust versions used by its workflows in `development/toolchains.env` and the npm resolution in `package-lock.json`. Keep build image and CI versions aligned when updating them.
+CI is split into primary checks (`ci.yml`), extended validation (`extended.yml`), Pages/browser builds (`pages.yml`), and the headless OCI image (`runtime.yml`). A workflow succeeding does not prove untested targets or hardware builds are correct.
 
 ## The runtime image executes Xila
 
-The separate `ghcr.io/xila-project/xila-runtime` image contains the **headless Xila runtime and its filesystem seed**, rather than compilers. Its default mode opens the Xila command-line shell; it can also run a WASI guest with explicit filesystem capabilities. See [Run Xila with Docker](/how-to/run-container-guest).
+The separately published `ghcr.io/xila-project/xila-runtime` image carries a non-root, headless Xila binary and a filesystem seed, **not** compilers or the developer toolchain. Its default mode launches Xila's CLI shell; it can also run supported WASI guests with explicit mounted host directories. See [Run Xila with Docker](/how-to/run-container-guest).
 
-## Three different execution contexts
+## Three execution contexts
 
-| Context      | What executes                                                | Relevant target                                     |
-| ------------ | ------------------------------------------------------------ | --------------------------------------------------- |
-| Native host  | Xila linked with native drivers in a Linux process           | Current host checks use `x86_64-unknown-linux-gnu`. |
-| WASI guest   | An application interpreted inside Xila's Wasmi runtime       | Application builds use `wasm32-wasip1`.             |
-| Browser host | Xila itself running in the browser, also hosting WASI guests | Example builds use `wasm32-unknown-unknown`.        |
+- **Native Linux host:** Xila linked with native drivers and the `x86_64-unknown-linux-gnu` host toolchain.
+- **WASI guest:** an application compiled for `wasm32-wasip1` and interpreted inside Xila using Wasmi.
+- **Browser host:** Xila itself compiled for `wasm32-unknown-unknown`, hosting the separate WASI guests.
 
-The `wasm` package's `host` feature means it hosts guest programs; it does not imply that every host runtime is a desktop application. Guest-library checks use `wasm32-unknown-unknown` with defaults disabled and `default_guest` enabled; these complement actual `wasm32-wasip1` application builds.
+The `wasm` crate's `host` feature refers to the interpreter, not necessarily a desktop. `default_guest` builds the guest-library API, not a full application. Native GUI testing requires a working Wayland session; the native headless display driver is also available for Debug-based UI inspection.
 
-The native graphical desktop can be run **inside the development container** with the wrapper's `--gui` display forwarding, but the `xila-runtime` Docker image remains headless.
+## Limits of validation
 
-## What validation establishes
-
-Compilation checks verify selected targets and feature combinations. Native GUI smoke tests exercise rendering, input, and closing in a real desktop session. Browser tests cover browser APIs, WASI guests, and storage. Translation tests and Miri examine separate portability and memory boundaries.
-
-These checks do not establish correctness or RAM/flash usage on an ESP32, nRF, STM32, or other microcontroller. Hardware must be validated separately.
-
-The current native workflow targets x86_64 Linux with Wayland (the wrapper also has an X11 fallback). Native Windows, macOS, ARM Linux, and NixOS are not validated; WSL2/WSLg needs a separate GUI smoke test. ESP-IDF tools, flashing, and serial permissions are separate from the host/WASM development container.
+Compilation, formatting and Clippy check particular toolchains/feature combinations. Browser tests exercise OPFS and UI behavior; independent native tests exercise execution and resource lifetimes. They do **not** prove RAM/flash use or hardware functionality on ESP32, nRF, STM32 or other microcontrollers.
 
 ## Related documentation
 
-- [Set up a development environment](/how-to/setup-development).
-- [Run Xila natively](/tutorials/native).
-- [Run Xila with Docker](/how-to/run-container-guest).
-- [Development command reference](/reference/development-commands).
-- <CodeReference path=".github/workflows/check.yml" />.
+- [Set up development](/how-to/setup-development).
+- [Native tutorial](/tutorials/native).
+- [Browser tutorial](/tutorials/browser).
+- [Development commands](/reference/development-commands).
+- <CodeReference path=".github/workflows/ci.yml" />.
