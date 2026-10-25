@@ -6,7 +6,7 @@ description: "The command-line shell provides bounded parsing, streaming command
 
 # Command line shell (executable)
 
-The command-line shell provides a small, bounded shell language for interactive terminal sessions and explicit `shell -c` command source or VFS scripts via `shell -s`.  It dispatches built-ins or native/WebAssembly executables through Xila's task and virtual filesystem APIs without depending on a hosted POSIX shell.
+The command-line shell provides a small, bounded shell language for interactive terminal sessions and explicit `shell -c` command source or VFS scripts via `shell -s`. It dispatches built-ins or native/WebAssembly executables through Xila's task and virtual filesystem APIs without depending on a hosted POSIX shell.
 
 ## Role
 
