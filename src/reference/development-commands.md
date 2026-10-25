@@ -1,80 +1,64 @@
 ---
 layout: doc
 docType: reference
-description: Cargo-make tasks, validation targets, toolchain version sources, and website development commands.
+description: Current mise tasks, target selection, toolchain sources, and website development commands.
 ---
 
 # Development commands
 
-Core's task definitions are in <CodeReference path="Makefile.toml" />. Run `cargo make <task>` from Core's root inside the `xila-dev` development container shell. Font C files are now generated and compiled by the Graphics crate's `build.rs` when Cargo builds the crate, rather than by a preliminary cargo-make task. Install the Core workspace's Node dependencies with `npm ci` before graphics builds.
+Run Core tasks from the **Core repository root** using [mise](https://mise.jdx.dev/). Cargo Make and `Makefile.toml` were removed in Core #509; do not use `cargo make` or the former `xila-dev` build container. `mise.toml` defines shared tasks, `mise.development.toml` adds local tools and developer commands, and `mise.ci.toml` defines CI-only tasks.
 
-## Core tasks
-
-| Task                                       | Behavior                                                                                                              |
-| ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------- |
-| `install-tools`                            | Runs `npm install` for tooling. The recommended checkout setup uses `npm ci`.                                         |
-| `format-rust`                              | Runs `cargo fmt --all`; accepts forwarded arguments.                                                                  |
-| `format-toml`                              | Runs Taplo formatting; accepts forwarded arguments.                                                                   |
-| `format-json`                              | Writes JSON formatting with Prettier.                                                                                 |
-| `format`                                   | Runs Rust, TOML, and JSON formatters.                                                                                 |
-| `translate-compare`                        | Compares local translations with Tolgee.                                                                              |
-| `translate-sync`                           | Syncs translations and removes unused keys.                                                                           |
-| `translate-pull`                           | Pulls translations from Tolgee.                                                                                       |
-| `translate-push`                           | Pushes local translations to Tolgee.                                                                                  |
-| `check-host`, `doc-host`, `clippy-host`    | Host compilation, documentation, or Clippy checks with the features below. Clippy denies warnings.                    |
-| `check-guest`, `doc-guest`, `clippy-guest` | Guest-library compilation, documentation, or Clippy checks with the features below. Clippy denies warnings.           |
-| `check`, `doc`, `clippy`                   | Runs both the corresponding host and guest tasks.                                                                     |
-| `lint`                                     | Runs Clippy with all targets/features and denies warnings. Check feature compatibility before selecting all features. |
-| `test`                                     | Runs `cargo test --workspace`.                                                                                        |
-| `run`, `build`                             | Cargo run/build wrappers accepting forwarded arguments.                                                               |
-| `coverage`                                 | Runs workspace coverage with cargo-llvm-cov and forwarded arguments.                                                  |
-| `before-commit`                            | Runs `format`, `check`, `doc`, and `clippy`.                                                                          |
-
-## Task targets and features
-
-| Task family             | Target                     | Package/features                                                   |
-| ----------------------- | -------------------------- | ------------------------------------------------------------------ |
-| Host                    | `x86_64-unknown-linux-gnu` | `graphics,abi_definitions,graphics_rendering_xrgb8888`             |
-| Guest library           | `wasm32-unknown-unknown`   | Package `wasm`, defaults disabled, `default_guest` enabled         |
-| Application guest build | `wasm32-wasip1`            | Application package, such as `calculator`                          |
-| Browser example build   | `wasm32-unknown-unknown`   | `wasm_example` through Trunk; Calculator release artifact required |
-
-Cargo-make uses `XILA_RUST_TOOLCHAIN`, defaulting to stable if unset. The development image and CI provide pinned stable and nightly toolchains.
-
-## Toolchain versions and development wrapper
-
-The [development-environment repository](https://github.com/xila-project/development-environment) owns the pinned build image and its `scripts/xila-dev` wrapper. Core's `development/toolchains.env` records the Rust versions expected by its workflows, while `package-lock.json` pins its npm dependencies.
-
-From the **host** in Core's root, with the development-environment repository checked out beside it:
+## First-time local setup (Debian/Ubuntu)
 
 ```sh
-../development-environment/scripts/xila-dev pull
-../development-environment/scripts/xila-dev shell
-../development-environment/scripts/xila-dev check
-../development-environment/scripts/xila-dev --gui shell
+mise trust
+mise install --include-task-tools # optional: preinstall all task tools
+mise bootstrap packages apply --manager apt
+mise run deps:npm
+mise run check:all
 ```
 
-`pull` downloads the image, `shell` opens the pinned toolchain (run `npm ci` there), `check` runs `cargo make check` in a new container, and `--gui shell` forwards the host display. The global `--gui` option must precede the subcommand.
+The default `development` environment is selected by `.miserc.toml`. Tasks install their declared tools when needed rather than activating a global toolchain; `mise tasks` shows the available commands. Native packages are bootstrapped separately. For CI commands use `MISE_ENV=ci` (or `mise -E ci run …`). Run ad-hoc Cargo builds through `mise run build:cargo -- ...` and binaries through `mise run run:cargo -- ...` to use the configured Rust integration/mbx.
 
-The wrapper sets `CARGO_TARGET_DIR` to `.dev-environment/target`. Some native image-building recipes assume relative `target/` paths; follow the [native tutorial](/tutorials/native) for the necessary override.
+## Common Core tasks
+
+- `check:host` / `check:guest` / `check:all`: compile the Linux host and/or `wasm32-unknown-unknown` guest library.
+- `clippy:host` / `clippy:guest` / `clippy:all`: lint the selected targets, denying warnings.
+- `docs:host` / `docs:guest` / `docs:all`: build target-specific Rustdoc.
+- `test:workspace`: run `cargo test --workspace`.
+- `test:fonts`: validate font caching, compile-time selection, archive linking and recovery.
+- `build:applications`: build the six bundled `wasm32-wasip1` WASI applications with the `release-wasm` profile.
+- `image:native` / `image:wasm`: build bundled applications and prepare their matching LittleFS seed images.
+- `build:profiling`: compile the profiling native example.
+- `format:rust`, `format:toml`, `format:json`, `format:all`: developer formatting tasks; format commands do not bootstrap native packages.
+- `dev:before-commit`: development checks across formatting, host/guest compilation, documentation and Clippy.
+- `localization:lint`: check semantic translation keys and catalog consistency.
+- `localization:check`: strictly check host and WASI application localization.
+- `translate:compare` / `translate:pull` / `translate:push`: Tolgee commands. `translate:sync` removes unused remote keys: inspect and approve changes before using it.
+- `coverage:host`: native host coverage.
+
+Exact task definitions: <CodeReference path="mise.toml" />, <CodeReference path="mise.development.toml" />, <CodeReference path="mise.ci.toml" />.
+
+## Targets, tools and CI
+
+The current host check uses `x86_64-unknown-linux-gnu` with `graphics,abi_definitions,graphics_rendering_xrgb8888`. The guest-library check uses `wasm32-unknown-unknown` with the `wasm` package's `default_guest` feature and disabled defaults. Bundled guest applications instead build for `wasm32-wasip1`. The browser example itself targets `wasm32-unknown-unknown` and is built by Trunk.
+
+Version pins are centralized in the `[vars]` table of `mise.toml` (Rust stable 1.99.0, Node 24.22.0, and target-specific tooling as of Core #510). CI profiles provision task-scoped tools and selected Linux packages; local tasks use the developer profile.
+
+Core #510 separated the primary checks into <CodeReference path=".github/workflows/ci.yml" />, extended validation into <CodeReference path=".github/workflows/extended.yml" />, browser documentation/Pages into <CodeReference path=".github/workflows/pages.yml" />, and OCI runtime into <CodeReference path=".github/workflows/runtime.yml" />. The old `check.yml` and `deploy.yml` paths no longer exist.
 
 ## Website commands
 
-These npm commands run from the **website repository root**, not Core:
+Run these from the **website repository root**, not Core:
 
-| Command                 | Behavior                                                                    |
-| ----------------------- | --------------------------------------------------------------------------- |
-| `npm ci`                | Installs the lockfile-resolved website dependencies.                        |
-| `npm run docs:dev`      | Starts VitePress development mode.                                          |
-| `npm run docs:build`    | Builds the static site, sitemap, and Pagefind index.                        |
-| `npm run docs:preview`  | Serves the production build for inspection.                                 |
-| `npm run docs:validate` | Checks source links, generated-page anchors, and navigation after a build.  |
-| `npm run format:fix`    | Formats repository files with Prettier.                                     |
-| `npm run format:check`  | Checks Prettier formatting.                                                 |
-| `npm run check`         | Checks formatting, builds documentation, and validates documentation links. |
+- `npm ci`: install website dependencies.
+- `npm run docs:dev` / `npm run docs:build` / `npm run docs:preview`: develop, build, preview.
+- `npm run docs:validate`: check internal links, references and navigation after building.
+- `npm run format:fix` / `npm run format:check`: format/check with Prettier.
+- `npm run check`: website tests, formatting, VitePress build and documentation validation.
 
 ## Related documentation
 
-- [Set up a development environment](/how-to/setup-development).
+- [Set up development](/how-to/setup-development).
 - [Validate a Core change](/how-to/validate-core).
-- [Write or update documentation](/how-to/write-documentation).
+- [Native tutorial](/tutorials/native) and [browser tutorial](/tutorials/browser).
