@@ -1,79 +1,58 @@
 ---
 layout: doc
 docType: tutorial
-description: Build and run Xila's native desktop using the containerized development environment.
+description: Build a seeded native Xila installation and open its graphical desktop with mise.
 ---
 
 # Run Xila natively
 
-Build Xila from Core, then open its native graphical desktop. The development container supplies **build tools**; it does not replace the Xila runtime. For the headless Xila shell in Docker, see [Run Xila with Docker](/how-to/run-container-guest).
+Build Xila from Core, prepare a filesystem seed, and open its native desktop on Linux. Core uses **mise** for builds; the older Cargo Make/development-container instructions no longer apply.
 
 ## Before you begin
 
-- Use x86_64 Linux with a Wayland desktop and working GPU/display drivers. The development wrapper has an X11 fallback; WSL2/WSLg needs a separate GUI smoke test.
-- Install Git and either Docker or Podman, with permission to start containers.
-- Allow internet access for the first image pull and dependency downloads.
+Use x86_64 Debian/Ubuntu Linux with a working Wayland desktop for the graphical test. Install [mise](https://mise.jdx.dev/getting-started.html) and Git. The host toolchain and runtime have not been validated on native Windows, macOS, ARM Linux or NixOS. WSL2/WSLg requires its own GUI smoke test.
 
-Native Windows, macOS, ARM Linux, and NixOS are not validated by the current Linux native workflow. **Devbox is no longer required.**
+## 1. Prepare Core
 
-## 1. Open Core in its development container
-
-In a **host terminal**, clone the two repositories side by side:
+In a **host terminal**:
 
 ```sh
-git clone https://github.com/xila-project/development-environment.git
 git clone https://github.com/xila-project/core.git
 cd core
-../development-environment/scripts/xila-dev pull
-../development-environment/scripts/xila-dev --gui shell
+mise trust
+mise bootstrap packages apply --manager apt
+mise run deps:npm
+mise run check:all
 ```
 
-The `xila-dev` wrapper lives in the **development-environment** repository, not Core. The `--gui` flag must appear before `shell`; it forwards the Wayland socket (or X11 fallback) and relevant GPU access. You are now in the build container, with Core mounted at `/workspace`.
+The check covers selected Linux host and WASM guest-library builds, not the actual desktop. Mise installs task tools as needed; to preinstall the complete set, run `mise install --include-task-tools`.
 
-## 2. Install dependencies and check the build
+## 2. Prepare the native seed
 
-From Core's root, **inside that container shell**:
+Still at Core's root:
 
 ```sh
-export CARGO_TARGET_DIR=target
-npm ci
-cargo make check
+mise run image:native
 ```
 
-The container already has the pinned Rust toolchains, WASM targets, native libraries, and `cargo-make`. The `CARGO_TARGET_DIR` override keeps the native image task and the preceding checks on the same Cargo output path. The checks cover the host and guest-library configurations, not interactive GUI behavior.
+This builds the bundled `wasm32-wasip1` applications and writes a 16 MiB LittleFS seed to `target/seed/native/seed.img`. Xila imports that seed **only when the live disk is absent**. It does not overwrite an existing installation or upgrade its bundled apps.
 
-## 3. Build the reference disk
-
-Native Xila boots from a reference disk containing prebuilt WASI applications. Core's `prepare-native-image` task uses fixed `target/` paths, whereas `xila-dev` normally places Cargo outputs in `.dev-environment/target`. The override in step 2 selects the task's expected target directory:
+## 3. Start the graphical runtime
 
 ```sh
-cargo make prepare-native-image
+mise run run:cargo -- -p native_example --bin native_example -- --gui --no-network --seed-image target/seed/native/seed.img
 ```
 
-This generates `target/seed/native/seed.img` and builds the bundled applications. The new `target/` directory is ignored by Git. This override is currently necessary for the image-preparation task; using it from the start avoids rebuilding the checks' artifacts in a second target directory.
+A native Xila window should appear. On a new disk, log in as **administrator** with an empty password. Check that pointer input, the app launcher and window closing work. The default mutable disk is `./drive.img`; use `--disk-path PATH` to create a separate installation without risking saved data.
 
-## 4. Launch Xila's graphical desktop
-
-Still inside the development shell:
-
-```sh
-cargo run -p native_example --bin native_example -- --gui --no-network \
-  --seed-image target/seed/native/seed.img
-```
-
-The `--no-network` option makes the first run independent of host TUN/TAP permissions. A native Xila window should open. On a **fresh** disk, log in as **administrator** with an empty password, then check that windows and pointer input respond.
-
-The live installation defaults to `./drive.img` in Core's working directory. Only an **absent** disk imports the seed. Later runs reuse its existing files and credentials; use `--disk-path PATH` for a separate installation, rather than deleting a disk with data.
+For text-only operation, replace `--gui` with `--terminal`. For a display-free graphical debug session, pass `--display-driver headless --resolution 800x600` and use the `xila-debug` client from another terminal. See <CodeReference path="examples/native/README.md" /> for the headless workflow and output limits.
 
 ## Check your result
 
-The checks should succeed and the desktop should render and respond to input without an immediate panic. Close Xila and inspect the launching terminal for errors.
-
-For a text-only native example, replace `--gui` with `--terminal`. For a display-free graphical debug session, Core also supports `--display-driver headless`; see <CodeReference path="examples/native/README.md" />.
+The build/check commands and the graphical smoke test should complete without errors. This confirms the tested Linux environment, **not** embedded flash/RAM requirements or microcontroller correctness.
 
 ## Continue learning
 
-- [Run Xila with Docker](/how-to/run-container-guest) for its interactive command-line shell and WASI execution without a GUI.
-- [Set up a development environment](/how-to/setup-development) for alternative wrapper commands.
-- [Run Calculator in the browser](./browser) for browser-hosted Xila.
-- [Architecture overview](/explanation/architecture/) for the components used here.
+- [Set up development](/how-to/setup-development).
+- [Run Calculator in the browser](./browser).
+- [Run the headless OCI runtime](/how-to/run-container-guest).
