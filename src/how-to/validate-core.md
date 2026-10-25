@@ -51,7 +51,7 @@ EMBEDDED_I18N_LOCALE=fr EMBEDDED_I18N_STRICT=1 mise run localization:check
 
 Repeat strict checks for affected locales, including `zh-CN` when changing Chinese catalogs or font subsetting. Review the key mapping files in <CodeReference path="tools/localization/mappings" />. A destructive Tolgee synchronization is not part of routine validation.
 
-## Browser validation
+## Browser behavior
 
 Build matching WASI guests and a browser filesystem image, then build the demonstration:
 
