@@ -25,10 +25,10 @@ Set up the [development environment](./setup-development) and read <CodeReferenc
 
 Follow [Validate a Core change](./validate-core), selecting the targets and tests your changes affect. CI's path selection is a useful guide; a skipped job is not evidence that its target passed.
 
-For the combined format/check/doc/Clippy gate, run from Core's root in its development shell:
+For the combined format/check/doc/Clippy gate, run from Core's root with the development mise environment:
 
 ```bash
-cargo make before-commit
+mise run dev:before-commit
 ```
 
 ## Verify completion
