@@ -114,7 +114,9 @@ This snippet assumes an initialized `graphics_manager` with an active display. T
 
 The runtime graphics crate explicitly enables `lvgl_rust_sys/build-lvgl` to compile the native LVGL C archive, while guest/bindgen-only dependencies need not compile LVGL. The graphics `build.rs` uses the selected locale and fallback to generate font C sources and compile them into a separate `font_assets` static archive in Cargo `OUT_DIR`. Font-only changes can therefore rebuild the font archive without rebuilding LVGL C sources. The old standalone `fonts_generator` executable and eager `generate-fonts` task have been removed. This separation landed in Core #505; #506 restored the runtime C linkage and corrected upstream bindgen include paths.
 
-The generated fonts are compile-time assets, not dynamically loaded fonts. Node.js and `lv_font_conv` (installed through Core's `npm ci`) are required during generation. As of #506, the complete workspace test suite still has a failing `graphics_lifetimes` assertion, so successful link checks should not be read as proof of every runtime lifetime invariant.
+Since Core #508, the Rust font build cache generates four deduplicated Latin range variants and archives each font/variant in a separate native object. `src/fonts.rs` selects the active six symbols at compile time using link aliases: the font archive may hold 24 objects, but **unselected font variants are not linked**. Chinese builds additionally subset Source Han Sans SC to glyphs occurring in localized catalog values, avoiding the entire CJK range (Core #456). The cache accounts for input fonts, converter/tool versions, locale ranges and generator options, and regenerates missing or corrupted results. Use `mise run test:fonts` to check cache and link behavior; there is no runtime font registry.
+
+The generated fonts are compile-time assets, not dynamically loaded fonts. Node.js and `lv_font_conv` (installed via `mise run deps:npm`) are required during generation. The graphics lifetime regression previously seen after #506 subsequently passed in Core #515's `mise run test:workspace` validation. This does not establish hardware-target correctness or runtime memory use.
 
 ## Extension points
 
@@ -141,5 +143,7 @@ The generated fonts are compile-time assets, not dynamically loaded fonts. Node.
 - <HostReference crate="graphics" kind="struct" symbol="Manager" /> — runtime API.
 - <CodeReference path="subsystems/graphics/src/manager.rs" /> — lifecycle, inspection and synthetic input.
 - <CodeReference path="subsystems/graphics/src/window.rs" /> — window ownership and events.
-- <CodeReference path="subsystems/graphics/build.rs" /> — locale-aware font generation and archive build.
+- <CodeReference path="subsystems/graphics/build.rs" /> and <CodeReference path="subsystems/graphics/build/fonts.rs" /> — locale-aware font generation, caching and archive build.
+- <CodeReference path="subsystems/graphics/src/fonts.rs" /> — compile-time font selection.
+- <CodeReference path="subsystems/graphics/fonts/README.md" /> — catalog-specific Chinese glyph subsetting.
 - [File system](/explanation/architecture/libraries/file_system)
