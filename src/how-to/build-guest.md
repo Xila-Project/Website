@@ -14,13 +14,13 @@ Use a configured [development environment](./setup-development) with the WASI ta
 
 ## Build an existing application
 
-From Core's root, inside its [development container shell](./setup-development):
+From Core's root, using [mise-managed tools](./setup-development):
 
 ```bash
 cargo build -p calculator --target wasm32-wasip1 --release
 ```
 
-Use the package name of your application for other workspace guests. Inside `xila-dev`, the default artifact location is `.dev-environment/target/wasm32-wasip1/release/calculator.wasm`. For the browser's seed-generation task, set `CARGO_TARGET_DIR=target` before building, as shown in the [browser tutorial](/tutorials/browser).
+Use the package name of your application for other workspace guests. With Cargo's default target directory, the artifact is `target/wasm32-wasip1/release/calculator.wasm`. The `mise run image:wasm` task builds the bundled applications and seed image together for the [browser tutorial](/tutorials/browser).
 
 ## Add graphics bindings
 
@@ -39,7 +39,7 @@ Core's `xila` package has no `wasm` feature. Command guests require `_start: () 
 
 The build should exit successfully and produce `$CARGO_TARGET_DIR/wasm32-wasip1/release/calculator.wasm` when `CARGO_TARGET_DIR` is set (or `target/wasm32-wasip1/release/calculator.wasm` with Cargo's default). Compilation does not verify runtime compatibility: [run the guest](./run-guest) in Xila to check its actual behavior.
 
-Before serving the browser example after a guest changes, regenerate its seed image with `cargo make prepare-wasm-image`. Existing browser disks are not upgraded from a newer seed.
+Before serving the browser example after a guest changes, regenerate its seed image with `mise run image:wasm`. Existing browser disks are not upgraded from a newer seed.
 
 ## Related documentation
 
