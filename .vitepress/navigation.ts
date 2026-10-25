@@ -38,8 +38,8 @@ const componentGroups: DefaultTheme.SidebarItem[] = [
       ["Peripherals", "peripherals"],
       ["Shared", "shared"],
       ["Synchronization", "synchronization"],
-      ["Target", "target"],
       ["Testing", "testing"],
+      ["Verification", "verification"],
     ].map(([text, page]) => ({
       text,
       link: `/explanation/architecture/libraries/${page}`,
