@@ -12,7 +12,6 @@ Libraries expose reusable contracts, types, protocols, algorithms, adapters and 
 
 - [Shared](/explanation/architecture/libraries/shared): portable shared types and helpers. <HostReference crate="shared" />.
 - [Synchronization](/explanation/architecture/libraries/synchronization): synchronization abstractions. <HostReference crate="synchronization" />.
-- [Target](/explanation/architecture/libraries/target): target/build configuration utilities. <HostReference crate="target" />.
 - [Internationalization](/explanation/architecture/libraries/internationalization): external `embedded-i18n` integration and build-time locales. <HostReference crate="embedded_i18n" />.
 
 ## Contracts and implementations
@@ -23,6 +22,7 @@ Libraries expose reusable contracts, types, protocols, algorithms, adapters and 
 - [Debug protocol](/explanation/architecture/libraries/debug_protocol): headless diagnostics requests, UI input and screenshot frame validation. <HostReference crate="debug_protocol" />.
 - [Peripherals](/explanation/architecture/libraries/peripherals): embedded-hal GPIO contract and fixed-capacity mock. <HostReference crate="peripherals" />.
 - [Audio](/explanation/architecture/libraries/audio): bounded PCM device contract, buffers and mixer implementation. <HostReference crate="audio" />.
+- [Verification](/explanation/architecture/libraries/verification): `no_std` SHA-256 streaming hashes and optional strict Ed25519 verification, without package trust policy. <HostReference crate="verification" />.
 
 ## Execution and support
 

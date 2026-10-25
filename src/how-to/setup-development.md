@@ -1,75 +1,54 @@
 ---
 layout: doc
 docType: how-to
-description: Set up Core's pinned Docker or Podman build tools without Devbox.
+description: Set up Core development locally with the pinned mise tasks and tools.
 ---
 
 # Set up a development environment
 
-Use the separate [Xila development-environment repository](https://github.com/xila-project/development-environment) for Core's pinned Rust, WASM, Node.js, Cargo tooling, and native dependencies. This **build container** is different from the `xila-runtime` Docker image that executes Xila.
+Core uses **mise** for local development and GitHub Actions (Core #509–#510). The earlier Cargo Make / `xila-dev` development-container workflow is obsolete. The `xila-runtime` OCI image is a separate product for running the headless operating system, not building Core.
 
-## Before you begin
+## Prerequisites
 
-Install Git and Docker or Podman, with permission to run containers and internet access for the initial pull. Core's native desktop workflow targets x86_64 Linux with Wayland; the wrapper also forwards X11 if Wayland is unavailable.
+Use Debian/Ubuntu Linux on x86_64 for the documented native build path, with Git, network access, and [mise](https://mise.jdx.dev/getting-started.html) installed. Native GUI testing additionally needs a functioning Wayland display and GPU drivers. WSL2/WSLg requires a separate GUI smoke test; native Windows, macOS, ARM Linux and NixOS have not been validated here.
 
-## Set up the checkout
+## Set up Core
 
-In a **host terminal**, clone both repositories side by side:
+In a **host terminal**, clone and enter Core:
 
 ```sh
-git clone https://github.com/xila-project/development-environment.git
 git clone https://github.com/xila-project/core.git
 cd core
-../development-environment/scripts/xila-dev pull
-../development-environment/scripts/xila-dev shell
+mise trust
+mise install --include-task-tools # optional upfront tool installation
+mise bootstrap packages apply --manager apt
+mise run deps:npm
+mise run check:all
 ```
 
-The wrapper is in `development-environment/scripts/xila-dev`, **not Core**. It mounts Core at `/workspace`, runs as your host UID/GID, and keeps removable Cargo/npm caches under `.dev-environment/`.
+The `mise bootstrap` command may request sudo for native Debian/Ubuntu packages. `mise run` resolves pinned, task-scoped tool versions on demand; the optional `mise install` command fetches them ahead of time. No build container is required.
 
-In the **container shell**, from Core's root:
+`.miserc.toml` selects `mise.development.toml` by default. Shared tasks live in `mise.toml`, with version pins in its `[vars]` table. Use `mise tasks` to see available commands. CI uses `mise.ci.toml` and `MISE_ENV=ci` rather than reusing a development image.
+
+## Build or run
+
+From the same Core root, choose a task:
 
 ```sh
-npm ci
-cargo make check
+mise run image:native
+mise run run:cargo -- -p native_example --bin native_example -- --gui --no-network --seed-image target/seed/native/seed.img
 ```
 
-Exit with `exit`. To run the checks without an interactive shell, use `../development-environment/scripts/xila-dev check` in Core's **host** directory after preparing npm dependencies.
+`image:native` builds matching guest applications and a 16 MiB seed image. A fresh native disk uses that seed; an existing installation is not overwritten. For a display-free test, use the native example's `--display-driver headless` and the Debug client described in the [native tutorial](/tutorials/native).
 
-## Run with a display or host device
+For browser-hosted Xila, use `mise run image:wasm` to prepare the reference image, then follow the [browser tutorial](/tutorials/browser). For independent Cargo operations, `mise run build:cargo -- ...` and `mise run run:cargo -- ...` use the configured build integration.
 
-For native GUI work, start a **new shell from the host**, opting into display forwarding:
+## Embedded targets
 
-```sh
-../development-environment/scripts/xila-dev --gui shell
-```
-
-The `--gui` flag must precede the subcommand. It forwards the Wayland socket or X11 fallback; no display forwarding occurs by default. See [Run Xila natively](/tutorials/native) for preparing the boot disk and launching Xila.
-
-When hardware access is required, add `--device /dev/...` before `shell`, only for the specific device you need.
-
-## Wrapper commands
-
-These run from the **host Core directory** after cloning development-environment beside it:
-
-```sh
-../development-environment/scripts/xila-dev doctor
-../development-environment/scripts/xila-dev check
-../development-environment/scripts/xila-dev run -- cargo --version
-../development-environment/scripts/xila-dev --print --gui shell
-```
-
-To use a different checkout, specify `--workspace PATH` before the subcommand. The wrapper supports Docker/Podman selection, local images, reusable caches, and opt-in display/device access. See its [README](https://github.com/xila-project/development-environment#using-scriptsxila-dev).
-
-## Manual setup
-
-Instead of the image, manually install Rust/rustup, `cargo-make`, Node/npm, Trunk, Clang/libclang, CMake/Ninja, pkg-config, and graphics/system dependencies appropriate for your target. Use the environment repository's [packages.txt](https://github.com/xila-project/development-environment/blob/main/packages.txt) and [toolchains.env](https://github.com/xila-project/development-environment/blob/main/toolchains.env) as a reference, then run `npm ci` from Core. Manual configurations are not guaranteed to match CI.
-
-## Embedded target setup
-
-ESP-IDF toolchains, flashing, and serial permissions require separate setup. Follow the esp-rs [Xtensa](https://docs.esp-rs.org/book/installation/riscv-and-xtensa.html) or [RISC-V](https://docs.esp-rs.org/book/installation/riscv.html) guide for the target.
+Native/guest checks do not establish firmware correctness. Install board-specific compilers, flashing tools, and serial permissions separately, following the esp-rs [Xtensa](https://docs.esp-rs.org/book/installation/riscv-and-xtensa.html) or [RISC-V](https://docs.esp-rs.org/book/installation/riscv.html) guides.
 
 ## Related documentation
 
 - [Development environments and targets](/explanation/development-environments).
-- [Development command reference](/reference/development-commands).
+- [Development commands](/reference/development-commands).
 - [Run Xila natively](/tutorials/native).

@@ -13,7 +13,7 @@ The `audio` crate supplies reusable PCM playback primitives and a fixed-capacity
 1. A caller allocates `PlaybackBuffer<N>` for a single playback device, or constructs and pins `AudioSystem<STREAMS, STREAM_BYTES, MIX_FRAMES, OUTPUTS, SINK_BYTES>` for multiple streams.
 2. Application writers enqueue interleaved PCM frames. Writes are nonblocking and may accept fewer bytes than requested.
 3. A renderer or `mix_next_block()` consumes frames. Paused or empty streams contribute silence.
-4. Output consumers owned by a platform adapter pull the mixed PCM. Native output uses `nanoaudio-cpal`; browser output uses Web Audio integration.
+4. Output consumers owned by a platform adapter pull the mixed PCM. Native output uses `nanoaudio-cpal`; browser output uses Web Audio integration. For deterministic tests without real audio hardware, `drivers_headless::audio::HeadlessAudioOutput` can consume the same mix pipeline.
 
 `nanoaudio` provides buffering, DSP, conversion, and volume support. The OS audio dependency does not include codecs or resampling. Host backends may adapt the fixed mix format to device capabilities.
 
@@ -53,6 +53,12 @@ output.with_consumer(|consumer| { /* platform adapter reads PCM */ });
 Each stream has its own queue, start/stop state and volume. Mixer gain and master gain use `nanoaudio::Mixer`. When an output sink lacks room for a full block, that sink drops the incoming block and increments `dropped_blocks()`; other sinks continue. Writes, controls and mixing use an atomic try-lock and return `RessourceBusy` under contention; output consumers do not acquire that lock.
 
 The default system contains **14 KiB of PCM queue storage** (8 KiB input and 6 KiB output). Core setup and steady-state operations are allocation-free, but this excludes platform adapter buffers and threads. A consumer transferred with `into_consumer_with_reservation` must be destroyed before its reservation is released; violating that unsafe lifetime contract is not permitted.
+
+## Deterministic headless output
+
+Core #515 adds a `HeadlessAudioOutput` adapter to `drivers_headless`. It reserves an output on a caller-owned pinned `AudioSystem`; the test drives mixing explicitly with `mix_next_block()`, then drains whole 48 kHz stereo F32 frames using `read(&mut buffer)`. Unlike a native sound device, it creates no threads, timers, additional queues or hardware dependencies. `read` returns zero when no frames are queued and rejects non-frame-aligned buffers without consuming audio. It exposes `dropped_blocks()` and releases its reservation on drop.
+
+This makes mixer output deterministic in host tests while leaving audible native and browser adapters independent. See <CodeReference path="drivers/headless/src/audio.rs" /> and <CodeReference path="drivers/headless/tests/audio.rs" />. Native ALSA development libraries are now needed only for opt-in host audio builds, not ordinary CI workspace audio tests.
 
 ## Virtual filesystem integration
 

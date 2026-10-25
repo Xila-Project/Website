@@ -10,13 +10,14 @@ Xila's command-line shell implements a bounded command language for interactive 
 
 ## Invocation
 
-Interactive input is parsed one line at a time. When the shell executable receives already-separated arguments, those arguments are preserved literally. Use `-c` to explicitly parse command source:
+Interactive input is parsed one line at a time. When the shell executable receives already-separated arguments, those arguments are preserved literally. Use `-c` to explicitly parse command source, or `-s PATH` to execute a line-oriented VFS script:
 
 ```text
 shell -c 'echo first | wc -l'
+shell -s /data/startup.xsh
 ```
 
-EOF executes a final unterminated interactive line.
+EOF executes a final unterminated interactive or script line. A script supports LF/CRLF; each line has at most 4096 source bytes. Script commands share that shell invocation's directory/environment state while reading input from the separate VFS script file. Script command failures continue by default and the final command status is returned. Syntax, read, UTF-8 and overlong-line errors identify the path/line and stop with status 2; `exit` stops the script. Nested noninteractive shell invocations are limited to four active levels.
 
 ## Composition operators
 
@@ -78,6 +79,7 @@ Expansion does not split a variable value on whitespace and does not reinterpret
 | Resource                                             |      Limit |
 | ---------------------------------------------------- | ---------: |
 | Source line                                          | 4096 bytes |
+| Script buffer                                        | 4097 bytes |
 | Tokens per line                                      |        256 |
 | Commands per line                                    |         32 |
 | Stages per pipeline                                  |          8 |
@@ -94,15 +96,15 @@ These limits bound shell-owned parsing and pipe storage. They do not bound alloc
 
 The current built-in registry contains:
 
-| Area              | Commands                                                                     |
-| ----------------- | ---------------------------------------------------------------------------- |
-| Shell/state       | `true`, `false`, `exit`, `cd`, `pwd`, `clear`, `help`                        |
-| Environment       | `export`, `unset`, `printenv`, `which`                                       |
-| Files/directories | `ls`, `cat`, `stat`, `mkdir`, `rm`, `rmdir`, `realpath`, `touch`, `mv`, `cp` |
-| Text/streams      | `echo`, `grep`, `wc`, `head`, `tail`, `tree`                                 |
-| Timing            | `sleep`                                                                      |
-| Permissions       | `chmod`                                                                      |
-| Network           | `web_request`, `dns_resolve`, `ping`, `ip`                                   |
+| Area              | Commands                                                                             |
+| ----------------- | ------------------------------------------------------------------------------------ |
+| Shell/state       | `true`, `false`, `exit`, `cd`, `pwd`, `clear`, `help`                                |
+| Environment       | `export`, `unset`, `printenv`, `which`                                               |
+| Files/directories | `ls`, `cat`, `stat`, `mkdir`, `rm`, `rmdir`, `realpath`, `touch`, `mv`, `cp`, `find` |
+| Text/streams      | `echo`, `grep`, `wc`, `head`, `tail`, `tree`                                         |
+| Timing            | `sleep`                                                                              |
+| Permissions       | `chmod`                                                                              |
+| Network           | `web_request`, `dns_resolve`, `ping`, `ip`                                           |
 
 Selected recent utilities:
 
@@ -114,12 +116,13 @@ Selected recent utilities:
 - `tree [-L N] [PATH]` streams a hierarchy without collecting sibling entries; depth is bounded to 32.
 - `mv SOURCE DESTINATION` renames within one mounted filesystem and uses the exact destination path.
 - `cp SOURCE DESTINATION` streams a regular file into a newly created or truncated destination with a fixed 512-byte buffer. If the destination is an existing directory, the source filename is appended. It does not copy directory trees and rejects directory sources and copies onto the same path.
+- `find [PATH] [-n NAME|--name NAME] [-t TYPE|--type TYPE] [-d N|--max-depth N]` streams matching paths, starting at `PATH` or the current directory. Name matching is exact; supported types are `f` (file), `d` (directory), `c` (character device), `b` (block device), `p` (pipe), `s` (socket) and `l` (symlink). It includes a matching start path and hidden entries, with at most 32 levels and 1024-byte paths. Permission, missing-path and traversal errors stop the command.
 
 Use `help COMMAND` for the authoritative option syntax of built-ins not detailed here.
 
 ## Unsupported shell syntax
 
-The current language does not implement script files, multiline syntax, command substitution, globbing, subshells, descriptor duplication such as `2>&1`, here-documents, or shell assignment syntax. Newline characters inside explicit command source are whitespace; use `;` to separate commands.
+The current language supports line-oriented VFS scripts but not multiline grammar, command substitution, globbing, subshells, descriptor duplication such as `2>&1`, here-documents, or shell assignment syntax. Newline characters inside explicit command source are whitespace; use `;` to separate commands.
 
 ## Related documentation
 

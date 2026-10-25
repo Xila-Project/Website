@@ -1,79 +1,57 @@
 ---
 layout: doc
 docType: tutorial
-description: Build Xila's bundled WASI applications, run Xila in a browser, and evaluate an expression through Calculator.
+description: Prepare a WASI seed image and run Calculator inside browser-hosted Xila.
 ---
 
 # Run Calculator in the browser
 
-This tutorial introduces browser-hosted Xila through Calculator. You will build the WASI applications required by the browser demonstration, start the `wasm32-unknown-unknown` Xila host, and use Calculator to compute `1 + 2 = 3`.
+Build Xila's bundled WASI applications and browser-hosted runtime, then use Calculator to evaluate `1 + 2 = 3`.
 
 ## Before you begin
 
-- Use the x86_64 Linux [development environment](/how-to/setup-development). Its build image provides Trunk and the pinned Rust toolchains.
-- Use a browser supporting OPFS, `FileSystemFileHandle.createWritable`, and Web Locks on localhost or HTTPS.
-- Close another Xila tab only when it is using the same browser disk you intend to open. Different tabs may use different images.
-- Keep guest artifacts in Core's default `target` directory; the browser build embeds them from there.
+Follow [development setup](/how-to/setup-development) on supported Linux. Use a browser offering OPFS, `FileSystemFileHandle.createWritable` and Web Locks over localhost or HTTPS. If another Xila tab uses the **same** origin-private disk, close that tab before opening it again.
 
-## 1. Prepare Core
+## 1. Prepare the guest image
 
-In a host terminal:
-
-```bash
-git clone https://github.com/xila-project/development-environment.git
-git clone https://github.com/xila-project/core.git
-cd core
-../development-environment/scripts/xila-dev pull
-../development-environment/scripts/xila-dev shell
-export CARGO_TARGET_DIR=target
-npm ci
-```
-
-Keep the development container shell open in Core's root. The `CARGO_TARGET_DIR` override aligns Cargo outputs with the relative `target/` paths used by the browser seed-image task. If the image and npm dependencies are already installed, enter the same container shell and continue.
-
-## 2. Build the bundled WASI applications and reference image
-
-The browser runtime loads applications from a separate seed image. Build the guest applications and generate that image before starting Trunk:
+In a **host terminal** from Core's root:
 
 ```sh
-cargo make prepare-wasm-image
+git clone https://github.com/xila-project/core.git
+cd core
+mise trust
+mise bootstrap packages apply --manager apt
+mise run deps:npm
+mise run image:wasm
 ```
 
-The command builds `wasm32-wasip1` applications including Calculator, Clock, and Pixel Painter, then writes `target/seed/wasm/seed.img`. For example, Calculator's guest binary is `target/wasm32-wasip1/release/calculator.wasm`. These guests are interpreted by Xila's Wasmi runtime; they are distinct from the browser-hosted Xila binary.
+`image:wasm` compiles Calculator, Clock, Pixel Painter, Text Editor, Synth and Weather for `wasm32-wasip1` and writes `target/seed/wasm/seed.img`. These guest binaries are **not** the Xila browser host (`wasm32-unknown-unknown`). Keep the host, guest binaries, fonts and seed image built for the same compile-time locale.
 
-## 3. Start browser-hosted Xila
+## 2. Build and serve browser-hosted Xila
 
-Still in Core's root:
+From Core's root, use the pinned CI task to build the browser demonstration:
 
-```bash
-cargo make generate-fonts
-(cd examples/wasm && RUSTUP_TOOLCHAIN=stable trunk serve)
+```sh
+MISE_ENV=ci mise run pages:demo
+python3 -m http.server 8080 --directory examples/wasm/dist
 ```
 
-Open the local URL printed by Trunk. Keep the server running while you use the example. The **Xila Help** panel lists the current origin's saved disks and lets you create or select another image before using the desktop.
+Open `http://localhost:8080` in the browser. The Pages task selects the required nightly Rust target and Trunk. The browser's Help panel lets you choose, create and switch origin-private disks. Use the freshly seeded installation to follow this tutorial.
 
-When boot succeeds, the Xila login screen should appear.
+## 3. Run Calculator
 
-## 4. Open Calculator
+On a new disk, log in as **administrator** with an empty password. Select **Calculator** in the app drawer and press **1**, **+**, **2**, **=**. Its display should show **3**. Close the Calculator window; the desktop should remain usable.
 
-On a fresh disk, log in as **administrator** with an empty password. If the selected image already contains Xila data, use that disk's saved credentials.
-
-Open the application drawer with the Xila button in the dock and select **Calculator**. Its window should appear. The reference disk already contains the bundled guests and their shortcuts. Clock and Pixel Painter should also appear on a fresh disk; existing browser disks are not automatically updated when the seed changes.
-
-## 5. Evaluate an expression
-
-Click **1**, **+**, **2**, and **=**. The result should be **3**. Close Calculator's window; it should disappear while the Xila desktop remains usable.
+Clock, Pixel Painter, Text Editor, Synth and Weather are also bundled, though device/network and audio capabilities depend on the browser. Existing persistent disks are **not** automatically upgraded when a new seed is published.
 
 ## Check your result
 
-You have built `wasm32-wasip1` applications and run one through browser-hosted Xila. The expression result and window closing demonstrate guest execution, graphics events, and normal VM cleanup rather than only a successful compilation.
+A working Calculator verifies more than compiling: it exercises Wasmi guest execution, LVGL event handling and window cleanup. Refresh the tab after a completed disk save to verify persistence if your change affects storage. Abrupt closure can lose changes that have not been committed to OPFS.
 
-Stop Trunk with `Ctrl+C` in its terminal when finished. The selected browser disk persists across reloads, but abrupt tab closure can lose changes since the last completed save. The Help panel can create, switch, and remove disk images; see [Browser storage](/explanation/browser-storage) before relying on persistence.
+Stop the local HTTP server with `Ctrl+C`. See [Browser storage](/explanation/browser-storage) before intentionally deleting an existing disk.
 
 ## Continue learning
 
-- [Build a guest application](/how-to/build-guest) for the independent build workflow.
+- [Build a guest](/how-to/build-guest).
 - [Run a guest from Xila's terminal](/how-to/run-guest).
-- [WASM runtime reference](/reference/wasm-runtime) for features and current capabilities.
-- [Manage browser disks](/how-to/reset-browser-storage) to create, switch, or deliberately remove images.
-- [Pixel Painter architecture](/explanation/architecture/executables/pixel_painter) for an application using the indexed-canvas ABI.
+- [WASM runtime](/reference/wasm-runtime).

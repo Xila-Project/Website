@@ -12,15 +12,17 @@ Xila uses the external `embedded-i18n` dependency for build-time localization. C
 
 Core's `.cargo/config.toml` selects locale and fallback using `EMBEDDED_I18N_LOCALE` and `EMBEDDED_I18N_FALLBACK`. English is the fallback. Executables use `embedded_i18n::translate!` for ordinary and C-string literals and keep translations in their `locales/` directories.
 
-Core now includes catalogs for **English (`en`), French (`fr`), Spanish (`es`), German (`de`), Brazilian Portuguese (`pt-BR`), Italian (`it`) and Polish (`pl`)**. New languages are built as separate, locale-matched host/guest/seed-image artifacts, rather than exposing a runtime language selector. Terminology, LVGL layouts, and native-speaker reviews remain particularly important for the newer languages. Simplified Chinese is still in progress, not a shipped locale.
+Core includes compiled catalogs for **English (`en`), French (`fr`), Spanish (`es`), German (`de`), Brazilian Portuguese (`pt-BR`), Italian (`it`), Polish (`pl`) and Simplified Chinese (`zh-CN`)**. The seven Latin-script locales are included in the deployment demonstrations; Chinese can be built and validated but has not completed native-speaker/embedded-device review and is **not enabled in deployment bundles**. Languages require separately built, matching host, guest and seed-image artifacts; no runtime language selector is implemented.
 
 The selected translations are embedded in the build. This avoids carrying a dynamic catalog lookup in each runtime call; language choice belongs to the build configuration rather than a live session-language service. Quantity-dependent text uses CLDR plural variants where needed (for example, stopwatch laps, DNS record counts and ping byte counts); Polish requires `one`, `few`, `many` and `other`.
 
 ## Graphics assets and translation tooling
 
-The Graphics crate's `build.rs` uses the selected locale and fallback's character ranges from `embedded-i18n` to generate the required glyphs and compile a separate `font_assets` static archive in Cargo `OUT_DIR`. The former standalone `fonts_generator` executable is no longer part of the build. Locale choice therefore also affects generated graphics assets and their size.
+The Graphics crate's Rust build helpers generate and cache deduplicated font-range variants in Cargo `OUT_DIR`. Every font C object has a unique symbol; `subsystems/graphics/src/fonts.rs` selects the six active locale/fallback symbols at compile time so unselected archive members do not add font data to the linked executable (Core #508). For `zh-CN`, Source Han Sans SC provides only the Chinese characters and punctuation found in selected translation **values**, rather than the full CJK range (Core #456). Arbitrary user-supplied Chinese is not guaranteed covered. The standalone `fonts_generator` task remains removed. Node is used to run `lv_font_conv`, not for Rust catalog discovery.
 
-Tolgee extraction and synchronization are configured in `tolgee.config.ts` and `tolgee.extractor.mjs`. Use [Core's localization guide](https://github.com/Xila-Project/Core/blob/main/docs/localization.md) for exact locale build steps, matching seeded applications and language-specific validation. The [development command reference](/reference/development-commands#core-tasks) lists the translation tasks; their implementation remains in Core's Makefile.
+Core #517 migrated the Rust macro calls and JSON catalogs from English-message keys to **stable semantic IDs**, formatted as lowercase snake_case segments separated by dots (`feature.component.purpose`). Wording-only edits retain the ID; meaning or placeholder-contract changes require a new ID and translator review. Separate contexts should not share a key solely because their English text matches. CLDR plural suffixes (for example `.one`, `.few`, `.many`, `.other`) remain locale-specific. The migration retained translation values but did **not** migrate remote Tolgee history or keys; avoid destructive synchronization without an explicit migration plan.
+
+Tolgee extraction uses `tolgee.config.ts` and a token-aware Rust macro scanner in `tolgee.extractor.mjs`. Per-namespace old-to-new mappings and validation are in <CodeReference path="tools/localization/mappings" /> and <CodeReference path="tools/localization/check.mjs" />. See <CodeReference path="tools/localization/README.md" /> for conventions and the [development command reference](/reference/development-commands#common-core-tasks) for current mise commands.
 
 ## Compile-time integration contract
 
@@ -32,9 +34,9 @@ Use the build-time locale and fallback consistently across host binaries, WebAss
 
 ## End-to-end update workflow
 
-1. Add or edit a string in the executable/library source using the existing localization macros.
+1. Add a stable dotted semantic ID to an executable/library `translate!` call, keeping user-facing English text in its `en.json` catalog. Do not use the English message itself as the key.
 2. Add translations under that crate's `locales/<locale>.json`, preserving the intended namespace and plural categories.
-3. Run the Core translation extractor/validation configured by `tolgee.config.ts` and `tolgee.extractor.mjs`; review diffs rather than deleting apparently unused keys during a namespace migration.
+3. Run `mise run localization:lint` and `node --test tolgee.extractor.test.mjs`; check `tools/localization/mappings/` for historical key mapping and use strict per-locale compilation (`EMBEDDED_I18N_LOCALE=fr EMBEDDED_I18N_STRICT=1 mise run localization:check`) for affected locales. Do not remove unused Tolgee keys automatically.
 4. Build **host, guests and seeded disk content for the same locale**. Cargo regenerates and compiles the locale-dependent graphics font archive as needed; install the Core workspace's Node dependencies with `npm ci` before building graphics.
 5. Check text truncation, symbol availability and UI layout in Graphics.
 
@@ -47,7 +49,9 @@ English fallback prevents missing-key failures but does not guarantee appropriat
 - <CodeReference path="src/lib.rs" /> — public re-export.
 - <CodeReference path=".cargo/config.toml" /> — locale defaults.
 - <CodeReference path="subsystems/graphics/build.rs" /> — glyph generation.
-- <CodeReference path="docs/localization.md" /> — build and translation instructions.
+- <CodeReference path="tools/localization/README.md" /> — semantic naming and translation conventions.
+- <CodeReference path="tools/localization/check.mjs" /> — semantic catalog validation.
+- <CodeReference path="subsystems/graphics/fonts/README.md" /> — Latin and Chinese font coverage.
 - [Graphics](/explanation/architecture/subsystems/graphics) — runtime text rendering.
 
 ## Related documentation

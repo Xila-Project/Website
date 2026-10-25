@@ -1,95 +1,73 @@
 ---
 layout: doc
 docType: how-to
-description: Select formatting, host/guest, runtime, and browser checks for a Core change.
+description: Select mise-based formatting, host/guest, graphics, and browser checks for Core.
 ---
 
 # Validate a Core change
 
-Run the checks that exercise the behavior and targets your change affects. Unless stated otherwise, run commands from Core's root inside its configured development container shell.
+Run checks that cover the behavior and targets you changed. All commands below start from the **Core repository root** after [development setup](./setup-development).
 
-## Before you begin
+## Formatting and target checks
 
-Complete [development setup](./setup-development) and install any extra prerequisites for your selected tests. Cargo-make initializes font generation before its tasks.
-
-## Check formatting
-
-Use read-only checks before review:
-
-```bash
-cargo make format-rust -- --check
-cargo make format-toml --check
+```sh
+mise run format:rust -- --check
+mise run format:toml -- --check
 npm exec prettier -- --check "**/*.json"
+mise run check:host
+mise run check:guest
+mise run clippy:all
+mise run docs:all
 ```
 
-Use `cargo make format` to apply the formatters while editing.
+`check:all` combines host and guest checks. `test:workspace` runs workspace tests:
 
-## Check the affected targets
-
-For host-facing changes:
-
-```bash
-cargo make check-host
-cargo make clippy-host
-cargo make doc-host
+```sh
+mise run check:all
+mise run test:workspace
 ```
 
-For guest-library changes:
+These targets include Linux host and `wasm32-unknown-unknown` guest-library checks. They do not substitute for running `wasm32-wasip1` applications or checking embedded hardware.
 
-```bash
-cargo make check-guest
-cargo make clippy-guest
-cargo make doc-guest
+## Graphics, fonts and WASM runtime
+
+For graphics/C ABI changes, use the focused host and memory64 Wasmi tests appropriate to the changed subsystem and the tests documented in <CodeReference path="executables/wasm/README.md" />. For font assets, run:
+
+```sh
+mise run test:fonts
 ```
 
-Use `check`, `clippy`, and `doc` for both sets. These tasks check the Linux host and `wasm32-unknown-unknown` guest library; build the actual [WASI guest](./build-guest) separately when it changes.
+This checks generation, caching, selected-symbol linkage, and recovery from invalid build artifacts. No-allocator or size tests on native targets are not MCU measurements.
 
-## Test WASM runtime
+## Localization
 
-For graphics catalog, runtime, and alternate guest-word translation changes:
+Translation IDs are stable dotted semantic keys, not English source strings. When altering strings or catalogs, run:
 
-```bash
-cargo test -p graphics_bindgen --target x86_64-unknown-linux-gnu
-cargo test -p wasm --features graphics --target x86_64-unknown-linux-gnu
-cargo test -p wasm --no-default-features --features host,graphics,memory_64 --target x86_64-unknown-linux-gnu
+```sh
+mise run localization:lint
+node --test tolgee.extractor.test.mjs
+EMBEDDED_I18N_LOCALE=fr EMBEDDED_I18N_STRICT=1 mise run localization:check
 ```
 
-Calculator is a wasm32 guest; its acceptance test is not run in the `memory_64` configuration. Portable translation coverage and Miri commands are documented in <CodeReference path="executables/wasm/tests/translation/README.md" />. Add `llvm-tools-preview` to the pinned stable toolchain for coverage and `miri` to the pinned nightly for Miri.
-
-Use `cargo make test` for workspace tests, and the [command reference](/reference/development-commands) for the combined gates.
+Repeat strict checks for affected locales, including `zh-CN` when changing Chinese catalogs or font subsetting. Review the key mapping files in <CodeReference path="tools/localization/mappings" />. A destructive Tolgee synchronization is not part of routine validation.
 
 ## Browser behavior
 
-Build Calculator before building the example:
+Build matching WASI guests and a browser filesystem image, then build the demonstration:
 
-```bash
-cargo build -p calculator --target wasm32-wasip1 --release
-cargo make generate-fonts
-(cd examples/wasm && RUSTUP_TOOLCHAIN="$XILA_NIGHTLY_TOOLCHAIN" trunk build)
+```sh
+mise run image:wasm
+MISE_ENV=ci mise run pages:demo
 ```
 
-Use `trunk serve` instead of `trunk build` and open the served URL to exercise rendering, input, `1 + 2 = 3`, and window closing. For storage changes, check save/reload after a completed save as well; compilation alone does not verify persistence.
+Serve `examples/wasm/dist` locally and exercise graphics, input and application close. For storage changes, verify save/reload and existing-disk preservation. Browser OPFS tests require compatible `wasm-bindgen-test-runner` and ChromeDriver, as described in <CodeReference path="examples/wasm/README.md" />.
 
-### OPFS storage tests
+## Completion
 
-Install `wasm-bindgen-cli` matching the resolved `wasm-bindgen` dependency and a Chrome/Chromium WebDriver matching your browser:
-
-```bash
-CARGO_TARGET_WASM32_UNKNOWN_UNKNOWN_RUNNER=wasm-bindgen-test-runner \
-CHROMEDRIVER=/path/to/chromedriver \
-cargo test -p drivers_wasm --target wasm32-unknown-unknown --test opfs
-```
-
-For a non-default browser executable, set `WASM_BINDGEN_TEST_WEBDRIVER_JSON` to a JSON file containing `{"goog:chromeOptions":{"binary":"/path/to/chromium"}}`. These tests use real OPFS files and cover MBR/LittleFS save/reopen behavior.
-
-## Verify completion
-
-Confirm your selected commands completed successfully and record the target, toolchain, and test scope. For native UI changes, also exercise rendering, input, and closing from a Wayland session.
-
-Rust host tests, browser tests, and Miri do not establish embedded hardware correctness or firmware RAM/flash costs. Validate the relevant board/toolchain when the change affects hardware behavior.
+Record which tools, target architectures and tests actually passed. On hardware-impacting changes, run target firmware checks and inspect flash, peak stack and RAM on the intended board; a green Linux/browser CI does not prove that.
 
 ## Related documentation
 
-- <CodeReference path=".github/workflows/check.yml" /> for CI's checks and affected-path selection.
-- <CodeReference path="examples/wasm/README.md" /> for browser verification details.
-- [Development environments and targets](/explanation/development-environments).
+- [Development commands](/reference/development-commands).
+- <CodeReference path=".github/workflows/ci.yml" /> and <CodeReference path=".github/workflows/extended.yml" />.
+- [Browser tutorial](/tutorials/browser).
