@@ -69,8 +69,8 @@ This makes mixer output deterministic in host tests while leaving audible native
 The optional `nanoaudio-cpal` driver creates one or two output sinks and a shared mixer scheduler on Linux, macOS, and Windows. Its callback plays silence on underrun. The owning `Runner` reports errors through `check()` and underruns through `underruns()`; dropping it stops the mixer before releasing output reservations.
 
 ```sh
-cargo test -p audio
-cargo run -p drivers_native --features audio --example audio
+cargo test -p xila-audio
+cargo run -p xila-drivers-native --features audio --example audio
 ```
 
 The example emits a short 440 Hz square wave when a host audio device is available. Tests of core buffers and mixing do not prove audible output on a particular device. Web Audio and generic guest descriptor controls are available; ESP32 I2S and system sounds remain follow-up work.
