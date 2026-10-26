@@ -24,7 +24,7 @@ Libraries expose reusable contracts, types, protocols, algorithms, adapters and 
 - [Peripherals](/explanation/architecture/libraries/peripherals): embedded-hal GPIO contract and fixed-capacity mock. <HostReference crate="peripherals" />.
 - [Audio](/explanation/architecture/libraries/audio): bounded PCM device contract, buffers and mixer implementation. <HostReference crate="audio" />.
 - [Firmware update](/explanation/architecture/libraries/firmware_update): experimental `no_std` firmware transaction backend and native signed NOR simulator. <HostReference crate="firmware_update" />.
-- [Verification](/explanation/architecture/libraries/verification): `no_std` SHA-256 streaming hashes and optional strict Ed25519 verification, without package trust policy. <HostReference crate="verification" />.
+- [Verification](/explanation/architecture/libraries/verification): shared `no_std` SHA-256 and strict Ed25519 primitives, now sourced from [package_manager](https://github.com/xila-project/package_manager/tree/main/crates/verification) rather than a local Core crate.
 
 ## Execution and support
 
@@ -34,6 +34,8 @@ Libraries expose reusable contracts, types, protocols, algorithms, adapters and 
 - [Authentication](/explanation/architecture/libraries/authentication): reusable credential/verification operations. <HostReference crate="authentication" />.
 - [Bootsplash](/explanation/architecture/libraries/bootsplash): startup animation implementation. <HostReference crate="bootsplash" />.
 - [Testing](/explanation/architecture/libraries/testing): test assembly helpers.
+
+Portable package manifest, TAR reader/writer and host builder crates live in the [separate package_manager workspace](/explanation/package-management), not under Core `libraries/`. Their [provisional file format](/reference/package-format) and [community publication registry](/how-to/submit-package) are documented independently from Core runtime libraries.
 
 See [Subsystems](/explanation/architecture/subsystems/) for runtime owners, [Drivers](/explanation/architecture/drivers/) for target implementations and [Executables](/explanation/architecture/executables/) for launched programs and Wasmi integration.
 
