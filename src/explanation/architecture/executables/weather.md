@@ -44,6 +44,10 @@ The network operation is currently synchronous from the guest UI's refresh handl
 - <CodeReference path="executables/weather/src/interface.rs" /> — refresh event and views.
 - [Networking](/explanation/architecture/subsystems/network) — underlying host device.
 
+## Bounded HTTP response processing
+
+Core #522 changed the underlying HTTP(S) VFS device from whole-body buffering to a 2 KiB streaming buffer per open. Weather consumes the **already decoded** HTTP response body, handles fragmented and coalesced reads, reuses bounded header memory for JSON, and releases temporary JSON storage before the next request. Large HTTP downloads therefore do not imply large transport response allocations, but Weather's own JSON and socket/TLS storage remain additional memory costs. See [HTTP](/explanation/architecture/libraries/http) and <CodeReference path="executables/weather/src/net.rs" />.
+
 ## References
 
 - <CodeReference path="executables/weather/README.md" />
