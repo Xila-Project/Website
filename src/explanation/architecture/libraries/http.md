@@ -6,7 +6,7 @@ description: Portable bounded HTTP/1 response parsing, body decoding and Xila's 
 
 # HTTP
 
-Core #522 extracted the reusable `xila-http` package under `libraries/http`. It provides `no_std` HTTP/1 request helpers, response-head parsing, borrowed URL parsing and incremental body decoding. The default feature set does not require a heap allocator; the optional `alloc` feature provides URL formatting helpers.
+Core #522 extracted the reusable `xila_http` package under `libraries/http`. It provides `no_std` HTTP/1 request helpers, response-head parsing, borrowed URL parsing and incremental body decoding. The default feature set does not require a heap allocator; the optional `alloc` feature provides URL formatting helpers.
 
 ## Framing and ownership
 
@@ -25,7 +25,7 @@ Sockets are reclaimed through the Network runner after queued traffic and FIN/RS
 ## Validation and boundaries
 
 ```sh
-cargo test -p xila-http --all-features
+cargo test -p xila_http --all-features
 cargo test -p xila-network --test https -- --ignored --nocapture
 ```
 
@@ -33,7 +33,7 @@ The HTTPS integration test needs Python 3 and OpenSSL and is intentionally ignor
 
 ## References
 
-- <HostReference crate="http" /> — portable HTTP library Rustdoc.
+- <HostReference crate="xila_http" /> — portable HTTP library Rustdoc.
 - <CodeReference path="libraries/http/README.md" /> — formats and memory bounds.
 - <CodeReference path="libraries/http/src/framing.rs" /> — incremental HTTP framing.
 - <CodeReference path="drivers/shared/src/devices/http_exchange.rs" /> — VFS stream transport.
