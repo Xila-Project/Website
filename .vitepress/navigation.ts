@@ -118,6 +118,8 @@ const documentationSidebar: DefaultTheme.SidebarItem[] = [
       { text: "Integrate a host application", link: "/how-to/integrate-host" },
       { text: "Build a guest", link: "/how-to/build-guest" },
       { text: "Run a guest", link: "/how-to/run-guest" },
+      { text: "Create a development package", link: "/how-to/package-application" },
+      { text: "Submit a package declaration", link: "/how-to/submit-package" },
       {
         text: "Run Xila with Docker",
         link: "/how-to/run-container-guest",
@@ -135,6 +137,7 @@ const documentationSidebar: DefaultTheme.SidebarItem[] = [
       { text: "Host API", link: "/reference/host" },
       { text: "Guest API", link: "/reference/guest" },
       { text: "Shell", link: "/reference/shell" },
+      { text: "Experimental package format", link: "/reference/package-format" },
       { text: "Development commands", link: "/reference/development-commands" },
       { text: "WASM runtime", link: "/reference/wasm-runtime" },
       {
@@ -165,6 +168,7 @@ const documentationSidebar: DefaultTheme.SidebarItem[] = [
         link: "/explanation/development-environments",
       },
       { text: "Browser storage", link: "/explanation/browser-storage" },
+      { text: "Package management architecture", link: "/explanation/package-management" },
     ],
   },
   { text: "About Xila", link: "/about/" },
