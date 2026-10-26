@@ -41,6 +41,10 @@ The build should exit successfully and produce `$CARGO_TARGET_DIR/wasm32-wasip1/
 
 Before serving the browser example after a guest changes, regenerate its seed image with `mise run image:wasm`. Existing browser disks are not upgraded from a newer seed.
 
+## Package the artifact for development
+
+After building the guest, the separate [native package builder](/how-to/package-application) can generate an experimental `.xpk` TAR archive and manifest from the resulting `.wasm`. This is **not** an on-device package installation mechanism or a signed trusted application release. See [Package management architecture](/explanation/package-management).
+
 ## Related documentation
 
 - [Run Calculator in the browser](/tutorials/browser).
