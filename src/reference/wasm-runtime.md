@@ -51,7 +51,7 @@ Default features are `host,memory_32`. Guest-only consumers must disable default
 | Interpreter                 | Wasmi 2 with validation, memory64 support, and automatic portable/native dispatch as available.                                                    |
 | Translation                 | Functions are translated eagerly before execution so fuel exhaustion cannot suspend lazy callee translation. This can increase startup work.       |
 | Scheduling                  | Fuel exhaustion and `sched_yield` yield cooperatively to the executor. Wasmi 2 meters input Wasm operators, so slice timing is not version-stable. |
-| `poll_oneoff`               | Up to 64 realtime/startup-clock subscriptions with relative or absolute deadlines. File-descriptor polling and unsupported clocks return errors.   |
+| `poll_oneoff`               | Up to 64 supported realtime/monotonic subscriptions. Invalid UTC does not prevent monotonic polling; file-descriptor readiness remains unsupported. |
 | Startup clock               | Uses the monotonic Embassy source; adjustable UTC is separate and can be unsynchronized.                                                           |
 | WebAssembly start sections  | Suspension is unsupported. WASI command guests should use exported `_start`.                                                                       |
 | WASI/graphics compatibility | Partial WASI coverage and a supported graphics subset, not full compatibility.                                                                     |
