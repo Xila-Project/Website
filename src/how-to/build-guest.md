@@ -17,14 +17,14 @@ Use a configured [development environment](./setup-development) with the WASI ta
 From Core's root, using [mise-managed tools](./setup-development):
 
 ```bash
-cargo build -p calculator --target wasm32-wasip1 --release
+cargo build -p xila-calculator --target wasm32-wasip1 --release
 ```
 
 Use the package name of your application for other workspace guests. With Cargo's default target directory, the artifact is `target/wasm32-wasip1/release/calculator.wasm`. The `mise run image:wasm` task builds the bundled applications and seed image together for the [browser tutorial](/tutorials/browser).
 
 ## Add graphics bindings
 
-For a separate Rust application workspace, select the `wasm` package and disable the default host interpreter:
+For a separate Rust application workspace, select the `xila-wasm` Cargo package and disable the default host interpreter:
 
 ```toml
 [dependencies]
