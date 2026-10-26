@@ -40,7 +40,7 @@ This builds the bundled `wasm32-wasip1` applications and writes a 16 MiB LittleF
 ## 3. Start the graphical runtime
 
 ```sh
-mise run run:cargo -- -p native_example --bin native_example -- --gui --no-network --seed-image target/seed/native/seed.img
+mise run run:cargo -- -p xila-native-example --bin native_example -- --gui --no-network --seed-image target/seed/native/seed.img
 ```
 
 A native Xila window should appear. On a new disk, log in as **administrator** with an empty password. Check that pointer input, the app launcher and window closing work. The default mutable disk is `./drive.img`; use `--disk-path PATH` to create a separate installation without risking saved data.

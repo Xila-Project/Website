@@ -1,125 +1,49 @@
 ---
 layout: doc
 docType: explanation
-description: "The Time module provides an explicitly constructed time source for Xila services."
+description: Separate monotonic elapsed time and adjustable UTC, including synchronization and WASI clock semantics.
 ---
 
 # Time
 
-The Time module provides an explicitly constructed time source for Xila services.
+Xila's Time subsystem has **two distinct clocks** following Core #533 and #534. The monotonic clock measures elapsed time and powers deadlines; the system's signed UTC clock represents civil time and may be explicitly corrected. This separation prevents NTP, manual or RTC corrections from changing uptime, LVGL animation ticks, TCP/ICMP timers or WASI monotonic subscriptions.
 
-## Role in system
+## Monotonic clock
 
-- Supplies current time to modules that stamp metadata (for example VFS attributes).
-- Supplies uptime-like elapsed time since manager initialization.
-- Acts as the canonical time source adapter for platform drivers.
+`time::Manager::monotonic_now()` returns `Duration` since a platform-defined arbitrary epoch. `uptime()` measures time since manager construction. `monotonic_resolution()` reports the source's nominal resolution and `monotonic_milliseconds_wrapping()` supplies a wrapping u32 clock for LVGL (wrap approximately every 49.7 days). Monotonic timestamps do not encode calendar time and **must not be persisted between reboots**.
 
-## Responsibilities and boundaries
+The default `EmbassyClock` shares the executor's monotonic tick source with task timers and guest deadlines. Native uses an Instant-backed driver; the browser uses `performance.now()` through Embassy. The resolution is nominal, not a guarantee of physical clock accuracy. On microcontrollers, low-power sleep may pause ticks and deep sleep/reboot starts a new epoch.
 
-**In scope**
+A platform can inject a custom `MonotonicClock` if it is nondecreasing and compatible with the executor's timebase.
 
-- Manager construction with a borrowed direct character device source.
-- `get_current_time()` and `get_current_time_since_startup()` query APIs.
-- Conversion between device byte payload and `core::time::Duration`.
+## Signed UTC and synchronization
 
-**Out of scope**
+`realtime_now()` returns a signed `Timestamp` (Unix nanoseconds stored as `i128`) or an error while unsynchronized or if arithmetic overflows. The time manager derives UTC by applying a checked signed correction to monotonically advancing time, rather than reading a device for every query.
 
-- Time synchronization protocols.
-- Timezone/calendar policy.
-- Multi-source clock arbitration.
+- `Manager::new(source)` initializes from a trusted `RealtimeSource` sample. Native and browser bootstraps read the host clock once.
+- `Manager::unsynchronized()` (or `with_clock(custom_clock)`) allows booting without a trustworthy RTC. The elapsed clock remains usable immediately.
+- `synchronize(source)` reads a trusted epoch and records its provenance. `set_realtime` accepts an explicit UTC setting; source invalidation makes UTC unreadable until resynchronized.
+- Synchronization metadata contains the source kind, application instant, nominal resolution and source-reported accuracy. It is **not** a continuously maintained accuracy guarantee.
 
-## Internal architecture
+Corrections **step immediately**, forward or backward, and failed corrections preserve the old state. No gradual slew, timezone database, daylight-saving conversion, automatic synchronization protocol or persistence across reboot is implemented. Those must be provided at a higher layer.
 
-- `Manager::new(driver)` returns an owned manager; the compatibility helper `time::initialize(driver)` also returns a manager, rather than installing a singleton.
-- `Manager` stores:
-  - a borrowed `DirectCharacterDevice + Send + Sync` with a lifetime tied to the manager,
-  - `start_time: Duration` captured at initialization.
-- Current-time reads deserialize `Duration` directly from device bytes.
+## Effects on other subsystems
 
-**Contract vs implementation**
+- **Graphics**: LVGL tick scheduling and shell/Settings periodic refresh use monotonic time.
+- **Network**: smoltcp and ICMP timeouts/RTT use monotonic instants; UTC changes cannot alter their deadlines.
+- **WASI**: realtime clock reads require valid UTC and return a WASI error if invalid/out of range. Monotonic `poll_oneoff` subscriptions still function when UTC is unsynchronized or broken, and the host reads only the clocks actually subscribed.
+- **VFS**: timestamps use UTC where available; existing authorized file access remains possible if UTC is invalid. Creating entries requiring a new timestamp can fail until UTC is available. Corrected UTC may legitimately move backwards.
+- **Shell**: unavailable UTC displays `--:--` instead of a bogus clock.
 
-- **Contract**: callers get `Duration` values and error on device/read failures.
-- **Implementation**: exact wire representation assumes device emits in-memory `Duration` layout expected by this build.
+## Construction and ownership
 
-```mermaid
-graph TD
-    Clients@{ shape: processes, label: "Other modules / executables" }
-    Init[time::Manager::new driver]
-    Manager[Time Manager]
-    Driver[DirectCharacterDevice time source]
+A final runtime owns its Time manager and passes references to clients; it is not a process-global singleton. State changes and reads use short synchronization critical sections, with no allocation or I/O while holding the lock. Custom monotonic sources must be safe to call under that critical section. Clock source trust and persistence are application/platform responsibilities.
 
-    Clients -->|explicit manager reference| Manager
-    Init --> Manager
-    Manager -->|read Duration bytes| Driver
-    Manager -->|compute uptime from start_time| Manager
-```
+The host implementation measured a 128-byte Time manager on x86_64. This is **not** a total RAM, stack or MCU flash measurement. Host and browser tests cover UTC jumps, invalid UTC, overflow, WASI polling, tick rollover and GUI behavior; ESP32-S3 validation remains unproven because the Xtensa toolchain was unavailable.
 
-## Lifecycle and execution model
+## Implementation and references
 
-1. Platform provides time device implementation.
-2. `time::Manager::new(driver)` captures the startup timestamp.
-3. Pass a reference to runtime consumers for current time or elapsed since startup.
-
-## Data/control flow
-
-- Read path: module caller -> time manager -> direct character device read -> `Duration`.
-- Uptime path: current read - cached startup time.
-
-## Concurrency and synchronization model
-
-- Manager state is immutable after initialization (device handle + start time).
-- Read calls are lock-free in manager layer and depend on driver thread-safety guarantees.
-
-## Dependency model
-
-- Upstream dependency: platform `DirectCharacterDevice` implementation.
-- Downstream consumers: VFS, graphics tick callback, network time conversion.
-
-## Failure semantics and recovery behavior
-
-- Initialization fails if initial time read fails.
-- Runtime queries propagate device read failures as `time::Error`.
-- No internal retry/backoff policy; callers decide recovery strategy.
-
-## Extension points
-
-- Replace time source driver per target.
-- Add higher-level synchronization layers above this module.
-- Extend manager with optional monotonic/wall-clock source separation.
-
-## Known limitations and trade-offs
-
-- Read-only API surface (no set-time operation in current module).
-- Accuracy/monotonic behavior depends entirely on device implementation.
-- Wire contract currently assumes compatible `Duration` representation at device boundary.
-
-## Implementation details and clock semantics
-
-The current manager is a small adapter around a borrowed `DirectCharacterDevice + Send + Sync`. Construction reads the device once and stores that `Duration` as `start_time`. Each `get_current_time()` call reads a fresh `Duration` directly from the device at offset zero; it does not cache or interpolate between reads.
-
-`get_current_time_since_startup()` returns `current_time.abs_diff(start_time)`. This is **not an independently monotonic clock**: if the underlying clock moves backwards, the reported elapsed value can still increase because the implementation uses an absolute difference. Callers requiring monotonic deadlines must use a separate monotonic time source.
-
-The device read uses the in-memory representation of `core::time::Duration` as a byte buffer. This makes the driver/manager boundary dependent on the expected representation and exact read behavior; it is not a stable cross-platform serialized timestamp format.
-
-`Manager::new(&device)` returns an owned manager borrowing the device, while `initialize(&'static device)` is a compatibility constructor returning `Manager<'static>`, **not** a global singleton. Construction and reads propagate device errors.
-
-### Example
-
-```rust
-let clock = time::Manager::new(&device)?;
-let now = clock.get_current_time()?;
-let elapsed = clock.get_current_time_since_startup()?;
-```
-
-The example assumes `device` implements the required direct character-device contract. Timezone names, daylight-saving transitions, persistent wall-clock configuration and NTP synchronization are not handled by this manager.
-
-### Implementation references
-
-- <CodeReference path="subsystems/time/src/manager.rs" />
-- <HostReference crate="time" kind="struct" symbol="Manager" />
-
-## References / See also
-
-- <HostReference crate="time" />
-- [Drivers](/explanation/architecture/drivers)
-- [Synchronization](/explanation/architecture/libraries/synchronization)
+- <CodeReference path="subsystems/time/src/manager.rs" /> — `Manager`, `MonotonicClock`, `EmbassyClock`, and synchronization lifecycle.
+- <CodeReference path="subsystems/time/src/lib.rs" /> — public time API exports.
+- <HostReference crate="time" /> — host Rustdoc.
+- [Network](/explanation/architecture/subsystems/network), [VFS](/explanation/architecture/subsystems/virtual_file_system), and [WASM runtime](/reference/wasm-runtime) — important consumers.

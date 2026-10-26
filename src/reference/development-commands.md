@@ -41,7 +41,7 @@ Exact task definitions: <CodeReference path="mise.toml" />, <CodeReference path=
 
 ## Targets, tools and CI
 
-The current host check uses `x86_64-unknown-linux-gnu` with `graphics,abi_definitions,graphics_rendering_xrgb8888`. The guest-library check uses `wasm32-unknown-unknown` with the `wasm` package's `default_guest` feature and disabled defaults. Bundled guest applications instead build for `wasm32-wasip1`. The browser example itself targets `wasm32-unknown-unknown` and is built by Trunk.
+The current host check uses `x86_64-unknown-linux-gnu` with `graphics,abi_definitions,graphics_rendering_xrgb8888`. The guest-library check uses `wasm32-unknown-unknown` with the `xila-wasm` package's `default_guest` feature and disabled defaults. Bundled guest applications instead build for `wasm32-wasip1`. The browser example itself targets `wasm32-unknown-unknown` and is built by Trunk.
 
 Version pins are centralized in the `[vars]` table of `mise.toml` (Rust stable 1.99.0, Node 24.22.0, and target-specific tooling as of Core #510). CI profiles provision task-scoped tools and selected Linux packages; local tasks use the developer profile.
 

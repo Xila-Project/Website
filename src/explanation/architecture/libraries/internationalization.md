@@ -24,6 +24,24 @@ Core #517 migrated the Rust macro calls and JSON catalogs from English-message k
 
 Tolgee extraction uses `tolgee.config.ts` and a token-aware Rust macro scanner in `tolgee.extractor.mjs`. Per-namespace old-to-new mappings and validation are in <CodeReference path="tools/localization/mappings" /> and <CodeReference path="tools/localization/check.mjs" />. See <CodeReference path="tools/localization/README.md" /> for conventions and the [development command reference](/reference/development-commands#common-core-tasks) for current mise commands.
 
+## Nested catalog files (Core #528)
+
+All **160 non-empty catalogs across 20 localized namespaces and eight locales** now use **nested JSON objects** instead of flat keys. Rust macro calls and Tolgee still use the same stable dotted semantic identifiers; translated values and locale-specific CLDR plurals were preserved.
+
+```json
+{
+  "alarm": {
+    "controls": {
+      "delete": "Delete"
+    }
+  }
+}
+```
+
+This is accessed as `translate!("alarm.controls.delete")`. The shared `tools/localization/catalog.mjs` flattener rejects duplicate paths and parent/leaf collisions rather than silently overwriting keys. `tolgee.config.ts` retains `JSON_C` and sets `pull.delimiter: "."` to export nested JSON; `push.removeOtherKeys` remains **false**. A real remote Tolgee push/pull was **not** validated in #528: inspect the first synchronization carefully and avoid `tolgee pull --empty-dir` during migration.
+
+Test the new catalog behavior with `node --test tools/localization/catalog.test.mjs`, `mise run localization:lint` and the usual strict per-locale builds. See <CodeReference path="tools/localization/README.md" />.
+
 ## Compile-time integration contract
 
 Xila does not currently maintain a separate `internationalization` crate in `libraries/`. Instead, its entrypoint re-exports the external `embedded-i18n` crate and the project provides locale catalogs and build tooling. This page describes that **cross-cutting build integration**, not a runtime manager.
