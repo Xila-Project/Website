@@ -31,5 +31,10 @@ jobs:
       - name: Setup | Install dependencies
         run: npm ci
 
+      - name: Diagnostic | Display formatting diff
+        run: |
+          npx prettier --write .vitepress/navigation.ts src/explanation/architecture/libraries/verification.md src/explanation/package-management.md src/how-to/submit-package.md src/reference/package-format.md
+          git diff -- .vitepress/navigation.ts src/explanation/architecture/libraries/verification.md src/explanation/package-management.md src/how-to/submit-package.md src/reference/package-format.md
+
       - name: Check | Documentation
         run: npm run check
