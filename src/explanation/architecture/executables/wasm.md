@@ -77,7 +77,7 @@ The host registers a subset of WASI Preview 1: process/exit, environment/args, f
 
 `execution::run` resumes a typed Wasmi call. On `OutOfFuel`, it yields to the Task scheduler, replenishes fuel to at least the amount needed by a single bulk operation, then resumes. Supported host suspension includes a yield import and clock-poll events; a pending clock poll sleeps in chunks capped at **50 ms** to check for shutdown and deadlines.
 
-The monotonic WASI clock is sourced from `embassy_time::Instant`, **not** by subtracting Xila's mutable wall clock. This prevents wall-clock corrections from shifting monotonic poll deadlines. A clock device failure on the wall-time side becomes a Wasmi clock error.
+The monotonic WASI clock is sourced from `embassy_time::Instant`, **not** by subtracting Xila's adjustable signed UTC clock. This prevents wall-clock corrections from shifting monotonic poll deadlines. The system's UTC clock is adjustable and can be unsynchronized; invalid realtime returns a WASI clock error without aborting monotonic polling. The monotonic source is the same Embassy epoch used by the executor and is independent of wall-clock corrections.
 
 `proc_exit(0)` succeeds; positive guest exit statuses propagate, clamped to **1–255** at the external executable boundary. Module loading/validation, missing exports, instantiation and traps produce runtime errors. VM-local graphics state is reclaimed on teardown, including trap paths.
 
