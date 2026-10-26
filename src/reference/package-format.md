@@ -46,20 +46,20 @@ The reader uses `tar-no-std` 0.5.0's full-archive slice API. It rejects unexpect
 
 This is a **shape example**, not a real digest or downloadable package. The `sha256` field is the lowercase hex digest of the **uncompressed logical file bytes**. There is currently no compression or alternate file type.
 
-| Implemented field/constraint | Current bound or rule |
-| --- | --- |
-| Manifest encoded bytes | Maximum **65,536 bytes** |
-| Number of payload files | **1–128** |
-| Total declared file lengths | At most **256 MiB** |
-| Payload path | Relative, nonempty, at most **200 bytes**, no `.`, `..`, empty segments, controls, backslashes, absolute paths or reserved `.xila/` |
-| Writer TAR path | ASCII only, at most **99 bytes** (stricter than manifest validation) |
-| Package name | Dotted lowercase/digit/dash segments, maximum **96 bytes** |
-| Version | Nonempty, maximum **64 bytes**, ASCII alphanumeric plus `.`, `+`, `-`; **not** a complete SemVer enforcement policy |
-| Target | Nonempty, maximum **64 bytes**, ASCII alphanumeric, dash or underscore |
-| `minimum_xila_abi` | Unsigned 32-bit field; no installer enforces it yet |
-| Capabilities | At most **32** nonempty strings of at most **64 bytes**; requests **do not grant permissions** |
-| File hash | Exactly 64 lowercase hexadecimal characters |
-| Signature | Optional raw **64-byte** Ed25519 signature stored as second entry |
+| Implemented field/constraint | Current bound or rule                                                                                                               |
+| ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| Manifest encoded bytes       | Maximum **65,536 bytes**                                                                                                            |
+| Number of payload files      | **1–128**                                                                                                                           |
+| Total declared file lengths  | At most **256 MiB**                                                                                                                 |
+| Payload path                 | Relative, nonempty, at most **200 bytes**, no `.`, `..`, empty segments, controls, backslashes, absolute paths or reserved `.xila/` |
+| Writer TAR path              | ASCII only, at most **99 bytes** (stricter than manifest validation)                                                                |
+| Package name                 | Dotted lowercase/digit/dash segments, maximum **96 bytes**                                                                          |
+| Version                      | Nonempty, maximum **64 bytes**, ASCII alphanumeric plus `.`, `+`, `-`; **not** a complete SemVer enforcement policy                 |
+| Target                       | Nonempty, maximum **64 bytes**, ASCII alphanumeric, dash or underscore                                                              |
+| `minimum_xila_abi`           | Unsigned 32-bit field; no installer enforces it yet                                                                                 |
+| Capabilities                 | At most **32** nonempty strings of at most **64 bytes**; requests **do not grant permissions**                                      |
+| File hash                    | Exactly 64 lowercase hexadecimal characters                                                                                         |
+| Signature                    | Optional raw **64-byte** Ed25519 signature stored as second entry                                                                   |
 
 Manifest parsing is `no_std + alloc` using **Miniserde JSON**, not an allocation-free parser. The reader uses `alloc` for the message buffer when verifying signatures. Current validation provides **no dependency solver, path destination mapping, privilege policy, symlink installation or compression framing**.
 
