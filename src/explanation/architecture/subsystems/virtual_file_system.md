@@ -72,7 +72,7 @@ This division also defines a boundary: authentication/session policy lives above
 
 Resolving a path is not the end of the VFS's job. Open files/directories and mounted devices keep references into backend state, so the VFS tracks live use to prevent a normal unmount from invalidating active handles.
 
-An unmount can therefore report a busy resource while references are alive. A forced unmount deliberately overrides that protection. This is an architectural consequence of exposing long-lived typed handles rather than copying every operation into a stateless path request.
+An unmount can therefore report a busy resource while references are alive. A forced unmount deliberately overrides some reference protections but **cannot** detach a mount that has visible nested mounts. Unmount preserves the underlying mount directory and its contents. Renaming or removing an active mount ancestor is rejected. Forced-detach resource reclamation remains future work.
 
 For async file reads, writes, flushes and controls, an operation-specific `poll_fn` waits for the backend to signal progress; cancellation unregisters pending operations. The separate VFS `poll(...)` helper for synchronous metadata is a one-shot call and **does not** retry a busy backend. A file opened with the non-blocking state surfaces the busy condition instead of registering an asynchronous waiter.
 
@@ -128,6 +128,18 @@ The root backend provides the base tree, while additional file systems and devic
 The VFS now supports symbolic links (Core #479). A link stores a target path and can point to an absent entry or cross mount boundaries. Path resolution follows intermediate links and, according to the operation, can either follow or preserve the final link. Reading a link returns its stored target without following it; removing or renaming a link acts on the link itself. Resolution and link creation remain subject to VFS path validation and permissions.
 
 Where a backend persists `Kind::SymbolicLink` metadata, the VFS writes the target into a staged file and publishes the typed entry by rename. Backends without that metadata capability can use their native symlink interface; backend support is not universal. This does **not** make the current WASI preopen implementation a security boundary against symlink traversal: Core #479 explicitly leaves WASI symlink-aware confinement and `path_open`/`readlink` semantics as follow-up work. Do not assume untrusted WASI guests are confined by lexical path checks alone.
+
+## Permission and metadata hardening (Core #523 and #527)
+
+Permission checks select **owner else group else others**, rather than falling back from a denied matching class to more permissive unrelated classes. Path ownership changes are **root-only**; ordinary owners (and root) can change mode under the existing policy. Path convenience reads fill the requested buffer or report early EOF; writes complete or return an error on zero progress. Zero-capacity named pipes are rejected before creating entries.
+
+Open file descriptors retain an opaque manager/task/generation authority, and metadata changes check **current** task credentials. Task exit or numeric task-ID reuse invalidates that authority. This is a guard against API misuse by kernel code, **not** isolation among mutually trusted native components. Descriptor ownership changes are unsupported for root and denied for ordinary users; read-only handles cannot change stored metadata. LittleFS checks native object identity when coordinating independent handle metadata, and rejects stale cached state rather than authorizing a mutation against a replaced file. Renaming a source file with live LittleFS opens is rejected until those opens close.
+
+Synchronous descriptor mutations try the namespace and task locks once and may report `RessourceBusy`. The original VFS polling I/O contract is preserved. The x86_64 file-handle struct grew from 80 to 104 bytes in a measured fixture; this is **not** an MCU total-memory result.
+
+Unresolved concerns remain under Core #521: WASI symlink-aware preopen containment, detach reclamation, close/Drop failures, mount-table contention, append/durability semantics, directory statistics and target-specific performance. Do not assume lexical path checks securely contain untrusted WASI guests.
+
+See <CodeReference path="subsystems/virtual_file_system/README.md" /> and <CodeReference path="libraries/little_fs/src/open_metadata.rs" />.
 
 ## Failure and policy boundaries
 
