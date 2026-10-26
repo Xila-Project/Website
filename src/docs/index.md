@@ -23,11 +23,14 @@ Start with a guided first run, complete a task, look up an interface, or explore
 
 - [Set up a development environment](/how-to/setup-development).
 - [Build a guest application](/how-to/build-guest).
+- [Create an experimental package](/how-to/package-application) and [submit registry metadata](/how-to/submit-package).
 - [Run Xila with Docker](/how-to/run-container-guest) using a CLI shell or WASI guest.
 - [Integrate Xila into a host application](/how-to/integrate-host).
 - [Validate a Core change](/how-to/validate-core).
 - [Improve the documentation](/how-to/write-documentation).
 
 ## Find a component
+
+For package distribution, see [package management architecture](/explanation/package-management) and the [experimental package format](/reference/package-format).
 
 Use the [component map](/explanation/architecture/components) to find modules, crates, drivers, and executables across the documentation. The [project overview](/about/) describes Xila's goals and license.
