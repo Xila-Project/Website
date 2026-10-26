@@ -36,7 +36,7 @@ From the same Core root, choose a task:
 
 ```sh
 mise run image:native
-mise run run:cargo -- -p native_example --bin native_example -- --gui --no-network --seed-image target/seed/native/seed.img
+mise run run:cargo -- -p xila-native-example --bin native_example -- --gui --no-network --seed-image target/seed/native/seed.img
 ```
 
 `image:native` builds matching guest applications and a 16 MiB seed image. A fresh native disk uses that seed; an existing installation is not overwritten. For a display-free test, use the native example's `--display-driver headless` and the Debug client described in the [native tutorial](/tutorials/native).
