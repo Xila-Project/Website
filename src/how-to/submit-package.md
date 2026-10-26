@@ -10,7 +10,7 @@ The [`Xila-Project/packages`](https://github.com/xila-project/packages) reposito
 
 ## 1. Publish the archive outside Git
 
-Build the experimental archive with the [native package builder](./package-application). Host the immutable `.xpk` as an external release asset, for example on your project's GitHub Releases. Record its **real** HTTPS URL, file length and SHA-256; do not use the example's fake values. The current registry code validates the *shape* of these fields but does not fetch artifacts to verify the actual bytes.
+Build the experimental archive with the [native package builder](./package-application). Host the immutable `.xpk` as an external release asset, for example on your project's GitHub Releases. Record its **real** HTTPS URL, file length and SHA-256; do not use the example's fake values. The current registry code validates the _shape_ of these fields but does not fetch artifacts to verify the actual bytes.
 
 ```sh
 sha256sum /path/to/released.xpk
