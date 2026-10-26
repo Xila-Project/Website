@@ -39,6 +39,10 @@ ABI declarations/definitions belong under [Libraries](/explanation/architecture/
 
 For real assembly examples, see <CodeReference path="examples/native/src/main.rs" /> and <CodeReference path="examples/wasm/src/main.rs" />.
 
+## External package distribution components
+
+Package authoring, archive parsing and reusable verification now live in a **separate shared Rust workspace**, not as an installed Core subsystem. The community registry preview is another repository. See [Package management architecture](/explanation/package-management) to distinguish implemented native tools from planned Core installation, download and loader policy.
+
 ## Rust API documentation
 
 The <HostReference crate="xila">host Rustdoc</HostReference> covers native runtime APIs, while the <GuestReference crate="xila">guest Rustdoc</GuestReference> covers APIs available to WebAssembly applications. The catalogs below link to individual crates.
