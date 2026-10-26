@@ -6,7 +6,7 @@ description: Reusable no_std SHA-256 and strict Ed25519 verification primitives,
 
 # Verification
 
-The `verification` library adds reusable, allocation-free `no_std` cryptographic primitives (Core #518). It is **not** a package manager, signature-policy engine, trust store, file-format parser, or a runtime enforcement mechanism. No firmware consumer enables cryptographic package verification by default.
+The `verification` library adds reusable, allocation-free `no_std` cryptographic primitives (Core #518). It is **not** a package manager, signature-policy engine, trust store, file-format parser, or a runtime enforcement mechanism. The experimental firmware update simulator (Core #532) now reuses these primitives, but there is still no production package-manager or hardware boot verification integration.
 
 ## API and feature selection
 
@@ -37,6 +37,10 @@ The values `expected_len`, `expected_sha256` and `chunks` are inputs supplied by
 SHA-256 detects differences relative to a **trusted** expected digest; by itself it does not provide authenticity. Ed25519 verification establishes the signature over supplied bytes only when the public key is already trusted. Package identity, version, rollback defense, target/ABI compatibility and permission grants must be defined by a separately authenticated manifest and policy.
 
 Core tracks those follow-up responsibilities in #402 (canonical manifest and signed bytes), #491 (trusted staging/activation) and #495 (loader enforcement/TOCTOU). **None is delivered by this library.** The existing VFS hash device is unchanged and still uses an allocating, dynamically dispatched context; direct `verification` calls deliberately avoid that context.
+
+## Current native firmware prototype
+
+The [Firmware update](/explanation/architecture/libraries/firmware_update) reference now uses this crate for streaming SHA-256 and strict Ed25519 verification of synthetic native NOR images. This does not turn the library into a trust manager: the simulator owns its separate manifest, test key assumptions, verified staging proofs and recovery decisions, while real hardware must integrate with its own bootloader and provisioned trust.
 
 ## Memory evidence and validation
 
