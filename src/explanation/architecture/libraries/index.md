@@ -18,10 +18,12 @@ Libraries expose reusable contracts, types, protocols, algorithms, adapters and 
 
 - [File system](/explanation/architecture/libraries/file_system): filesystem, path and device I/O contracts. <HostReference crate="file_system" />.
 - [LittleFS](/explanation/architecture/libraries/little_fs): concrete embedded filesystem implementation. <HostReference crate="little_fs" />.
+- [HTTP](/explanation/architecture/libraries/http): portable, bounded, `no_std` HTTP/1 parsing and decoding. <HostReference crate="http" />.
 - [Device](/explanation/architecture/libraries/device): device-control and backend-independent neural-network inference contracts. <HostReference crate="device" />.
 - [Debug protocol](/explanation/architecture/libraries/debug_protocol): headless diagnostics requests, UI input and screenshot frame validation. <HostReference crate="debug_protocol" />.
 - [Peripherals](/explanation/architecture/libraries/peripherals): embedded-hal GPIO contract and fixed-capacity mock. <HostReference crate="peripherals" />.
 - [Audio](/explanation/architecture/libraries/audio): bounded PCM device contract, buffers and mixer implementation. <HostReference crate="audio" />.
+- [Firmware update](/explanation/architecture/libraries/firmware_update): experimental `no_std` firmware transaction backend and native signed NOR simulator. <HostReference crate="firmware_update" />.
 - [Verification](/explanation/architecture/libraries/verification): `no_std` SHA-256 streaming hashes and optional strict Ed25519 verification, without package trust policy. <HostReference crate="verification" />.
 
 ## Execution and support
