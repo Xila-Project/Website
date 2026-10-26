@@ -6,7 +6,7 @@ description: Supported guest graphics calls, checked Xila helpers, status codes,
 
 # Graphics bindings
 
-The `wasm` package's optional `graphics` feature provides the supported `xila_graphics_call` interface. Core uses LVGL 9.6. Sources: <CodeReference path="executables/wasm/README.md" /> and <CodeReference path="executables/wasm/src/host/graphics" />.
+The `xila-wasm` Cargo package's optional `graphics` feature provides the supported `xila_graphics_call` interface. Core uses LVGL 9.6. Sources: <CodeReference path="executables/wasm/README.md" /> and <CodeReference path="executables/wasm/src/host/graphics" />.
 
 ## Supported calls
 
