@@ -23,11 +23,19 @@ The `xila-wasm` Cargo package's optional `graphics` feature provides the support
 | Local styling   | RGB888 background/text/border colors, opacity, radius, border sides, text alignment and size bounds |
 | Theme and fonts | Four semantic theme surfaces and six host-owned ROM font roles                                      |
 
-The build-time `GraphicsRegistry` exposes only host-supported Rust/C wrappers and host metadata; unsupported discovered LVGL calls are omitted from guest APIs without changing legacy catalog IDs. It writes `graphics_abi_inventory.json` under Cargo `OUT_DIR` for build-time inspection, not as runtime ABI negotiation. The merged Grid/Flex and local style/font slice supports 59 host-dispatched calls in the current Core revision; it does not imply full coverage of the LVGL widget families.
+The build-time `GraphicsRegistry` exposes only host-supported Rust/C wrappers and host metadata; unsupported discovered LVGL calls are omitted from guest APIs without changing legacy catalog IDs. It writes `graphics_abi_inventory.json` under Cargo `OUT_DIR` for build-time inspection, not as runtime ABI negotiation. Following Core #488 and #489, this configuration supports **133 host-dispatched calls** out of 1,088 surveyed LVGL/Xila catalog entries, while 955 remain excluded. This is still a deliberately bounded LVGL subset, not full widget coverage.
 
 Calculator exercises the basic widget subset. Pixel Painter additionally exercises pointer events, text input, keyboard attachment, and the indexed-canvas helpers. Weather still needs APIs beyond the currently supported subset.
 
-Calls requiring arbitrary native structure layouts, guest callbacks, retained guest pointers, unrestricted native font/style pointers, images/charts, or other unsupported LVGL APIs are not exposed in the generated guest API. If invoked by numeric ID, unsupported calls return an unsupported status. Guest memory is never interpreted as a typed host reference.
+Calls requiring arbitrary native structure layouts, guest callbacks, retained guest pointers, unrestricted native font/style pointers, raw image/asset resources, or other unsupported LVGL APIs are not exposed in the generated guest API. **Chart and Line have bounded, typed adapters**, not arbitrary native LVGL pointer access. If invoked by numeric ID, unsupported calls return an unsupported status. Guest memory is never interpreted as a typed host reference.
+
+## Expanded widgets and limits
+
+Core #488 introduces checked **Arc**, **Bar**, **Slider**, **Switch** and **Spinner** wrappers, with validated range/value/mode, orientation, state and animation parameters. Core #489 adds selected **Calendar**, **Spinbox**, **Chart**, **Line**, **List** and **Tileview** operations, plus themed **Badge**, **Card**, button variants and input error styling.
+
+Additional limits include at most **32 Calendar highlights**, **8 Chart series with 128 values each**, **128 Line points**, **64 List items**, **32 live Tileview tiles**, and **8,192 bytes of shared retained per-VM data**. Spinbox values are restricted to ±1,000,000 with 1–10 digits. Native arrays and Chart series remain host-owned; arguments, object state and resource limits are checked before LVGL mutation. These values are for the merged ABI, not a guarantee of platform memory budgets.
+
+Missing widget families, Calendar pressed-date events, rich Chart/List interaction, native image assets, capability/version negotiation and a full linked-size comparison remain outside the current scope.
 
 ## Xila-specific checked helpers
 
