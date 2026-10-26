@@ -56,7 +56,19 @@ The Settings executable is a tab-based graphical configuration application. It n
 ## Operational limitations
 
 - Tab set is compile-time fixed.
-- Window-event processing is waker-driven. However, refreshing the Network tab is currently checked while events are being handled; its 30-second threshold does not create an independent periodic timer.
+- Top-level window-event processing is waker-driven; the Wi-Fi panel additionally uses a timer to refresh connection progress even when the user sends no input. The other Network tab refresh path remains event-driven.
+
+## Wi-Fi settings and native demo
+
+Since Core #529, a Wi-Fi-capable controller exposes a Settings → Network → `wlan0` panel. It supports radio on/off, bounded scan lists, security mode/signal/channel/BSSID details, connection and disconnection, and asynchronous progress/errors. Unsupported authentication methods are shown but cannot be selected for connection. Passwords are masked, transient, and cleared after submission or dismissal; there is no stored profile or automatic reconnection policy.
+
+For a headless native demo, run `mise run image:native` first, then:
+
+```sh
+mise run run:cargo -- -p xila-native-example --bin native_example -- --no-network --mock-wifi --display-driver headless --resolution 800x600 --disk-path /tmp/xila-wifi-demo.img --seed-image target/seed/native/seed.img
+```
+
+The mock advertises `Xila demo` (public test password `xila-demo`) and an open `Xila open` network. This only exercises control/UI behavior; it does not access the host wireless radio or provide Internet access. See <CodeReference path="executables/settings/src/tabs/network/wifi.rs" /> and <CodeReference path="drivers/native/tests/wifi.rs" />.
 
 ## Appearance and per-user homes
 
@@ -74,7 +86,7 @@ Each user has a private home directory at `/users/<uid>` (mode `0700`). Appearan
 
 - Appearance reads the current task's user preferences from `/users/<uid>/.appearance` via `graphics::appearance::Appearance`. The tab applies colors to live windows before attempting to persist the versioned record. **Saving can fail after the UI change has already taken effect**, in which case an error status is shown.
 - The password tab gets the current task identity from Task and Users, checks the current password through `authentication::authenticate_user`, then persists the replacement through `change_user_password`. The current UI requires a non-empty current password, a non-empty new password, matching confirmation and **at least four characters**. This is UI validation, not a strong password-policy implementation; it means a seeded user with an empty password cannot use this screen without first addressing that flow.
-- The Network tab enumerates `/devices/network` and issues typed controls such as `GET_KIND` and `IS_LINK_UP`. Its refresh threshold is **30 seconds**, but it is evaluated within `handle_event`, not by a separate periodic timer.
+- The Network tab enumerates `/devices/network` and issues typed controls such as `GET_KIND` (now `n/21`) and `IS_LINK_UP`. Non-Wi-Fi details retain event-driven refresh; the new Wi-Fi panel has its own scheduled status refresh while an association or scan is pending.
 
 The graphical shell provisions user homes with restrictive permissions and restores appearance after login. The executable assumes the current VFS credentials permit reading and writing the relevant files.
 
