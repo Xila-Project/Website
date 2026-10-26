@@ -1,69 +1,85 @@
 ---
 layout: doc
 docType: explanation
-description: Reusable no_std SHA-256 and strict Ed25519 verification primitives, limits, ownership and security boundaries.
+description: Shared no_std SHA-256 and strict Ed25519 primitives, the Core Git pin, feature gates and security boundaries.
 ---
 
 # Verification
 
-The `verification` library adds reusable, allocation-free `no_std` cryptographic primitives (Core #518). It is **not** a package manager, signature-policy engine, trust store, file-format parser, or a runtime enforcement mechanism. The experimental firmware update simulator (Core #532) now reuses these primitives, but there is still no production package-manager or hardware boot verification integration.
+Xila uses reusable **`no_std` SHA-256 and strict Ed25519** primitives for signed firmware simulation and package-format prototyping. The canonical implementation was **moved** from Core to [`Xila-Project/package_manager/crates/verification`](https://github.com/xila-project/package_manager/tree/main/crates/verification) (package-manager #3, Core #537). Core **deleted** its former `libraries/verification` sources; older documentation referencing that directory is obsolete.
 
-## API and feature selection
+This is a **cryptographic primitive crate**, not a package installer, trust store, signature-policy engine or runtime authorization boundary. See the [package ecosystem architecture](/explanation/package-management).
 
-The default `sha256` Cargo feature provides two streaming interfaces:
+## Shared source and version pin
 
-- `Sha256Verifier` computes a complete SHA-256 digest incrementally.
-- `ContentVerifier::new(expected_length, expected_digest)` checks the exact logical length and the complete 32-byte expected digest of a streamed payload.
+The current shared workspace's Cargo package is **`xila-package-verification`**, with Rust library import `xila_package_verification`. Core #537 pins an **earlier immutable Git commit** `f5e3f0b323a79a80d106ce2b88b77bfa8667d71b`, where the Cargo package is still named `verification`, retaining Core's existing `use verification::…` source imports.
 
-`update` takes caller-provided byte slices; the library does not allocate a full-file buffer. Stream length and update failures permanently poison the verifier, even when a caller ignores an error. Finalizing before the declared length is consumed fails. The logical SHA-256 input length is bounded to `2^61 - 1` bytes.
+**Do not casually update Core's Git pin to `package_manager/main`:** the shared package was later renamed. Upgrading it requires the Cargo dependency alias `verification = { package = "xila-package-verification", git = "…", rev = "…" }`, updating Core's and the standalone probe's lockfiles, and running native/WASM/Cortex-M/firmware regressions. Keep Git dependencies fixed to reviewed immutable revisions rather than following a moving branch.
 
-The optional `ed25519` feature exposes validated `PublicKey` instances, accepting 32-byte public keys and 64-byte signatures. Verification uses Dalek's **strict Ed25519** check on the exact supplied message bytes, rejecting invalid and weak key encodings. This is not Ed25519ph, a signing API, or a way to authenticate keys found inside untrusted packages. A zero-feature build exports only typed errors/results.
+See [Core's migration notes](https://github.com/xila-project/core/blob/main/docs/shared-verification.md) and the [shared verification README](https://github.com/xila-project/package_manager/blob/main/crates/verification/README.md).
+
+## APIs and feature boundaries
+
+The default `sha256` feature provides:
+
+- `Sha256Verifier::new()`, `update(&[u8])`, and consuming `finalize()` for streaming SHA-256.
+- `ContentVerifier::new(expected_length, expected_digest)`, `update` and `verify` to enforce both the **exact logical input length** and the **full 32-byte expected digest**.
+
+SHA-256 accepts at most `2^61 - 1` bytes; errors poison a verifier, and short streams cannot be finalized successfully. Bytes are supplied by the caller, with **no package/full-file buffer allocation**.
+
+Optional `ed25519` exposes `PublicKey::from_bytes(&[u8;32])` and strict ordinary Ed25519 `verify(message, &[u8;64])`. Invalid/noncanonical/weak key encodings and malformed signatures fail. The implementation uses Dalek's **strict** verification. This is **not Ed25519ph**, and signing only a SHA-256 digest is not interchangeable with signing the original message.
+
+A no-feature build exports typed errors and results but neither hashing nor signing functionality. The shared crate is not a signer; private-key generation, identity, authorization, certificate/TLS policy and repository key rotation are outside it.
+
+### Example with the shared Cargo crate
 
 ```rust
-use verification::ContentVerifier;
+use xila_package_verification::ContentVerifier;
 
-// Authenticate the expected length/digest independently before accepting content.
-let mut verifier = ContentVerifier::new(expected_len, expected_sha256)?;
-for chunk in chunks {
-    verifier.update(chunk)?;
-}
+let expected_digest: [u8; 32] = [
+    0xba, 0x78, 0x16, 0xbf, 0x8f, 0x01, 0xcf, 0xea,
+    0x41, 0x41, 0x40, 0xde, 0x5d, 0xae, 0x22, 0x23,
+    0xb0, 0x03, 0x61, 0xa3, 0x96, 0x17, 0x7a, 0x9c,
+    0xb4, 0x10, 0xff, 0x61, 0xf2, 0x00, 0x15, 0xad,
+];
+
+let mut verifier = ContentVerifier::new(3, expected_digest)?;
+verifier.update(b"a")?;
+verifier.update(b"bc")?;
 verifier.verify()?;
 ```
 
-The values `expected_len`, `expected_sha256` and `chunks` are inputs supplied by the caller; this illustrates the interface, not a working package installation.
+This proves the data matches an **expected** digest; the example cannot prove that the expected digest came from a trusted publisher. When using **Core's current pinned source revision**, the import is `verification::ContentVerifier` instead.
 
-## Integration and trust boundaries
+## Trust and package integration
 
-SHA-256 detects differences relative to a **trusted** expected digest; by itself it does not provide authenticity. Ed25519 verification establishes the signature over supplied bytes only when the public key is already trusted. Package identity, version, rollback defense, target/ABI compatibility and permission grants must be defined by a separately authenticated manifest and policy.
+A SHA-256 digest authenticates no one unless its expected value is itself trusted. Strict Ed25519 can authenticate a message under a **previously trusted** public key, but it cannot establish *which publishers* are authorized, grant device capabilities, prove freshness or make installation atomic.
 
-Core tracks those follow-up responsibilities in #402 (canonical manifest and signed bytes), #491 (trusted staging/activation) and #495 (loader enforcement/TOCTOU). **None is delivered by this library.** The existing VFS hash device is unchanged and still uses an allocating, dynamically dispatched context; direct `verification` calls deliberately avoid that context.
+The [experimental package manifest](/reference/package-format#exact-provisional-signing-statement) constructs a versioned message over exact JSON bytes. The shared reader can verify that message with a key supplied by its caller, but the **publisher trust policy and on-device installer do not exist**. The [firmware update prototype](/explanation/architecture/libraries/firmware_update) uses the same algorithms with a **different simulator-specific signed image format**, not an application package.
 
-## Current native firmware prototype
+Core issue [#402](https://github.com/xila-project/core/issues/402) owns canonical package bytes, [#491](https://github.com/xila-project/core/issues/491) owns trusted installation and [#495](https://github.com/xila-project/core/issues/495) owns execution enforcement. Keep those independent from the cryptographic algorithm implementation.
 
-The [Firmware update](/explanation/architecture/libraries/firmware_update) reference now uses this crate for streaming SHA-256 and strict Ed25519 verification of synthetic native NOR images. This does not turn the library into a trust manager: the simulator owns its separate manifest, test key assumptions, verified staging proofs and recovery decisions, while real hardware must integrate with its own bootloader and provisioned trust.
+## Resource evidence and testing
 
-## Memory evidence and validation
+The original x86_64 tests measured 120 bytes of SHA-256 state, 160 bytes of content-verifier state and 192 bytes of validated public-key state; individual verify paths made no heap allocation. These are **not** MCU peak-stack, total-RAM, linked-flash or runtime-energy measurements.
 
-On native x86_64, live state has been measured at 120 bytes for the incremental SHA-256 verifier, 160 bytes for a content verifier and 192 bytes for a validated public key. Focused tests report no heap allocations in the verification paths, but these sizes exclude caller buffers, peak stack and dependencies.
-
-Cortex-M4, browser WASM and native **no-allocator link probes** passed, and four feature combinations were tested. These were compile/link checks, **not actual MCU or browser execution**. No safe MCU task-stack, total-RAM budget, flash estimate or on-device latency has been established.
-
-Focused validation from Core's root:
+The shared crate retains the feature-matrix and allocation tests; Core retains separate no-allocator full-link probes for Cortex-M4 and Wasm. From the relevant repository roots:
 
 ```sh
-bash libraries/verification/check.sh
-bash tools/verification_probe/check.sh thumbv7em-none-eabi
-COMPACT_SHA2=1 bash tools/verification_probe/check.sh thumbv7em-none-eabi
+# In Xila-Project/package_manager
+mise run test
+bash crates/verification/check.sh
+
+# In Xila-Project/core, using its pinned shared revision
+MISE_ENV=ci mise run ci:verification
 ```
 
-CI runs these through `mise -E ci run ci:verification`. Keep package verification integration and hardware safety gates separate from this primitive library.
+Hardware timing, firmware security proofs and package trust still need separate validation.
 
-## Sources and related documentation
+## Source references
 
-- <HostReference crate="verification" /> — Rust API documentation.
-- <CodeReference path="libraries/verification/src/lib.rs" /> — exports and feature boundaries.
-- <CodeReference path="libraries/verification/src/hash.rs" /> — streaming hashing and exact-length content checks.
-- <CodeReference path="libraries/verification/src/signature.rs" /> — strict Ed25519 verification.
-- <CodeReference path="libraries/verification/README.md" /> — tests, measurements and integration caveats.
-- <CodeReference path="tools/verification_probe/README.md" /> — no-allocator final-link probes.
-- [File-system contract](/explanation/architecture/libraries/file_system) — separate storage capabilities.
+- [Shared verification source](https://github.com/xila-project/package_manager/tree/main/crates/verification/src).
+- [Shared tests](https://github.com/xila-project/package_manager/tree/main/crates/verification/tests).
+- [Core's pinned dependency](https://github.com/xila-project/core/blob/main/Cargo.toml).
+- [Core verification link probes](https://github.com/xila-project/core/tree/main/tools/verification_probe).
+- [Package management](/explanation/package-management) and [package format](/reference/package-format).
