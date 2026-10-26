@@ -53,7 +53,7 @@ This proves the data matches an **expected** digest; the example cannot prove th
 
 ## Trust and package integration
 
-A SHA-256 digest authenticates no one unless its expected value is itself trusted. Strict Ed25519 can authenticate a message under a **previously trusted** public key, but it cannot establish *which publishers* are authorized, grant device capabilities, prove freshness or make installation atomic.
+A SHA-256 digest authenticates no one unless its expected value is itself trusted. Strict Ed25519 can authenticate a message under a **previously trusted** public key, but it cannot establish _which publishers_ are authorized, grant device capabilities, prove freshness or make installation atomic.
 
 The [experimental package manifest](/reference/package-format#exact-provisional-signing-statement) constructs a versioned message over exact JSON bytes. The shared reader can verify that message with a key supplied by its caller, but the **publisher trust policy and on-device installer do not exist**. The [firmware update prototype](/explanation/architecture/libraries/firmware_update) uses the same algorithms with a **different simulator-specific signed image format**, not an application package.
 
