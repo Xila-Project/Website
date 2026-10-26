@@ -8,7 +8,7 @@ description: Understand how Xila turns a platform network device into interface 
 
 Xila's Network module sits between applications and platform network hardware. It gives executables portable DNS/TCP/UDP/ICMP services while `smoltcp` handles the protocol stack and a target-specific driver moves packets to and from the actual device.
 
-The same interface also appears in Xila's file namespace as `/devices/network/<name>`, giving the system one control surface for addresses, routes, DNS, DHCP, link state, and backend-specific commands.
+The same interface also appears in Xila's file namespace as `/devices/network/<name>`, giving the system one control surface for addresses, routes, DNS, DHCP, link state, Wi-Fi station control and backend-specific commands.
 
 ## Mental model
 
@@ -134,6 +134,22 @@ The current `mount_interface` starts its runner **before** creating and mounting
 A new platform can integrate networking by providing a `smoltcp::phy::Device` plus its controller device; the Network manager above that pair remains the same. New typed socket wrappers can be layered over the stack/socket-set abstraction, and the device command family can grow as portable control needs evolve.
 
 Capability still varies by backend. A portable command can only be as meaningful as the controller underneath it, and platform-specific commands remain intentionally possible. That is the trade-off that lets one control plane cover both portable state and hardware-specific behavior.
+
+## Wi-Fi control plane (Core #529)
+
+Network interfaces can expose a vendor-independent `no_std` station control API under `subsystems/network/src/device/wifi/`. Bounded types cover SSIDs, credentials, scan results, radio state, association status and link availability. Scan, connect and disconnect operations schedule work and return promptly; callers poll generation-checked status/results rather than blocking the network stack. `IS_LINK_UP` from a supporting controller now affects interface availability; unsupported controllers keep the earlier cached-link behavior. Network still uses **smoltcp 0.14** as its single packet stack (Core #238).
+
+**Compatibility change:** network control `GET_KIND` moved from generic command `n/1` to `n/21` in #529 to avoid a collision with `GET_STATE`. Rebuild native control clients and guest/device bindings that use numeric commands; do not treat that command ID as backward-compatible.
+
+The native Wi-Fi mock supports one pending operation and publishes up to 16 APs; its network runner and the Settings → Network → `wlan0` panel can be exercised without physical Wi-Fi or TAP permissions. Credentials are transient and no credential persistence, profile management or reconnection policy is provided. Real ESP32 firmware integration and radio behavior remain unvalidated.
+
+See <CodeReference path="subsystems/network/src/device/wifi/mod.rs" />, <CodeReference path="drivers/native/src/devices/wifi/controller.rs" /> and <CodeReference path="examples/native/README.md" />.
+
+## HTTP/HTTPS streaming and socket lifetimes
+
+Core #522 replaced whole-response buffering with a per-opening 2 KiB response buffer and reader backpressure. The reusable [HTTP library](/explanation/architecture/libraries/http) parses response framing, handles chunked decoding and detects truncated bodies. HTTP/HTTPS VFS readers receive original headers followed by **decoded** response data. The network runner now reclaims abandoned sockets after the queued data and FIN/RST events have been processed, bounding abandoned shutdowns to 15 seconds. Core #524 allows full-size TLS records by using a 16 KiB + 256-byte HTTPS receive buffer, distinct from the streaming body buffer.
+
+The HTTP transport changes do not implement automatic redirects, certificate policy or untested hardware networking. Seven opt-in TLS 1.3 transport tests exercise local end-to-end behavior, but public-server interoperability remains to be established.
 
 ## Explore further
 
