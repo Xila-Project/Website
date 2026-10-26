@@ -37,7 +37,13 @@ The catalog requires guest and host bindings built from the same LVGL revision a
 
 Calculator exercises the supported graphics subset; Weather still requires calls beyond it. The [graphics reference](/reference/graphics-bindings#supported-calls) lists the exact operations and compatibility requirements.
 
-Calls involving arbitrary native structure layouts, guest callbacks, retained guest pointers, raw LVGL fonts/styles, native images/charts, or other unsupported LVGL functions are not offered as safe guest wrappers. Unsupported numeric IDs still return an unsupported status. Guest memory is never interpreted as a typed host reference.
+Calls involving arbitrary native structure layouts, guest callbacks, retained guest pointers, raw LVGL fonts/styles, raw image assets or other unsupported LVGL functions are not offered as safe guest wrappers. **Bounded Chart and Line widget adapters are now supported**, with host-owned typed data rather than native guest pointers. Unsupported numeric IDs still return an unsupported status. Guest memory is never interpreted as a typed host reference.
+
+## Extended widget surface (Core #488 and #489)
+
+The generated host-dispatched graphics surface now contains **133 calls** (out of 1,088 surveyed catalog calls in this configuration). Range/toggle adapters include Arc, Bar, Slider, Switch and Spinner with checked values, ranges, orientation/state, and bounded animation parameters. The next slice adds Calendar, Spinbox, Chart, Line, List and Tileview along with Shadcn Badge/Card/button-variant/Input-error helpers.
+
+Calendar highlights, Line points and Chart series data are host-owned. Chart series are scoped IDs rather than native pointers, and Tileview returns checked child handles. There is no unrestricted host heap or automatic guest-pointer retention: per-widget and per-VM budgets apply. However, this **does not** expose every enabled LVGL widget, arbitrary images or automatic ABI version negotiation. See [resource limits](/reference/graphics-bindings#resource-limits).
 
 ## Layout and semantic styling
 
