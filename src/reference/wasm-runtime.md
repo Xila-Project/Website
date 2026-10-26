@@ -6,7 +6,7 @@ description: Xila WASM command options, package features, WASI constraints, and 
 
 # WASM runtime
 
-The `wasm` package implements the Wasmi runtime and guest helper APIs. The native and browser examples mount its executable at `/applications/executables/wasm`. Sources: <CodeReference path="executables/wasm/Cargo.toml" /> and <CodeReference path="executables/wasm/src/host/main.rs" />.
+The `xila-wasm` Cargo package implements the Wasmi runtime and guest helper APIs. The native and browser examples mount its executable at `/applications/executables/wasm`. Sources: <CodeReference path="executables/wasm/Cargo.toml" /> and <CodeReference path="executables/wasm/src/host/main.rs" />.
 
 ## Command syntax
 
@@ -35,7 +35,7 @@ The command runs in Xila's terminal. `<path>` must identify a regular guest file
 | `memory_64`     | Alternate 64-bit guest-word translation configuration; bundled applications remain wasm32.    |
 | `default_guest` | `guest,graphics,c_bindings,memory_32`; emits `xila_graphics.h` in the build output directory. |
 
-Default features are `host,memory_32`. Guest-only consumers must disable defaults. Core's `xila` package has neither a `host` nor a `wasm` feature; these runtime features belong to the `wasm` package.
+Default features are `host,memory_32`. Guest-only consumers must disable defaults. Core's `xila` package has neither a `host` nor a `wasm` feature; these runtime features belong to the `xila-wasm` package.
 
 ## Results and errors
 
@@ -52,7 +52,7 @@ Default features are `host,memory_32`. Guest-only consumers must disable default
 | Translation                 | Functions are translated eagerly before execution so fuel exhaustion cannot suspend lazy callee translation. This can increase startup work.       |
 | Scheduling                  | Fuel exhaustion and `sched_yield` yield cooperatively to the executor. Wasmi 2 meters input Wasm operators, so slice timing is not version-stable. |
 | `poll_oneoff`               | Up to 64 realtime/startup-clock subscriptions with relative or absolute deadlines. File-descriptor polling and unsupported clocks return errors.   |
-| Startup clock               | Uses Xila's time manager and driver, not a separate hardware monotonic source.                                                                     |
+| Startup clock               | Uses the monotonic Embassy source; adjustable UTC is separate and can be unsynchronized.                                                           |
 | WebAssembly start sections  | Suspension is unsupported. WASI command guests should use exported `_start`.                                                                       |
 | WASI/graphics compatibility | Partial WASI coverage and a supported graphics subset, not full compatibility.                                                                     |
 | Graphics ABI                | Guest and host must match the LVGL revision/configuration; only registry-supported wrappers are generated, with no capability negotiation yet.     |
