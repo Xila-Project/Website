@@ -23,6 +23,10 @@ If you are new to Xila, start with the [architecture overview](./architecture/).
 
 Read [development environments and targets](./development-environments) for the relationship between toolchains, validation targets, and platform ownership.
 
+**How will application packages be built, published and installed?**
+
+Read [package management architecture](./package-management) for the separation of portable Rust tooling, the static community registry preview and planned on-device trust/installer integration.
+
 **How does the browser version keep a persistent disk?**
 
 Read [browser storage](./browser-storage) for the relationship between OPFS, the in-memory disk image, autosave, and durability.

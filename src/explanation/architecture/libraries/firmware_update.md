@@ -18,7 +18,7 @@ The `no_std` core defines an allocator-independent `Update<B>` transaction owner
 4. Activate only the verified generation, then attempt a trial boot.
 5. Confirm the running image or recover the previous confirmed image. Aborting never activates new firmware.
 
-The native simulator models NOR erase sectors, 1→0 programming, torn writes, two image slots and redundant boot records. It reuses SHA-256 and **strict ordinary Ed25519** from [Verification](/explanation/architecture/libraries/verification) and uses a **simulator-specific signed manifest**, distinct from XPK or ESP/MCUboot formats.
+The native simulator models NOR erase sectors, 1→0 programming, torn writes, two image slots and redundant boot records. After Core #537, it consumes the **pinned shared verification dependency** from [package_manager](https://github.com/xila-project/package_manager/tree/main/crates/verification), reusing SHA-256 and **strict ordinary Ed25519** from [Verification](/explanation/architecture/libraries/verification) and uses a **simulator-specific signed manifest**, distinct from XPK or ESP/MCUboot formats.
 
 ## Device contract
 
