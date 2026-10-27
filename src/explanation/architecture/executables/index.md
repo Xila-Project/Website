@@ -51,7 +51,7 @@ New native and browser seed images bundle Calculator, Clock, Pixel Painter, Synt
 
 ## API documentation
 
-The <HostReference crate="executable">host executable contract</HostReference> defines launch and context APIs. The <HostReference crate="wasm">host WASM runtime</HostReference> and <GuestReference crate="wasm">guest WASM APIs</GuestReference> document the two sides of guest execution.
+The <HostReference crate="executable">host executable contract</HostReference> defines launch and context APIs. The <HostReference repo="applications" crate="wasm">host WASM runtime</HostReference> and <GuestReference repo="applications" crate="wasm">guest WASM APIs</GuestReference> document the two sides of guest execution.
 
 ## See also
 
