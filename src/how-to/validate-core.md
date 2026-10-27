@@ -31,7 +31,7 @@ These targets include Linux host and `wasm32-unknown-unknown` guest-library chec
 
 ## Graphics, fonts and WASM runtime
 
-For graphics/C ABI changes, use the focused host and memory64 Wasmi tests appropriate to the changed subsystem and the tests documented in <CodeReference path="executables/wasm/README.md" />. For font assets, run:
+For graphics/C ABI changes, use the focused host and memory64 Wasmi tests appropriate to the changed subsystem and the tests documented in <CodeReference repo="applications" path="executables/wasm/README.md" />. For font assets, run:
 
 ```sh
 mise run test:fonts
@@ -60,7 +60,7 @@ mise run image:wasm
 MISE_ENV=ci mise run pages:demo
 ```
 
-Serve `examples/wasm/dist` locally and exercise graphics, input and application close. For storage changes, verify save/reload and existing-disk preservation. Browser OPFS tests require compatible `wasm-bindgen-test-runner` and ChromeDriver, as described in <CodeReference path="examples/wasm/README.md" />.
+Serve `examples/wasm/dist` locally and exercise graphics, input and application close. For storage changes, verify save/reload and existing-disk preservation. Browser OPFS tests require compatible `wasm-bindgen-test-runner` and ChromeDriver, as described in <CodeReference repo="platforms" path="examples/wasm/README.md" />.
 
 ## Completion
 
