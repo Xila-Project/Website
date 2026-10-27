@@ -41,7 +41,9 @@ export function getSourceHref(repository, path) {
   if (
     !path ||
     path.startsWith("/") ||
-    path.split("/").some((segment) => !segment || segment === "." || segment === "..")
+    path
+      .split("/")
+      .some((segment) => !segment || segment === "." || segment === "..")
   ) {
     throw new Error("Source path must be a non-empty relative repository path");
   }
@@ -52,6 +54,7 @@ export function getSourceHref(repository, path) {
 // documentation host. Link their actual source rather than a broken Rustdoc URL.
 export function getExternalCrateHref(repository, crate) {
   const root = EXTERNAL_CRATE_ROOTS[repository]?.[crate];
-  if (!root) throw new Error(`No source mapping for ${repository} crate ${crate}`);
+  if (!root)
+    throw new Error(`No source mapping for ${repository} crate ${crate}`);
   return getSourceHref(repository, root);
 }
