@@ -57,4 +57,4 @@ Disk removal is an explicit user action; a mount failure does not grant startup 
 - [Browser capabilities](/reference/wasm-runtime#browser-capabilities).
 - [WASM drive integration](./architecture/drivers/wasm).
 - [Browser validation](/how-to/validate-core#browser-behavior).
-- <CodeReference path="drivers/wasm/src/devices/drive.rs" /> and <CodeReference path="examples/wasm/src/storage.rs" />.
+- <CodeReference repo="platforms" path="drivers/wasm/src/devices/drive.rs" /> and <CodeReference repo="platforms" path="examples/wasm/src/storage.rs" />.
