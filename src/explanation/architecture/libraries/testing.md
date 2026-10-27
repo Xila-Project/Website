@@ -86,15 +86,15 @@ Managers and devices are leaked for lifetime convenience. Global logger state an
 
 ### Source and API references
 
-- <CodeReference path="libraries/testing/src/lib.rs" /> — precise bootstrap order and mounted endpoints.
-- <HostReference crate="testing" /> — fixture API.
+- <CodeReference repo="platforms" path="libraries/testing/src/lib.rs" /> — precise bootstrap order and mounted endpoints.
+- <HostReference repo="platforms" crate="testing" /> — fixture API.
 - [File system](/explanation/architecture/libraries/file_system) — test block device and backend interfaces.
 - [Executable](/explanation/architecture/libraries/executable) — returned Standard context.
 
 ## References
 
-- <HostReference crate="testing" /> — generated Rust API documentation.
+- <HostReference repo="platforms" crate="testing" /> — generated Rust API documentation.
 
-- <CodeReference path="libraries/testing" />
+- <CodeReference repo="platforms" path="libraries/testing" />
 - [Executable crate](/explanation/architecture/libraries/executable)
 - [Architecture](/explanation/architecture/)
