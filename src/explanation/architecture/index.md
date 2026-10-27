@@ -16,7 +16,7 @@ flowchart TD
     P --> A[Applications: guest and native programs, Wasmi]
     A --> C
     A -.->|integration test harness, development only| P
-    R[package_manager: portable package tooling] --> C
+    C --> R[package_manager: portable package tooling]
 ```
 
 - **[Core](https://github.com/xila-project/core)** contains reusable subsystem managers (Task, VFS, Graphics, Time, Network, Users, Memory, Log), general device/filesystem/ABI libraries, and its `xila` API façade under <CodeReference path="core/src/lib.rs" />.
