@@ -75,7 +75,7 @@ English fallback prevents missing-key failures but does not guarantee appropriat
 ## Related documentation
 
 - <HostReference crate="embedded_i18n" />
-- <CodeReference path="src/lib.rs" /> and <CodeReference path=".cargo/config.toml" />.
+- <CodeReference path="core/src/lib.rs" /> and <CodeReference path=".cargo/config.toml" />.
 - <CodeReference path="subsystems/graphics/build.rs" />.
 - <CodeReference path="tolgee.config.ts" /> and <CodeReference path="tolgee.extractor.mjs" />.
 - [Graphics](/explanation/architecture/subsystems/graphics).
