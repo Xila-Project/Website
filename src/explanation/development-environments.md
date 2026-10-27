@@ -1,41 +1,39 @@
 ---
 layout: doc
 docType: explanation
-description: Understand mise-managed Core development, headless runtime containers, and target-specific validation.
+description: Understand the independent Core, Applications and Platforms development and runtime targets.
 ---
 
 # Development environments and targets
 
-Xila combines native Rust crates, bundled WASI applications, generated fonts, and a browser-hosted runtime. The development toolchain and the Xila operating-system runtime are different concerns.
+The three Xila workspaces have different responsibilities and independent Cargo/mise setups. The portable libraries are developed in **Core**; **Applications** builds Wasmi and WASI app logic; **Platforms** supplies platform-specific drivers, the final native/browser assembly and images.
 
-## Local and CI development with mise
+## Workspace and tool boundaries
 
-Core #509 replaced Cargo Make and the `xila-dev` build container with [mise](https://mise.jdx.dev/). Its `mise.toml` contains reusable build/check/image tasks and pinned tool versions. The default `development` environment (selected through `.miserc.toml`) adds local tools and formatting commands; `mise.ci.toml` declares per-job tools for GitHub Actions. Each task installs its required tools on demand rather than activating a whole environment globally.
+- **Core**: portable Task, VFS, Time, Graphics, Network, ABI and shared libraries; host Rustdoc deployment. Source: <CodeReference path="mise.toml" />.
+- **Applications**: WASI guest applications, guest bindings, the host Wasmi runtime, shells and other native executables; application localization and development package workflows. Source: <CodeReference repo="applications" path="mise.toml" />.
+- **Platforms**: display/audio/network platform drivers, example runtimes, OPFS, LittleFS reference image generation, container image and browser demonstration publishing. Source: <CodeReference repo="platforms" path="mise.toml" />.
 
-On Debian/Ubuntu, native dependencies can be provisioned with `mise bootstrap packages apply --manager apt`. Cargo builds use the configured mbx integration; formatting and documentation tasks avoid unrelated tool installation. See [development setup](/how-to/setup-development).
+Mise selects pinned Rust/Node/tool versions on demand. mr-boxington compilation caching and CI tool bootstrap remain repository-specific. All repositories pin external Git dependencies; local adjacent checkouts require an explicit Cargo patch or their pinned versions will still be selected.
 
-CI is split into primary checks (`ci.yml`), extended validation (`extended.yml`), Pages/browser builds (`pages.yml`), and the headless OCI image (`runtime.yml`). A workflow succeeding does not prove untested targets or hardware builds are correct.
+## Three execution targets
 
-## The runtime image executes Xila
+| Target | What it runs | Owned by |
+| --- | --- | --- |
+| `x86_64-unknown-linux-gnu` | Native Xila runtime and host tests | Platforms (with Core + Applications dependencies) |
+| `wasm32-wasip1` | WASI guest apps interpreted by Wasmi inside Xila | Applications |
+| `wasm32-unknown-unknown` | Browser-hosted Xila final binary using OPFS and browser drivers | Platforms |
 
-The separately published `ghcr.io/xila-project/xila-runtime` image carries a non-root, headless Xila binary and a filesystem seed, **not** compilers or the developer toolchain. Its default mode launches Xila's CLI shell; it can also run supported WASI guests with explicit mounted host directories. See [Run Xila with Docker](/how-to/run-container-guest).
+The `xila-wasm` crate lives in Applications and owns **both** Wasmi host integration and guest-facing bindings. Core contains neither a standalone guest interpreter nor the browser example.
 
-## Three execution contexts
+## Distribution and runtime isolation
 
-- **Native Linux host:** Xila linked with native drivers and the `x86_64-unknown-linux-gnu` host toolchain.
-- **WASI guest:** an application compiled for `wasm32-wasip1` and interpreted inside Xila using Wasmi.
-- **Browser host:** Xila itself compiled for `wasm32-unknown-unknown`, hosting the separate WASI guests.
+The Linux/amd64 headless OCI runtime is assembled/published by Platforms, separate from the mise development environment. Its host filesystem mounts and permissions remain part of the runtime policy; Docker's isolation is not proof of MCU security.
 
-The `wasm` crate's `host` feature refers to the interpreter, not necessarily a desktop. `default_guest` builds the guest-library API, not a full application. Native GUI testing requires a working Wayland session; the native headless display driver is also available for Debug-based UI inspection.
+Core publishes **only its host Rust API** at [documentation.xila.dev](https://documentation.xila.dev/); the browser demo and localized builds now live at [platforms.xila.dev](https://platforms.xila.dev/). Applications' guest Rustdoc is not currently published under Core's old `/guest/` path; use the [guest source reference](/reference/guest) until it has a dedicated publishing pipeline.
 
-## Limits of validation
+## Validation limits
 
-Compilation, formatting and Clippy check particular toolchains/feature combinations. Browser tests exercise OPFS and UI behavior; independent native tests exercise execution and resource lifetimes. They do **not** prove RAM/flash use or hardware functionality on ESP32, nRF, STM32 or other microcontrollers.
+Compilation and CI only cover selected target/feature combinations. In particular, the Espressif code retained in Platforms needs a board-specific toolchain, power/flash/RAM measurement and validation. A successful Linux/browser integration check alone is **not** proof of a working ESP32-S3 port.
 
-## Related documentation
-
-- [Set up development](/how-to/setup-development).
-- [Native tutorial](/tutorials/native).
-- [Browser tutorial](/tutorials/browser).
-- [Development commands](/reference/development-commands).
-- <CodeReference path=".github/workflows/ci.yml" />.
+Continue with [Development setup](/how-to/setup-development), [Development commands](/reference/development-commands) and the [native](/tutorials/native) or [browser](/tutorials/browser) tutorial.
