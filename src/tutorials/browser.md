@@ -1,57 +1,72 @@
 ---
 layout: doc
 docType: tutorial
-description: Prepare a WASI seed image and run Calculator inside browser-hosted Xila.
+description: Run Xila's Platforms-hosted browser demo and build matching Applications guests locally.
 ---
 
 # Run Calculator in the browser
 
-Build Xila's bundled WASI applications and browser-hosted runtime, then use Calculator to evaluate `1 + 2 = 3`.
+The live browser demonstration is published by [Xila Platforms](https://github.com/xila-project/platforms), not Core. Open **[platforms.xila.dev](https://platforms.xila.dev/)** for the English experience, or choose a locale under `https://platforms.xila.dev/demonstrations/wasm/<locale>/` (currently en, fr, es, de, pt-BR, it and pl).
 
-## Before you begin
+The demo runs the browser host (`wasm32-unknown-unknown`) with **separate WASI application binaries** (`wasm32-wasip1`). The browser needs OPFS and Web Locks on HTTPS or localhost.
 
-Follow [development setup](/how-to/setup-development) on supported Linux. Use a browser offering OPFS, `FileSystemFileHandle.createWritable` and Web Locks over localhost or HTTPS. If another Xila tab uses the **same** origin-private disk, close that tab before opening it again.
+## 1. Try the hosted demo
 
-## 1. Prepare the guest image
+1. Open [the Platforms demonstration](https://platforms.xila.dev/).
+2. Create or select a disk in the browser's Help panel if prompted.
+3. On a fresh installation, log in as **administrator** with an empty password.
+4. Open **Calculator** from the launcher and evaluate `1 + 2 = 3`. Close the window and check that the desktop remains usable.
 
-In a **host terminal** from Core's root:
+The demo also includes Clock, Pixel Painter, Text Editor, Synth and Weather, subject to the available browser drivers. **An existing OPFS disk keeps its data and old applications**; publishing a new seed never automatically replaces it. Browser storage is origin-specific: the old Core Pages origin and the new `platforms.xila.dev` origin do **not** share saved disks.
+
+## 2. Build a matching local guest set
+
+For development, clone **Applications** and **Platforms** as siblings (Core is consumed through pinned Git dependencies):
 
 ```sh
-git clone https://github.com/xila-project/core.git
-cd core
+git clone https://github.com/xila-project/applications.git
+git clone https://github.com/xila-project/platforms.git
+
+cd applications
 mise trust
-mise bootstrap packages apply --manager apt
-mise run deps:npm
-mise run image:wasm
+mise run build:applications
+cd ..
 ```
 
-`image:wasm` compiles Calculator, Clock, Pixel Painter, Text Editor, Synth and Weather for `wasm32-wasip1` and writes `target/seed/wasm/seed.img`. These guest binaries are **not** the Xila browser host (`wasm32-unknown-unknown`). Keep the host, guest binaries, fonts and seed image built for the same compile-time locale.
+Applications produces the six guest files under `applications/target/wasm32-wasip1/release-wasm/`. Keep applications, platform runtime, font catalogs and image built for compatible Core revisions and the **same locale**. For local multi-checkout changes rather than pinned revisions, follow <CodeReference repo="platforms" path="tools/dev/local_overrides.py" />.
 
-## 2. Build and serve browser-hosted Xila
+## 3. Seed and build the local browser runtime
 
-From Core's root, use the pinned CI task to build the browser demonstration:
+From `platforms`:
 
 ```sh
+cd platforms
+mise trust
+mise bootstrap packages apply --manager apt
+npm ci
+export XILA_APPLICATIONS_DIR="$(realpath ../applications/target/wasm32-wasip1/release-wasm)"
+export XILA_FONT_CATALOG_ROOTS="$(realpath ../applications)"
+mise run image:browser
 MISE_ENV=ci mise run pages:demo
 python3 -m http.server 8080 --directory examples/wasm/dist
 ```
 
-Open `http://localhost:8080` in the browser. The Pages task selects the required nightly Rust target and Trunk. The browser's Help panel lets you choose, create and switch origin-private disks. Use the freshly seeded installation to follow this tutorial.
+Open `http://localhost:8080`. The `image:browser` task prepares `target/seed/browser/seed.img` from the already-built guest applications; the browser's Trunk build expects the appropriate seed at `target/seed/wasm/seed.img`. For a local demo build, copy the freshly generated image before invoking `pages:demo`:
 
-## 3. Run Calculator
+```sh
+cp target/seed/browser/seed.img target/seed/wasm/seed.img
+```
 
-On a new disk, log in as **administrator** with an empty password. Select **Calculator** in the app drawer and press **1**, **+**, **2**, **=**. Its display should show **3**. Close the Calculator window; the desktop should remain usable.
+If you use the full CI-oriented `MISE_ENV=ci mise run pages:build` instead, Platforms orchestrates per-locale guest compilation, reference seed verification and Trunk builds into `pages/demonstrations/wasm/<locale>/`, without needing the manual copy.
 
-Clock, Pixel Painter, Text Editor, Synth and Weather are also bundled, though device/network and audio capabilities depend on the browser. Existing persistent disks are **not** automatically upgraded when a new seed is published.
+## 4. Verify and clean up
 
-## Check your result
+Test app launch/close, display input and persistence after a completed disk save. Closing the browser abruptly can lose changes not yet saved to OPFS. Stop the HTTP server with `Ctrl+C`. Clearing site data is destructive; see [Browser storage](/explanation/browser-storage).
 
-A working Calculator verifies more than compiling: it exercises Wasmi guest execution, LVGL event handling and window cleanup. Refresh the tab after a completed disk save to verify persistence if your change affects storage. Abrupt closure can lose changes that have not been committed to OPFS.
+## Source and deployment
 
-Stop the local HTTP server with `Ctrl+C`. See [Browser storage](/explanation/browser-storage) before intentionally deleting an existing disk.
-
-## Continue learning
-
-- [Build a guest](/how-to/build-guest).
-- [Run a guest from Xila's terminal](/how-to/run-guest).
-- [WASM runtime](/reference/wasm-runtime).
+- <CodeReference repo="platforms" path="examples/wasm/README.md" /> — browser setup, OPFS, audio and test limitations.
+- <CodeReference repo="platforms" path=".github/workflows/demo.yml" /> — actual Pages deployment.
+- <CodeReference repo="platforms" path="mise.ci.toml" /> — `pages:build` and `pages:demo`.
+- <CodeReference repo="applications" path="mise.toml" /> — guest compilation tasks.
+- [Build a guest](/how-to/build-guest) and [WASM runtime](/reference/wasm-runtime).
