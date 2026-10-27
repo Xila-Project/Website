@@ -18,6 +18,8 @@ This section maps executable crates that run through the [Executable runtime cra
 - [Command line shell](/explanation/architecture/executables/command_line_shell): bounded parser/executor with composition, built-ins, and mounted-binary dispatch.
 - [Terminal](/explanation/architecture/executables/terminal): graphical terminal device surface that launches the command-line shell.
 
+[System activity](/explanation/architecture/executables/activity) is a native Xila dashboard for uptime, task count and allocator usage, including a bounded demo workload. It lives in Applications and is registered by Platforms; it is not a WASI guest.
+
 The [Debug executable](/explanation/architecture/executables/debug) is a native diagnostics service for bounded task/memory inspection, UI snapshots and synthetic input. Its `/devices/debug/transport` endpoint must be protected by the hosting environment.
 
 ### Session and UI shell executables
