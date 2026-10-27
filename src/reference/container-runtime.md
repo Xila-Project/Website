@@ -50,6 +50,6 @@ This runner does not provide a graphical desktop, host sockets, an enabled Xila 
 
 - [Run Xila with Docker](/how-to/run-container-guest) for shell and guest commands.
 - [WASM runtime](/reference/wasm-runtime).
-- <CodeReference path="examples/native/src/bin/xila-runtime.rs" />.
-- <CodeReference path="Dockerfile.runtime" />.
+- <CodeReference repo="platforms" path="examples/native/src/bin/xila-runtime.rs" />.
+- <CodeReference repo="platforms" path="Dockerfile.runtime" />.
 - <CodeReference path=".github/workflows/container.yml" />.
