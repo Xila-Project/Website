@@ -74,20 +74,13 @@ A reference can target a crate, a top-level Rustdoc symbol, or an associated-ite
 
 `member` is the raw Rustdoc anchor (for example `method.open`, `associatedconstant.NAME`, or `associatedtype.Item`), not a website-specific taxonomy. Only use it after verifying the generated symbol/anchor. Keep `CodeReference` for source or example code whose implementation materially helps the explanation, rather than linking source merely because it exists.
 
-### Link the actual repository after the split
+### Source repositories after the split
 
-`CodeReference` defaults to `repo="core"`. Always set `repo="applications"` for files under Applications (including Wasmi and guest applications), or `repo="platforms"` for platform drivers, native/browser examples, seed and deployment tools. For example:
+`CodeReference` defaults to Core. Set `repo="applications"` for Wasmi and official executable sources, or `repo="platforms"` for platform drivers, examples and deployment files. For an exact moved file, use its full path relative to that repository's root.
 
-```md
-<CodeReference repo="applications" path="executables/wasm/src/guest/mod.rs" />
-<CodeReference repo="platforms" path="examples/wasm/src/main.rs" />
-<CodeReference path="core/src/lib.rs" />
-```
+`HostReference` and `GuestReference` also accept `repo`. Core host references still use the deployed Rustdoc viewer. Because external Applications/Platforms Rustdoc is not deployed at the former Core Pages URLs, those references link to the crate's GitHub source directory rather than a symbol-specific page.
 
-`HostReference` and `GuestReference` also accept `repo`. Core host references still resolve through deployed Core Rustdoc. Since **Applications and Platforms do not publish Rustdoc at the previous Core Pages URLs**, external-crate references currently link to their **actual GitHub source directory**, not a symbol-specific Rustdoc page. Use a `CodeReference` with an exact source file when the destination must be more precise. Do not write a fake `documentation.xila.dev/guest/` link.
-
-The documentation CI checks source paths against fresh clones of Core, Applications and Platforms. For the same check locally, set `XILA_CORE_PATH`, `XILA_APPLICATIONS_PATH` and `XILA_PLATFORMS_PATH` when invoking `npm run check`.
-
+CI checks paths against current Core, Applications and Platforms checkouts. Locally, provide `XILA_CORE_PATH`, `XILA_APPLICATIONS_PATH` and `XILA_PLATFORMS_PATH` to enable all source checks.
 
 ## Connect the page
 
