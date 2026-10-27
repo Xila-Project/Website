@@ -37,7 +37,7 @@ Some external integrations are necessarily process-global: the Rust allocator an
 
 ABI declarations/definitions belong under [Libraries](/explanation/architecture/libraries/abi). Guest/host bindings and the Wasmi interpreter belong with [Executables](/explanation/architecture/executables/wasm), not standalone subsystems.
 
-For real assembly examples, see <CodeReference path="examples/native/src/main.rs" /> and <CodeReference path="examples/wasm/src/main.rs" />.
+For real assembly examples, see <CodeReference repo="platforms" path="examples/native/src/main.rs" /> and <CodeReference repo="platforms" path="examples/wasm/src/main.rs" />.
 
 ## External package distribution components
 
