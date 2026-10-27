@@ -8,6 +8,10 @@ description: Repository-specific mise tasks, native/browser image generation, CI
 
 Xila now has three distinct Rust workspaces. **Run each command in the repository that owns the task**. All use [mise](https://mise.jdx.dev/); `MISE_ENV=ci` selects CI tasks. Local task lists are visible with `mise tasks`.
 
+## Common Core tasks
+
+The following portable Core tasks remain available; the guest checks require an external Applications checkout (see below).
+
 ## Core: portable OS libraries
 
 Run in [`Xila-Project/core`](https://github.com/xila-project/core):
