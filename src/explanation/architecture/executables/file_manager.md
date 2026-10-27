@@ -66,11 +66,11 @@ The application navigates directories and displays file metadata; it does **not*
 
 ### Source and API references
 
-- <CodeReference path="executables/file_manager/src/lib.rs" /> — executable registration and launch.
-- <CodeReference path="executables/file_manager/src/file_manager.rs" /> — navigation, sorting, event wake-up and UI.
-- <HostReference crate="file_manager" /> — native Rust API.
+- <CodeReference repo="applications" path="executables/file_manager/src/lib.rs" /> — executable registration and launch.
+- <CodeReference repo="applications" path="executables/file_manager/src/file_manager.rs" /> — navigation, sorting, event wake-up and UI.
+- <HostReference repo="applications" crate="file_manager" /> — native Rust API.
 
 ## References
 
-- <CodeReference path="executables/file_manager" />
+- <CodeReference repo="applications" path="executables/file_manager" />
 - [Virtual file system](/explanation/architecture/subsystems/virtual_file_system)
