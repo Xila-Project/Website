@@ -6,7 +6,7 @@ description: Xila WASM command options, package features, WASI constraints, and 
 
 # WASM runtime
 
-The `xila-wasm` Cargo package implements the Wasmi runtime and guest helper APIs. The native and browser examples mount its executable at `/applications/executables/wasm`. Sources: <CodeReference path="executables/wasm/Cargo.toml" /> and <CodeReference path="executables/wasm/src/host/main.rs" />.
+The `xila-wasm` Cargo package implements the Wasmi runtime and guest helper APIs. The native and browser examples mount its executable at `/applications/executables/wasm`. Sources: <CodeReference repo="applications" path="executables/wasm/Cargo.toml" /> and <CodeReference repo="applications" path="executables/wasm/src/host/main.rs" />.
 
 ## Command syntax
 
