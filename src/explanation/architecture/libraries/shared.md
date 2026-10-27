@@ -69,10 +69,10 @@ assert_eq!(raw.cast::<u32>(), Some(&42));
 
 ## Additional utilities
 
-- `Url::parse("https://example.com/path")` splits the borrowed scheme, host and path and defaults to `"/"` when no path is supplied. It is a **small structural helper**, not a full URL parser/validator, so do not use it as an origin-security boundary.
+- `xila_http::Url::parse("https://example.com/path")` splits the borrowed scheme, host and path and defaults to `"/"` when no path is supplied. It is a **small structural helper**, not a full URL parser/validator, so do not use it as an origin-security boundary.
 - `utf8_chunks(&bytes)` iterates valid UTF-8 fragments and **skips malformed bytes**; it may also yield empty strings where invalid bytes were encountered. It is intended for lossy text presentation, not for validating configuration or filenames.
 - `BijectiveMap` and size/unit/time helpers reduce duplicate representations across consumers, while the `shadow_type` module provides reusable typed wrappers.
-- Generic HTTP request/response helpers are data utilities; this library does not own sockets, network routing or an HTTP server.
+- HTTP response/request parsing is now a separate [HTTP library](/explanation/architecture/libraries/http), not part of `shared`; `shared` does not own sockets or routing.
 
 ## Ownership and limitations
 
@@ -81,7 +81,7 @@ These helpers do not register global services and their data lifetimes remain wi
 ### Source and API references
 
 - <CodeReference path="libraries/shared/src/any.rs" /> — byte layout and casts.
-- <CodeReference path="libraries/shared/src/http/url.rs" /> — compact URL parsing.
+- <CodeReference path="libraries/http/src/url.rs" /> — compact URL parsing.
 - <CodeReference path="libraries/shared/src/utf8.rs" /> — lossy UTF-8 iteration.
 - <HostReference crate="shared" kind="struct" symbol="AnyByLayout" /> — device-control payload helper.
 
