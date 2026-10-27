@@ -16,12 +16,12 @@ A fresh **native** seed includes a launcher shortcut. Existing disks are not rep
 
 ## What the dashboard measures
 
-| Metric | Source and meaning |
-| --- | --- |
-| Uptime | Monotonic time since Time manager initialization; UTC changes do not change it |
-| Registered tasks | Entries in Task manager, including root/runtime tasks |
-| Allocator used/capacity | Xila allocator, **not** process RSS, physical RAM or per-application allocation |
-| CPU load / registered devices | **Unavailable** until appropriate service providers are implemented |
+| Metric                        | Source and meaning                                                              |
+| ----------------------------- | ------------------------------------------------------------------------------- |
+| Uptime                        | Monotonic time since Time manager initialization; UTC changes do not change it  |
+| Registered tasks              | Entries in Task manager, including root/runtime tasks                           |
+| Allocator used/capacity       | Xila allocator, **not** process RSS, physical RAM or per-application allocation |
+| CPU load / registered devices | **Unavailable** until appropriate service providers are implemented             |
 
 Each metric is sampled separately, not as an atomic snapshot. The default update interval is 1,000 ms; `--interval-ms` accepts 100–10,000 ms, and the Refresh control cycles 250/1,000/2,000 ms.
 
