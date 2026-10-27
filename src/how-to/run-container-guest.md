@@ -11,7 +11,7 @@ The `ghcr.io/xila-project/xila-runtime` image **runs Xila**, instead of supplyin
 ## Before you begin
 
 - Install Docker and ensure you can start containers.
-- Use a published image from [Core's container workflow](https://github.com/xila-project/core/actions/workflows/container.yml). `latest` follows `main`; pin a release or commit-SHA tag for reproducible runs.
+- Use a published image from [Platforms' runtime workflow](https://github.com/xila-project/platforms/actions/workflows/runtime.yml). `latest` follows `main`; pin a release or commit-SHA tag for reproducible runs.
 - To run a guest, have a compatible `app.wasm` file compiled for `wasm32-wasip1`.
 
 ## 1. Pull the runtime and prepare persistent state
