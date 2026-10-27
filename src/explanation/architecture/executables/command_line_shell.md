@@ -97,15 +97,15 @@ For example, a background command gets duplicated output/error streams but its s
 
 ### Source and API references
 
-- <CodeReference path="executables/shell/command_line/src/lib.rs" /> — entrypoint and invocation modes.
-- <CodeReference path="executables/shell/command_line/src/tokenizer.rs" /> — tokenization and quoting.
-- <CodeReference path="executables/shell/command_line/src/parser.rs" /> — syntax validation and limits.
-- <CodeReference path="executables/shell/command_line/src/execution.rs" /> — composition and child tasks.
-- <CodeReference path="executables/shell/command_line/src/resolver.rs" /> — path lookup and precedence.
+- <CodeReference repo="applications" path="executables/shell/command_line/src/lib.rs" /> — entrypoint and invocation modes.
+- <CodeReference repo="applications" path="executables/shell/command_line/src/tokenizer.rs" /> — tokenization and quoting.
+- <CodeReference repo="applications" path="executables/shell/command_line/src/parser.rs" /> — syntax validation and limits.
+- <CodeReference repo="applications" path="executables/shell/command_line/src/execution.rs" /> — composition and child tasks.
+- <CodeReference repo="applications" path="executables/shell/command_line/src/resolver.rs" /> — path lookup and precedence.
 - [Executable library](/explanation/architecture/libraries/executable) — native launch contract.
 
 ## References
 
-- <CodeReference path="executables/shell/command_line" />
+- <CodeReference repo="applications" path="executables/shell/command_line" />
 - [Shell reference](/reference/shell)
 - [Terminal](/explanation/architecture/executables/terminal)
