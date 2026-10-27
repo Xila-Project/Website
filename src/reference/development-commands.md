@@ -45,7 +45,7 @@ The current host check uses `x86_64-unknown-linux-gnu` with `graphics,abi_defini
 
 Version pins are centralized in the `[vars]` table of `mise.toml` (Rust stable 1.99.0, Node 24.22.0, and target-specific tooling as of Core #510). CI profiles provision task-scoped tools and selected Linux packages; local tasks use the developer profile.
 
-Core #510 separated the primary checks into <CodeReference path=".github/workflows/ci.yml" />, extended validation into <CodeReference path=".github/workflows/extended.yml" />, browser documentation/Pages into <CodeReference path=".github/workflows/pages.yml" />, and OCI runtime into <CodeReference path=".github/workflows/runtime.yml" />. The old `check.yml` and `deploy.yml` paths no longer exist.
+Core #510 separated the primary checks into <CodeReference path=".github/workflows/ci.yml" />, extended validation into <CodeReference path=".github/workflows/extended.yml" />, browser documentation/Pages into <CodeReference path=".github/workflows/pages.yml" />, and OCI runtime into <CodeReference repo="platforms" path=".github/workflows/runtime.yml" />. The old `check.yml` and `deploy.yml` paths no longer exist.
 
 ## Website commands
 
