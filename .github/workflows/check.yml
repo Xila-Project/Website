@@ -31,5 +31,15 @@ jobs:
       - name: Setup | Install dependencies
         run: npm ci
 
+      - name: Setup | Checkout source repositories for reference validation
+        run: |
+          git clone --quiet --depth 1 https://github.com/xila-project/core.git "$RUNNER_TEMP/xila-core"
+          git clone --quiet --depth 1 https://github.com/xila-project/applications.git "$RUNNER_TEMP/xila-applications"
+          git clone --quiet --depth 1 https://github.com/xila-project/platforms.git "$RUNNER_TEMP/xila-platforms"
+
       - name: Check | Documentation
+        env:
+          XILA_CORE_PATH: ${{ runner.temp }}/xila-core
+          XILA_APPLICATIONS_PATH: ${{ runner.temp }}/xila-applications
+          XILA_PLATFORMS_PATH: ${{ runner.temp }}/xila-platforms
         run: npm run check
