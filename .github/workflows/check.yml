@@ -37,11 +37,6 @@ jobs:
           git clone --quiet --depth 1 https://github.com/xila-project/applications.git "$RUNNER_TEMP/xila-applications"
           git clone --quiet --depth 1 https://github.com/xila-project/platforms.git "$RUNNER_TEMP/xila-platforms"
 
-      - name: Diagnostic | Show exact Prettier changes
-        run: |
-          npx prettier --write .vitepress/theme/utilities/source-reference.mjs scripts/check-docs.mjs src/explanation/development-environments.md src/how-to/setup-development.md
-          git diff -- .vitepress/theme/utilities/source-reference.mjs scripts/check-docs.mjs src/explanation/development-environments.md src/how-to/setup-development.md
-
       - name: Check | Documentation
         env:
           XILA_CORE_PATH: ${{ runner.temp }}/xila-core
