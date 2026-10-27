@@ -108,25 +108,74 @@ for (const [file, { html }] of documents) {
   }
 }
 
-// Source paths can be checked offline when a sibling Core checkout is available.
-const core = process.env.XILA_CORE_PATH ?? path.resolve(root, "..", "core");
+// Optional local checkout validation; CI supplies all three source checkouts.
+// Core's source root is no longer the owner of Applications/Platforms paths.
+const sourceRoots = {
+  core: process.env.XILA_CORE_PATH ?? path.resolve(root, "..", "core"),
+  applications:
+    process.env.XILA_APPLICATIONS_PATH ??
+    path.resolve(root, "..", "applications"),
+  platforms:
+    process.env.XILA_PLATFORMS_PATH ?? path.resolve(root, "..", "platforms"),
+};
+const requiredCheckouts = {
+  core: Boolean(process.env.XILA_CORE_PATH),
+  applications: Boolean(process.env.XILA_APPLICATIONS_PATH),
+  platforms: Boolean(process.env.XILA_PLATFORMS_PATH),
+};
+const supportedRepositories = new Set([
+  ...Object.keys(sourceRoots),
+  "package_manager",
+  "packages",
+]);
 let references = 0;
-if (fs.existsSync(path.join(core, "Cargo.toml"))) {
-  for (const file of pages) {
-    for (const match of fs
-      .readFileSync(file, "utf8")
-      .matchAll(/<CodeReference\s+path="([^"]+)"/g)) {
-      references += 1;
-      if (!fs.existsSync(path.join(core, match[1]))) {
-        errors.add(
-          `${path.relative(source, file)}: missing Core source path ${match[1]}`,
-        );
+const sourceChecks = { core: 0, applications: 0, platforms: 0 };
+const omittedRepositories = new Set();
+
+for (const file of pages) {
+  const text = fs.readFileSync(file, "utf8");
+  for (const match of text.matchAll(/<CodeReference\b([^>]*?)\/?\s*>/g)) {
+    const attributes = match[1];
+    const repo = attributes.match(/\brepo="([^"]+)"/)?.[1] ?? "core";
+    const sourcePath = attributes.match(/\bpath="([^"]+)"/)?.[1];
+    references += 1;
+    if (!supportedRepositories.has(repo) || !sourcePath) {
+      errors.add(
+        `${path.relative(source, file)}: invalid CodeReference repository/path: ${repo} ${sourcePath ?? ""}`,
+      );
+      continue;
+    }
+    // Package tooling can be linked explicitly through the same source component.
+    const pathFromEnv =
+      repo === "package_manager"
+        ? process.env.XILA_PACKAGE_MANAGER_PATH
+        : repo === "packages"
+          ? process.env.XILA_PACKAGES_PATH
+          : sourceRoots[repo];
+    if (!pathFromEnv || !fs.existsSync(path.join(pathFromEnv, "Cargo.toml")) &&
+        !(repo === "packages" && fs.existsSync(path.join(pathFromEnv, "README.md")))) {
+      if (requiredCheckouts[repo] || process.env[
+        repo === "package_manager"
+          ? "XILA_PACKAGE_MANAGER_PATH"
+          : "XILA_PACKAGES_PATH"
+      ]) {
+        errors.add(`Missing source checkout for repository ${repo}: ${pathFromEnv}`);
+      } else {
+        omittedRepositories.add(repo);
       }
+      continue;
+    }
+    sourceChecks[repo] = (sourceChecks[repo] ?? 0) + 1;
+    if (!fs.existsSync(path.join(pathFromEnv, sourcePath))) {
+      errors.add(
+        `${path.relative(source, file)}: missing ${repo} source ${sourcePath}`,
+      );
     }
   }
-} else {
+}
+if (omittedRepositories.size) {
   console.log(
-    "Core source-path checks skipped: set XILA_CORE_PATH to a local checkout.",
+    `Source checkout checks skipped for: ${[...omittedRepositories].join(", ")}`,
   );
 }
 
