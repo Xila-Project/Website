@@ -18,11 +18,11 @@ Mise selects pinned Rust/Node/tool versions on demand. mr-boxington compilation 
 
 ## Three execution targets
 
-| Target | What it runs | Owned by |
-| --- | --- | --- |
-| `x86_64-unknown-linux-gnu` | Native Xila runtime and host tests | Platforms (with Core + Applications dependencies) |
-| `wasm32-wasip1` | WASI guest apps interpreted by Wasmi inside Xila | Applications |
-| `wasm32-unknown-unknown` | Browser-hosted Xila final binary using OPFS and browser drivers | Platforms |
+| Target                     | What it runs                                                    | Owned by                                          |
+| -------------------------- | --------------------------------------------------------------- | ------------------------------------------------- |
+| `x86_64-unknown-linux-gnu` | Native Xila runtime and host tests                              | Platforms (with Core + Applications dependencies) |
+| `wasm32-wasip1`            | WASI guest apps interpreted by Wasmi inside Xila                | Applications                                      |
+| `wasm32-unknown-unknown`   | Browser-hosted Xila final binary using OPFS and browser drivers | Platforms                                         |
 
 The `xila-wasm` crate lives in Applications and owns **both** Wasmi host integration and guest-facing bindings. Core contains neither a standalone guest interpreter nor the browser example.
 
