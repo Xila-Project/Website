@@ -10,7 +10,7 @@ The `xila-runtime` binary runs a Xila **command-line shell** or a VFS executable
 
 ## Image and executable
 
-Core's [container workflow](https://github.com/xila-project/core/actions/workflows/container.yml) builds and smoke-tests the image from `Dockerfile.runtime` and publishes to `ghcr.io/xila-project/xila-runtime` on eligible pushes. `latest` follows the default branch; releases receive matching `v*` tags, and published builds receive a commit-SHA tag.
+Platforms' [runtime workflow](https://github.com/xila-project/platforms/actions/workflows/runtime.yml) builds and smoke-tests the image from `Dockerfile.runtime` and publishes to `ghcr.io/xila-project/xila-runtime` on eligible pushes. `latest` follows the default branch; releases receive matching `v*` tags, and published builds receive a commit-SHA tag.
 
 The image runs as UID/GID **10001**, retains its mutable disk in `/var/lib/xila`, and carries an immutable reference image at `/usr/share/xila/base.img`. Its entrypoint is `/usr/bin/xila-runtime`, and its default command is **`shell --network=none`**. The container currently supports **linux/amd64**, not embedded hardware.
 
@@ -52,4 +52,4 @@ This runner does not provide a graphical desktop, host sockets, an enabled Xila 
 - [WASM runtime](/reference/wasm-runtime).
 - <CodeReference repo="platforms" path="examples/native/src/bin/xila-runtime.rs" />.
 - <CodeReference repo="platforms" path="Dockerfile.runtime" />.
-- <CodeReference path=".github/workflows/container.yml" />.
+- <CodeReference repo="platforms" path=".github/workflows/runtime.yml" />.
