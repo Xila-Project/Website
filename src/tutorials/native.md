@@ -45,7 +45,7 @@ mise run run:cargo -- -p xila-native-example --bin native_example -- --gui --no-
 
 A native Xila window should appear. On a new disk, log in as **administrator** with an empty password. Check that pointer input, the app launcher and window closing work. The default mutable disk is `./drive.img`; use `--disk-path PATH` to create a separate installation without risking saved data.
 
-For text-only operation, replace `--gui` with `--terminal`. For a display-free graphical debug session, pass `--display-driver headless --resolution 800x600` and use the `xila-debug` client from another terminal. See <CodeReference path="examples/native/README.md" /> for the headless workflow and output limits.
+For text-only operation, replace `--gui` with `--terminal`. For a display-free graphical debug session, pass `--display-driver headless --resolution 800x600` and use the `xila-debug` client from another terminal. See <CodeReference repo="platforms" path="examples/native/README.md" /> for the headless workflow and output limits.
 
 ## Check your result
 
