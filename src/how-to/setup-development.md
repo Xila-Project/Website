@@ -23,6 +23,9 @@ cd core
 mise trust
 mise bootstrap packages apply --manager apt
 mise run deps:npm
+export XILA_APPLICATIONS_ROOT="$(realpath ../applications)"
+export XILA_APPLICATIONS_MANIFEST="$XILA_APPLICATIONS_ROOT/Cargo.toml"
+export XILA_FONT_CATALOG_ROOTS="$XILA_APPLICATIONS_ROOT"
 mise run check:all
 cd ../applications
 mise trust
@@ -41,13 +44,13 @@ The exact native OS, linker, graphics/font and display dependencies vary by oper
 
 ## Select the repository for the task
 
-| What you want to do | Where to run it |
-| --- | --- |
-| Portable VFS, Task, Time, Graphics, Network, ABI and device APIs | `core` |
-| WASI applications, Wasmi, graphical/CLI shells, localization of applications | `applications` |
-| Native/browser runtime, Linux/ESP drivers, seed images, OPFS and deployment | `platforms` |
-| Manifest/TAR development packages | `package_manager` |
-| Static community publication declarations | `packages` |
+| What you want to do                                                          | Where to run it   |
+| ---------------------------------------------------------------------------- | ----------------- |
+| Portable VFS, Task, Time, Graphics, Network, ABI and device APIs             | `core`            |
+| WASI applications, Wasmi, graphical/CLI shells, localization of applications | `applications`    |
+| Native/browser runtime, Linux/ESP drivers, seed images, OPFS and deployment  | `platforms`       |
+| Manifest/TAR development packages                                            | `package_manager` |
+| Static community publication declarations                                    | `packages`        |
 
 To assemble a desktop or browser demonstration, build WASI apps first, then point Platforms at them:
 
