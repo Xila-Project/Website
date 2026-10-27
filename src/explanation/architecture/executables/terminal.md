@@ -66,12 +66,12 @@ The terminal UI sleeps **20 ms** between event-processing calls while the comman
 
 ### Source and API references
 
-- <CodeReference path="executables/terminal/src/lib.rs" /> — mount/open/launch sequence.
-- <CodeReference path="executables/terminal/src/device.rs" /> — polling, cancellation and stream operations.
-- <CodeReference path="executables/terminal/src/terminal.rs" /> — UI, input validation and output handling.
-- <CodeReference path="executables/terminal/src/executable.rs" /> — shortcut and trait wrapper.
+- <CodeReference repo="applications" path="executables/terminal/src/lib.rs" /> — mount/open/launch sequence.
+- <CodeReference repo="applications" path="executables/terminal/src/device.rs" /> — polling, cancellation and stream operations.
+- <CodeReference repo="applications" path="executables/terminal/src/terminal.rs" /> — UI, input validation and output handling.
+- <CodeReference repo="applications" path="executables/terminal/src/executable.rs" /> — shortcut and trait wrapper.
 
 ## References
 
-- <CodeReference path="executables/terminal" />
+- <CodeReference repo="applications" path="executables/terminal" />
 - [Command line shell](/explanation/architecture/executables/command_line_shell)
