@@ -13,6 +13,9 @@ After the repository split, there is no single all-repositories Core test comman
 From the `core` checkout:
 
 ```sh
+export XILA_APPLICATIONS_ROOT="$(realpath ../applications)"
+export XILA_APPLICATIONS_MANIFEST="$XILA_APPLICATIONS_ROOT/Cargo.toml"
+export XILA_FONT_CATALOG_ROOTS="$XILA_APPLICATIONS_ROOT"
 mise run format:rust -- --check
 mise run format:toml -- --check
 mise run check:all
