@@ -22,7 +22,7 @@ The browser example validates existing MBR/LittleFS data and stops on mount erro
 
 When Xila renders a dirty rectangle to browser Canvas `ImageData`, its little-endian XRGB8888 buffer must be converted from byte order BGRA-like (`B,G,R,X`) to the Canvas `R,G,B,A` order. The SIMD converter now handles trailing complete pixels after 16-byte vector chunks instead of copying their bytes unchanged (Core #403). This matters for rectangles whose pixel count is not divisible by four; it does not change the guest graphics ABI or introduce a new graphics capability.
 
-- <CodeReference path="drivers/wasm/src/devices/graphics/canvas_screen.rs" /> — browser framebuffer conversion and dirty rectangles.
+- <CodeReference repo="platforms" path="drivers/wasm/src/devices/graphics/canvas_screen.rs" /> — browser framebuffer conversion and dirty rectangles.
 
 ## Browser audio
 
@@ -42,9 +42,9 @@ OPFS, `FileSystemFileHandle.createWritable`, and Web Locks require an appropriat
 
 ## References
 
-- <HostReference crate="drivers_wasm" /> — generated Rust API documentation.
+- <HostReference repo="platforms" crate="drivers_wasm" /> — generated Rust API documentation.
 
-- <CodeReference path="drivers/wasm" />
+- <CodeReference repo="platforms" path="drivers/wasm" />
 
 ## See also
 
