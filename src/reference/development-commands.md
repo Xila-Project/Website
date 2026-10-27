@@ -87,7 +87,7 @@ npm run check
 npm run docs:dev
 ```
 
-`npm run check` runs tests, Prettier, VitePress and internal-link validation. Source hyperlinks use `<CodeReference repo="applications" path="…" />` or `repo="platforms"` for relocated files, and default to Core. See [Documentation contribution](/how-to/write-documentation) and [Repository architecture](/explanation/architecture/).
+`npm run check` runs tests, Prettier, VitePress and internal-link validation. Source hyperlinks use the `CodeReference` component with a `repo` attribute (for example `applications` or `platforms`) for relocated files; without `repo`, they default to Core. See [Documentation contribution](/how-to/write-documentation) and [Repository architecture](/explanation/architecture/).
 
 ## Related documentation
 
