@@ -68,7 +68,7 @@ For a headless native demo, run `mise run image:native` first, then:
 mise run run:cargo -- -p xila-native-example --bin native_example -- --no-network --mock-wifi --display-driver headless --resolution 800x600 --disk-path /tmp/xila-wifi-demo.img --seed-image target/seed/native/seed.img
 ```
 
-The mock advertises `Xila demo` (public test password `xila-demo`) and an open `Xila open` network. This only exercises control/UI behavior; it does not access the host wireless radio or provide Internet access. See <CodeReference path="executables/settings/src/tabs/network/wifi.rs" /> and <CodeReference path="drivers/native/tests/wifi.rs" />.
+The mock advertises `Xila demo` (public test password `xila-demo`) and an open `Xila open` network. This only exercises control/UI behavior; it does not access the host wireless radio or provide Internet access. See <CodeReference repo="applications" path="executables/settings/src/tabs/network/wifi.rs" /> and <CodeReference repo="platforms" path="drivers/native/tests/wifi.rs" />.
 
 ## Appearance and per-user homes
 
@@ -92,13 +92,13 @@ The graphical shell provisions user homes with restrictive permissions and resto
 
 ### Source and API references
 
-- <CodeReference path="executables/settings/src/settings.rs" /> — event loop and tab array.
-- <CodeReference path="executables/settings/src/tabs/appearance.rs" /> — immediate theme application and persistence.
-- <CodeReference path="executables/settings/src/tabs/password.rs" /> — password verification and mutation.
-- <CodeReference path="executables/settings/src/tabs/network/mod.rs" /> — VFS interface enumeration.
+- <CodeReference repo="applications" path="executables/settings/src/settings.rs" /> — event loop and tab array.
+- <CodeReference repo="applications" path="executables/settings/src/tabs/appearance.rs" /> — immediate theme application and persistence.
+- <CodeReference repo="applications" path="executables/settings/src/tabs/password.rs" /> — password verification and mutation.
+- <CodeReference repo="applications" path="executables/settings/src/tabs/network/mod.rs" /> — VFS interface enumeration.
 - [Authentication library](/explanation/architecture/libraries/authentication) — password storage semantics.
 
 ## References
 
-- <CodeReference path="executables/settings" />
+- <CodeReference repo="applications" path="executables/settings" />
 - [Internationalization](/explanation/architecture/libraries/internationalization)
