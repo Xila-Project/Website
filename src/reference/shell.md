@@ -127,5 +127,5 @@ The current language supports line-oriented VFS scripts but not multiline gramma
 ## Related documentation
 
 - [Command-line shell architecture](/explanation/architecture/executables/command_line_shell).
-- <CodeReference path="executables/shell/command_line/README.md" />.
-- <CodeReference path="executables/shell/command_line/src/commands/mod.rs" />.
+- <CodeReference repo="applications" path="executables/shell/command_line/README.md" />.
+- <CodeReference repo="applications" path="executables/shell/command_line/src/commands/mod.rs" />.
