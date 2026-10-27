@@ -36,5 +36,5 @@ The HTTPS integration test needs Python 3 and OpenSSL and is intentionally ignor
 - <HostReference crate="xila_http" /> — portable HTTP library Rustdoc.
 - <CodeReference path="libraries/http/README.md" /> — formats and memory bounds.
 - <CodeReference path="libraries/http/src/framing.rs" /> — incremental HTTP framing.
-- <CodeReference path="drivers/shared/src/devices/http_exchange.rs" /> — VFS stream transport.
-- <CodeReference path="drivers/shared/src/devices/https_client.rs" /> — HTTPS device.
+- <CodeReference repo="platforms" path="drivers/shared/src/devices/http_exchange.rs" /> — VFS stream transport.
+- <CodeReference repo="platforms" path="drivers/shared/src/devices/https_client.rs" /> — HTTPS device.
