@@ -47,6 +47,8 @@ npm ci
 export XILA_APPLICATIONS_DIR="$(realpath ../applications/target/wasm32-wasip1/release-wasm)"
 export XILA_FONT_CATALOG_ROOTS="$(realpath ../applications)"
 mise run image:browser
+mkdir -p target/seed/wasm
+cp target/seed/browser/seed.img target/seed/wasm/seed.img
 MISE_ENV=ci mise run pages:demo
 python3 -m http.server 8080 --directory examples/wasm/dist
 ```
