@@ -26,6 +26,10 @@ flowchart TD
 
 Production dependency direction is **Platforms → Applications → Core**, with Platforms also directly depending on Core. Development-only test harness imports may reverse these edges; no circular production runtime ownership is intended. Git dependencies are pinned and local code overrides need explicit Cargo configuration.
 
+## Runtime assembly
+
+A final Platforms binary chooses the target drivers and composes Core managers with Applications executables. This is where the Xila runtime is initialized, capabilities are passed to launch contexts, and the VFS namespace and default programs are mounted; the portable Core crates themselves do not provide a runnable browser/desktop example.
+
 ## Portable architecture roles
 
 Core's [subsystems](/explanation/architecture/subsystems/) own runtime capabilities and lifecycle. [Libraries](/explanation/architecture/libraries/) expose contracts, protocols and reusable implementations. [Drivers](/explanation/architecture/drivers/) mostly live in Platforms except Core's minimal `drivers/core` implementations. [Executables](/explanation/architecture/executables/) live in Applications.
