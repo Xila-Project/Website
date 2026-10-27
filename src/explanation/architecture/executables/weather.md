@@ -38,18 +38,18 @@ The network operation is currently synchronous from the guest UI's refresh handl
 
 ### Source references
 
-- <CodeReference path="executables/weather/src/api.rs" /> — geocoding/forecast query contracts.
-- <CodeReference path="executables/weather/src/net.rs" /> — HTTPS VFS device and HTTP framing.
-- <CodeReference path="executables/weather/src/state.rs" /> — fetch ordering, retries and error mapping.
-- <CodeReference path="executables/weather/src/interface.rs" /> — refresh event and views.
+- <CodeReference repo="applications" path="executables/weather/src/api.rs" /> — geocoding/forecast query contracts.
+- <CodeReference repo="applications" path="executables/weather/src/net.rs" /> — HTTPS VFS device and HTTP framing.
+- <CodeReference repo="applications" path="executables/weather/src/state.rs" /> — fetch ordering, retries and error mapping.
+- <CodeReference repo="applications" path="executables/weather/src/interface.rs" /> — refresh event and views.
 - [Networking](/explanation/architecture/subsystems/network) — underlying host device.
 
 ## Bounded HTTP response processing
 
-Core #522 changed the underlying HTTP(S) VFS device from whole-body buffering to a 2 KiB streaming buffer per open. Weather consumes the **already decoded** HTTP response body, handles fragmented and coalesced reads, reuses bounded header memory for JSON, and releases temporary JSON storage before the next request. Large HTTP downloads therefore do not imply large transport response allocations, but Weather's own JSON and socket/TLS storage remain additional memory costs. See [HTTP](/explanation/architecture/libraries/http) and <CodeReference path="executables/weather/src/net.rs" />.
+Core #522 changed the underlying HTTP(S) VFS device from whole-body buffering to a 2 KiB streaming buffer per open. Weather consumes the **already decoded** HTTP response body, handles fragmented and coalesced reads, reuses bounded header memory for JSON, and releases temporary JSON storage before the next request. Large HTTP downloads therefore do not imply large transport response allocations, but Weather's own JSON and socket/TLS storage remain additional memory costs. See [HTTP](/explanation/architecture/libraries/http) and <CodeReference repo="applications" path="executables/weather/src/net.rs" />.
 
 ## References
 
-- <CodeReference path="executables/weather/README.md" />
-- <CodeReference path="executables/weather" />
+- <CodeReference repo="applications" path="executables/weather/README.md" />
+- <CodeReference repo="applications" path="executables/weather" />
 - [Network subsystem](/explanation/architecture/subsystems/network)
