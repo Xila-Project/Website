@@ -184,5 +184,5 @@ if (errors.size) {
   process.exit(1);
 }
 console.log(
-  `Validated ${pages.length} source pages, ${links} rendered internal links, ${anchors} anchors, and ${references} Core source references.`,
+  `Validated ${pages.length} source pages, ${links} rendered internal links, ${anchors} anchors, and ${references} repository-aware source references.`,
 );
