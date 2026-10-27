@@ -90,19 +90,19 @@ Run host-side object deletion tests and guest memory32/memory64 translation test
 ### Source references
 
 - <CodeReference path="subsystems/graphics/bindings_generator" /> — API catalog and function selection.
-- <CodeReference path="executables/wasm/src/host/graphics/wasmi.rs" /> — Wasmi import registration.
-- <CodeReference path="executables/wasm/src/host/graphics/dispatch.rs" /> — checked host dispatch.
-- <CodeReference path="executables/wasm/src/host/graphics/objects.rs" /> — VM-local object registry.
-- <CodeReference path="executables/wasm/src/host/graphics/marshal.rs" /> — retained strings and map bounds.
-- <CodeReference path="executables/wasm/src/host/translation/memory.rs" /> — borrowed guest-memory view.
+- <CodeReference repo="applications" path="executables/wasm/src/host/graphics/wasmi.rs" /> — Wasmi import registration.
+- <CodeReference repo="applications" path="executables/wasm/src/host/graphics/dispatch.rs" /> — checked host dispatch.
+- <CodeReference repo="applications" path="executables/wasm/src/host/graphics/objects.rs" /> — VM-local object registry.
+- <CodeReference repo="applications" path="executables/wasm/src/host/graphics/marshal.rs" /> — retained strings and map bounds.
+- <CodeReference repo="applications" path="executables/wasm/src/host/translation/memory.rs" /> — borrowed guest-memory view.
 - [Bindings reference](/reference/graphics-bindings) — supported call list and status codes.
 
 ## References / See also
 
 - <CodeReference path="subsystems/graphics/bindings_generator" />
-- <CodeReference path="executables/wasm/src/host/graphics" />
-- <CodeReference path="executables/wasm/tests/translation/README.md" />
-- <HostReference crate="wasm" />
+- <CodeReference repo="applications" path="executables/wasm/src/host/graphics" />
+- <CodeReference repo="applications" path="executables/wasm/tests/translation/README.md" />
+- <HostReference repo="applications" crate="wasm" />
 - [Graphics](/explanation/architecture/subsystems/graphics)
 - [WASM runtime](/explanation/architecture/executables/wasm)
 - [ABI](/explanation/architecture/libraries/abi)
