@@ -73,13 +73,13 @@ This is a data-model example; `storage::Store` performs actual file I/O on guest
 
 ### Source references
 
-- <CodeReference path="executables/clock/src/lib.rs" /> — Stopwatch, Timer, Alarm, Settings.
-- <CodeReference path="executables/clock/src/storage.rs" /> — alternating records and checksums.
-- <CodeReference path="executables/clock/src/interface.rs" /> — GUI, event cadence and notifications.
-- <CodeReference path="executables/clock/src/install.rs" /> — shortcut installation.
+- <CodeReference repo="applications" path="executables/clock/src/lib.rs" /> — Stopwatch, Timer, Alarm, Settings.
+- <CodeReference repo="applications" path="executables/clock/src/storage.rs" /> — alternating records and checksums.
+- <CodeReference repo="applications" path="executables/clock/src/interface.rs" /> — GUI, event cadence and notifications.
+- <CodeReference repo="applications" path="executables/clock/src/install.rs" /> — shortcut installation.
 
 ## References
 
-- <CodeReference path="executables/clock" />
+- <CodeReference repo="applications" path="executables/clock" />
 - [WASM runtime](/reference/wasm-runtime)
 - [Graphics bindings](/reference/graphics-bindings)
