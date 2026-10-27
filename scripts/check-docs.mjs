@@ -152,14 +152,25 @@ for (const file of pages) {
         : repo === "packages"
           ? process.env.XILA_PACKAGES_PATH
           : sourceRoots[repo];
-    if (!pathFromEnv || !fs.existsSync(path.join(pathFromEnv, "Cargo.toml")) &&
-        !(repo === "packages" && fs.existsSync(path.join(pathFromEnv, "README.md")))) {
-      if (requiredCheckouts[repo] || process.env[
-        repo === "package_manager"
-          ? "XILA_PACKAGE_MANAGER_PATH"
-          : "XILA_PACKAGES_PATH"
-      ]) {
-        errors.add(`Missing source checkout for repository ${repo}: ${pathFromEnv}`);
+    if (
+      !pathFromEnv ||
+      (!fs.existsSync(path.join(pathFromEnv, "Cargo.toml")) &&
+        !(
+          repo === "packages" &&
+          fs.existsSync(path.join(pathFromEnv, "README.md"))
+        ))
+    ) {
+      if (
+        requiredCheckouts[repo] ||
+        process.env[
+          repo === "package_manager"
+            ? "XILA_PACKAGE_MANAGER_PATH"
+            : "XILA_PACKAGES_PATH"
+        ]
+      ) {
+        errors.add(
+          `Missing source checkout for repository ${repo}: ${pathFromEnv}`,
+        );
       } else {
         omittedRepositories.add(repo);
       }
