@@ -10,7 +10,7 @@ Add a page or revise an existing one so readers can learn, complete a task, look
 
 ## Before you begin
 
-Work in the `website` repository with its Node.js/npm environment. Read [AGENTS.md](https://github.com/xila-project/website/blob/main/AGENTS.md) and check relevant Core source at a known revision for technical claims.
+Work in the `website` repository with its Node.js/npm environment. Read [AGENTS.md](https://github.com/xila-project/website/blob/main/AGENTS.md) and check the relevant Core, Applications or Platforms source at a known revision for technical claims.
 
 ## Choose the page's purpose
 
