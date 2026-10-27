@@ -49,4 +49,4 @@ After building the guest, the separate [native package builder](/how-to/package-
 
 - [Run Calculator in the browser](/tutorials/browser).
 - [WASM runtime reference](/reference/wasm-runtime).
-- <CodeReference path="executables/calculator/Cargo.toml" /> for the workspace guest's configuration.
+- <CodeReference repo="applications" path="executables/calculator/Cargo.toml" /> for the workspace guest's configuration.
