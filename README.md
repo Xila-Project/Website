@@ -114,3 +114,29 @@ Keep each substantive page focused on one reader need. Split mixed onboarding pa
 ## License
 
 This project is under the [Apache License 2.0](LICENSE).
+
+## Validate code references against source repositories
+
+Website documentation can embed `CodeReference` components pointing to files in
+Core, Applications, Platforms, Package Manager or Packages. The check command
+validates those paths against local checkouts when available; a missing local
+checkout is reported as skipped to keep standalone documentation development
+possible.
+
+On pull requests, CI checks out all five repositories at their current `main`
+revisions in `.reference-checkouts/` using `actions/checkout` with shallow
+history and no persisted credentials. It sets `XILA_STRICT_SOURCE_REFERENCES=1`
+and the corresponding `XILA_<REPO>_PATH` variables, so missing checkouts or
+files are build failures. Checkout directories are ignored by Git and Prettier.
+
+To reproduce strict CI checks locally, place these repositories next to Website
+or set their `XILA_<REPO>_PATH` environment variables and run:
+
+```sh
+XILA_STRICT_SOURCE_REFERENCES=1 mise run documentation:check
+```
+
+The supported repository names come from
+`.vitepress/theme/utilities/source-reference.mjs` and are shared with the
+source link generator. `npm run test:reference` covers all reference and
+checkout validation tests.
