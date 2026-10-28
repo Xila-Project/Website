@@ -123,10 +123,10 @@ const omittedRepositories = new Set();
 
 for (const file of pages) {
   const text = fs.readFileSync(file, "utf8");
-  for (const match of text.matchAll(/<CodeReference\\b([^>]*?)\\/?\\s*>/g)) {
+  for (const match of text.matchAll(/<CodeReference\b([^>]*?)\/?\s*>/g)) {
     const attributes = match[1];
-    const repo = attributes.match(/\\brepo="([^"]+)"/)?.[1] ?? "core";
-    const sourcePath = attributes.match(/\\bpath="([^"]+)"/)?.[1];
+    const repo = attributes.match(/\brepo="([^"]+)"/)?.[1] ?? "core";
+    const sourcePath = attributes.match(/\bpath="([^"]+)"/)?.[1];
     references += 1;
 
     const result = checkCodeReference(repo, sourcePath, {
