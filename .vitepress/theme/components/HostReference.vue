@@ -2,28 +2,18 @@
 import { ReferenceArchitecture } from "../utilities/reference";
 import Reference from "./Reference.vue";
 
-const props = defineProps({
-  crate: {
-    type: String,
-    required: true,
-  },
-  kind: {
-    type: String,
-    required: false,
-  },
-  symbol: {
-    type: String,
-    required: false,
-  },
-  member: {
-    type: String,
-    required: false,
-  },
+defineProps({
+  repo: { type: String, default: "core" },
+  crate: { type: String, required: true },
+  kind: String,
+  symbol: String,
+  member: String,
 });
 </script>
 
 <template>
   <Reference
+    :repo="repo"
     :architecture="ReferenceArchitecture.Host"
     :crate="crate"
     :kind="kind"

@@ -1,52 +1,48 @@
 ---
 layout: doc
 docType: how-to
-description: Build a WASI guest artifact and select the correct Xila guest graphics dependency.
+description: Compile a wasm32-wasip1 guest from Applications and use the relocated xila-wasm guest API.
 ---
 
 # Build a guest application
 
-Compile an application for Xila's WASI runtime. The application target is `wasm32-wasip1`; `wasm32-unknown-unknown` is used for the browser example and guest-library checks.
+Official guest code and the `xila-wasm` guest API now live in [Applications](https://github.com/xila-project/applications). Compile application binaries for **`wasm32-wasip1`**; `wasm32-unknown-unknown` is the **Platforms browser host**, not the guest target.
 
-## Before you begin
+## Build an existing bundled application
 
-Use a configured [development environment](./setup-development) with the WASI target installed. In a manual Rust setup, run `rustup target add wasm32-wasip1` for the toolchain you use. Graphical bindings also require the native binding-generation tools.
+From the `applications` checkout, after installing [mise](https://mise.jdx.dev/):
 
-## Build an existing application
-
-From Core's root, using [mise-managed tools](./setup-development):
-
-```bash
-cargo build -p xila-calculator --target wasm32-wasip1 --release
+```sh
+mise trust
+mise run build:applications
 ```
 
-Use the package name of your application for other workspace guests. With Cargo's default target directory, the artifact is `target/wasm32-wasip1/release/calculator.wasm`. The `mise run image:wasm` task builds the bundled applications and seed image together for the [browser tutorial](/tutorials/browser).
+This compiles Calculator, Clock, Weather, Pixel Painter, Text Editor and Synth with `release-wasm`. For one application:
 
-## Add graphics bindings
+```sh
+mise exec -- cargo build --locked -p xila-calculator \
+  --target wasm32-wasip1 --profile release-wasm
+```
 
-For a separate Rust application workspace, select the `xila-wasm` Cargo package and disable the default host interpreter:
+The artifact is `target/wasm32-wasip1/release-wasm/calculator.wasm` relative to Applications.
+
+## Depend on guest graphics bindings
+
+In an external guest project's Cargo manifest, specify the **renamed package** and the new Git repository:
 
 ```toml
 [dependencies]
-wasm = { git = "https://github.com/Xila-Project/Core.git", default-features = false, features = ["guest", "graphics", "memory_32"] }
+wasm = { package = "xila-wasm", git = "https://github.com/xila-project/applications", rev = "1bedb918668b8b9606d8b61bb04c2f0931615b4f", default-features = false, features = ["guest", "graphics", "memory_32"] }
 ```
 
-Use `default_guest` instead if you need the C wrappers and generated `xila_graphics.h` header. Match guest and host LVGL revisions/configuration and use the supported [graphics bindings](/reference/graphics-bindings). Standard WASI guests can use the implemented WASI imports without Xila graphics wrappers.
+This example pins the Applications main revision reviewed when this page was written; select matching versions of Core/Applications/Platforms for your runtime. For local development, a relative `path` dependency on `../applications/executables/wasm` is also possible.
 
-Core's `xila` package has no `wasm` feature. Command guests require `_start: () -> ()`; optional installers require `__install: () -> ()`.
+`default_guest` additionally enables generated C wrappers and `xila_graphics.h`. Standard WASI guests can use the supported WASI imports without importing Xila graphics. Native LVGL/Wasmi APIs are **not** exposed simply by enabling the guest feature.
 
-## Verify completion
+Command guests export `_start: () -> ()`; an optional app installer exports `__install: () -> ()`. See <CodeReference repo="applications" path="executables/wasm/README.md" /> and [graphics bindings](/reference/graphics-bindings) for compatibility limitations.
 
-The build should exit successfully and produce `$CARGO_TARGET_DIR/wasm32-wasip1/release/calculator.wasm` when `CARGO_TARGET_DIR` is set (or `target/wasm32-wasip1/release/calculator.wasm` with Cargo's default). Compilation does not verify runtime compatibility: [run the guest](./run-guest) in Xila to check its actual behavior.
+## Run or package it
 
-Before serving the browser example after a guest changes, regenerate its seed image with `mise run image:wasm`. Existing browser disks are not upgraded from a newer seed.
+Platforms assembles the native/browser runtime and creates its seed image from a directory of built guests using `XILA_APPLICATIONS_DIR`. Follow [Run Xila natively](/tutorials/native), [the browser tutorial](/tutorials/browser), or [run a guest](/how-to/run-guest).
 
-## Package the artifact for development
-
-After building the guest, the separate [native package builder](/how-to/package-application) can generate an experimental `.xpk` TAR archive and manifest from the resulting `.wasm`. This is **not** an on-device package installation mechanism or a signed trusted application release. See [Package management architecture](/explanation/package-management).
-
-## Related documentation
-
-- [Run Calculator in the browser](/tutorials/browser).
-- [WASM runtime reference](/reference/wasm-runtime).
-- <CodeReference path="executables/calculator/Cargo.toml" /> for the workspace guest's configuration.
+The separate [host package builder](/how-to/package-application) can bundle the file into an experimental `.xpk`, **not** install or authorize it.

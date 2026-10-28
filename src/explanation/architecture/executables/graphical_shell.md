@@ -76,12 +76,12 @@ Login is not an external authorization service: account persistence and password
 
 ### Source and API references
 
-- <CodeReference path="executables/shell/graphical/src/lib.rs" /> — CLI, session transition and cadence.
-- <CodeReference path="executables/shell/graphical/src/login.rs" /> — authentication, HOME and task identity.
-- <CodeReference path="executables/shell/graphical/src/desk.rs" /> — shortcut loading, dock and window handling.
-- <CodeReference path="executables/shell/graphical/src/home.rs" /> — Home gesture and overlay.
+- <CodeReference repo="applications" path="executables/shell/graphical/src/lib.rs" /> — CLI, session transition and cadence.
+- <CodeReference repo="applications" path="executables/shell/graphical/src/login.rs" /> — authentication, HOME and task identity.
+- <CodeReference repo="applications" path="executables/shell/graphical/src/desk.rs" /> — shortcut loading, dock and window handling.
+- <CodeReference repo="applications" path="executables/shell/graphical/src/home.rs" /> — Home gesture and overlay.
 
 ## References
 
-- <CodeReference path="executables/shell/graphical" />
+- <CodeReference repo="applications" path="executables/shell/graphical" />
 - [Executable runtime crate](/explanation/architecture/libraries/executable)

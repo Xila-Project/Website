@@ -21,9 +21,9 @@ It provides commonly used services for host execution, including logging, memory
 
 ## References
 
-- <HostReference crate="drivers_std" /> — generated Rust API documentation.
+- <HostReference repo="platforms" crate="drivers_std" /> — generated Rust API documentation.
 
-- <CodeReference path="drivers/std" />
+- <CodeReference repo="platforms" path="drivers/std" />
 
 ## See also
 

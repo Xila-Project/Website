@@ -33,7 +33,7 @@ Libraries expose reusable contracts, types, protocols, algorithms, adapters and 
 - [Application metadata](/explanation/architecture/libraries/application_metadata): shared guest/native application inventory and shortcut metadata. <HostReference crate="application_metadata" />.
 - [Authentication](/explanation/architecture/libraries/authentication): reusable credential/verification operations. <HostReference crate="authentication" />.
 - [Bootsplash](/explanation/architecture/libraries/bootsplash): startup animation implementation. <HostReference crate="bootsplash" />.
-- [Testing](/explanation/architecture/libraries/testing): test assembly helpers.
+- [Testing](/explanation/architecture/libraries/testing): the native integration test harness now lives in [Platforms](https://github.com/xila-project/platforms/tree/main/libraries/testing), not Core.
 
 Portable package manifest, TAR reader/writer and host builder crates live in the [separate package_manager workspace](/explanation/package-management), not under Core `libraries/`. Their [provisional file format](/reference/package-format) and [community publication registry](/how-to/submit-package) are documented independently from Core runtime libraries.
 

@@ -38,15 +38,15 @@ The synthesizer is limited to eight voices and a bounded block per turn. Voice c
 
 ### Source references
 
-- <CodeReference path="executables/synth/src/device.rs" /> — WASI control protocol, retries and teardown.
-- <CodeReference path="executables/synth/src/interface.rs" /> — keyboard, waveform and voice events.
-- <CodeReference path="executables/synth/src/lib.rs" /> — bounded PCM synthesis state.
-- <CodeReference path="executables/synth/src/install.rs" /> — launcher metadata.
+- <CodeReference repo="applications" path="executables/synth/src/device.rs" /> — WASI control protocol, retries and teardown.
+- <CodeReference repo="applications" path="executables/synth/src/interface.rs" /> — keyboard, waveform and voice events.
+- <CodeReference repo="applications" path="executables/synth/src/lib.rs" /> — bounded PCM synthesis state.
+- <CodeReference repo="applications" path="executables/synth/src/install.rs" /> — launcher metadata.
 - [Audio device contract](/explanation/architecture/libraries/audio) — shared format and mixer semantics.
 
 ## References
 
-- <CodeReference path="executables/synth/README.md" />
-- <CodeReference path="executables/synth" />
+- <CodeReference repo="applications" path="executables/synth/README.md" />
+- <CodeReference repo="applications" path="executables/synth" />
 - [Audio library](/explanation/architecture/libraries/audio)
 - [WASM executable](/explanation/architecture/executables/wasm)

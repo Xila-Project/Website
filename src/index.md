@@ -9,7 +9,7 @@ hero:
   actions:
     - theme: brand
       text: Try it ! ✨
-      link: https://documentation.xila.dev/demonstrations/wasm/en/
+      link: https://platforms.xila.dev/
     - theme: alt
       text: Documentation 📖
       link: /docs/

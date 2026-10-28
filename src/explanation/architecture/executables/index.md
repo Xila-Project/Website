@@ -18,6 +18,8 @@ This section maps executable crates that run through the [Executable runtime cra
 - [Command line shell](/explanation/architecture/executables/command_line_shell): bounded parser/executor with composition, built-ins, and mounted-binary dispatch.
 - [Terminal](/explanation/architecture/executables/terminal): graphical terminal device surface that launches the command-line shell.
 
+[System activity](/explanation/architecture/executables/activity) is a native Xila dashboard for uptime, task count and allocator usage, including a bounded demo workload. It lives in Applications and is registered by Platforms; it is not a WASI guest.
+
 The [Debug executable](/explanation/architecture/executables/debug) is a native diagnostics service for bounded task/memory inspection, UI snapshots and synthetic input. Its `/devices/debug/transport` endpoint must be protected by the hosting environment.
 
 ### Session and UI shell executables
@@ -47,11 +49,11 @@ New native and browser seed images bundle Calculator, Clock, Pixel Painter, Synt
 ## Contract vs implementation
 
 - **Contract**: this map describes executable-level responsibilities and integration points on top of the executable runtime contract.
-- **Current implementation**: entries and relationships reflect the currently mounted/implemented executables and the browser/native demonstration bundle in Core.
+- **Current implementation**: entries and relationships reflect the currently mounted/implemented executables and the browser/native demonstration bundle in Applications and Platforms.
 
 ## API documentation
 
-The <HostReference crate="executable">host executable contract</HostReference> defines launch and context APIs. The <HostReference crate="wasm">host WASM runtime</HostReference> and <GuestReference crate="wasm">guest WASM APIs</GuestReference> document the two sides of guest execution.
+The <HostReference crate="executable">host executable contract</HostReference> defines launch and context APIs. The <HostReference repo="applications" crate="wasm">Wasmi host runtime source</HostReference> and <GuestReference repo="applications" crate="wasm">guest API source</GuestReference> document the two sides of guest execution (their separate Rustdoc is not yet deployed on Core Pages).
 
 ## See also
 

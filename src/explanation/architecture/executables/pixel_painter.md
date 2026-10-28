@@ -73,14 +73,14 @@ The checked graphics host mirrors the guest drawing into an indexed canvas with 
 
 ### Source references
 
-- <CodeReference path="executables/pixel_painter/src/drawing.rs" /> — palette, rasterization, viewport and XPNT format.
-- <CodeReference path="executables/pixel_painter/src/storage.rs" /> — bounded file I/O and durability.
-- <CodeReference path="executables/pixel_painter/src/interface.rs" /> — UI event and pointer mapping.
-- <CodeReference path="executables/wasm/src/host/graphics/canvas.rs" /> — host indexed-canvas storage.
+- <CodeReference repo="applications" path="executables/pixel_painter/src/drawing.rs" /> — palette, rasterization, viewport and XPNT format.
+- <CodeReference repo="applications" path="executables/pixel_painter/src/storage.rs" /> — bounded file I/O and durability.
+- <CodeReference repo="applications" path="executables/pixel_painter/src/interface.rs" /> — UI event and pointer mapping.
+- <CodeReference repo="applications" path="executables/wasm/src/host/graphics/canvas.rs" /> — host indexed-canvas storage.
 
 ## References
 
-- <CodeReference path="executables/pixel_painter" />
+- <CodeReference repo="applications" path="executables/pixel_painter" />
 - [Graphics bindings](/reference/graphics-bindings)
 - [WASM runtime](/reference/wasm-runtime)
 - [Browser storage](/explanation/browser-storage)

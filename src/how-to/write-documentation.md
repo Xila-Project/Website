@@ -10,7 +10,7 @@ Add a page or revise an existing one so readers can learn, complete a task, look
 
 ## Before you begin
 
-Work in the `website` repository with its Node.js/npm environment. Read [AGENTS.md](https://github.com/xila-project/website/blob/main/AGENTS.md) and check relevant Core source at a known revision for technical claims.
+Work in the `website` repository with its Node.js/npm environment. Read [AGENTS.md](https://github.com/xila-project/website/blob/main/AGENTS.md) and check the relevant Core, Applications or Platforms source at a known revision for technical claims.
 
 ## Choose the page's purpose
 
@@ -73,6 +73,14 @@ A reference can target a crate, a top-level Rustdoc symbol, or an associated-ite
 ```
 
 `member` is the raw Rustdoc anchor (for example `method.open`, `associatedconstant.NAME`, or `associatedtype.Item`), not a website-specific taxonomy. Only use it after verifying the generated symbol/anchor. Keep `CodeReference` for source or example code whose implementation materially helps the explanation, rather than linking source merely because it exists.
+
+### Source repositories after the split
+
+`CodeReference` defaults to Core. Set `repo="applications"` for Wasmi and official executable sources, or `repo="platforms"` for platform drivers, examples and deployment files. For an exact moved file, use its full path relative to that repository's root.
+
+`HostReference` and `GuestReference` also accept `repo`. Core host references still use the deployed Rustdoc viewer. Because external Applications/Platforms Rustdoc is not deployed at the former Core Pages URLs, those references link to the crate's GitHub source directory rather than a symbol-specific page.
+
+CI checks paths against current Core, Applications and Platforms checkouts. Locally, provide `XILA_CORE_PATH`, `XILA_APPLICATIONS_PATH` and `XILA_PLATFORMS_PATH` to enable all source checks.
 
 ## Connect the page
 

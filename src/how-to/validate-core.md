@@ -1,73 +1,79 @@
 ---
 layout: doc
 docType: how-to
-description: Select mise-based formatting, host/guest, graphics, and browser checks for Core.
+description: Select checks from Core, Applications and Platforms based on the touched crate or integration boundary.
 ---
 
-# Validate a Core change
+# Validate a Xila change
 
-Run checks that cover the behavior and targets you changed. All commands below start from the **Core repository root** after [development setup](./setup-development).
+After the repository split, there is no single all-repositories Core test command. **Validate within the owning repository**, then use Platforms integration checks when multiple repositories interact.
 
-## Formatting and target checks
+## Portable Core change
+
+From the `core` checkout:
 
 ```sh
+export XILA_APPLICATIONS_ROOT="$(realpath ../applications)"
+export XILA_APPLICATIONS_MANIFEST="$XILA_APPLICATIONS_ROOT/Cargo.toml"
+export XILA_FONT_CATALOG_ROOTS="$XILA_APPLICATIONS_ROOT"
 mise run format:rust -- --check
 mise run format:toml -- --check
-npm exec prettier -- --check "**/*.json"
-mise run check:host
-mise run check:guest
-mise run clippy:all
-mise run docs:all
-```
-
-`check:all` combines host and guest checks. `test:workspace` runs workspace tests:
-
-```sh
 mise run check:all
+mise run clippy:all
 mise run test:workspace
+mise run docs:host
 ```
 
-These targets include Linux host and `wasm32-unknown-unknown` guest-library checks. They do not substitute for running `wasm32-wasip1` applications or checking embedded hardware.
+The portable graphics/font/linker, VFS, synchronization, networking and cryptographic paths have additional focused tests in Core's <CodeReference path=".github/workflows/ci.yml" /> and <CodeReference path=".github/workflows/extended.yml" />. Core Pages now builds **only Core's Rustdoc**.
 
-## Graphics, fonts and WASM runtime
-
-For graphics/C ABI changes, use the focused host and memory64 Wasmi tests appropriate to the changed subsystem and the tests documented in <CodeReference path="executables/wasm/README.md" />. For font assets, run:
+Core's integration tests that build official guests need a compatible external Applications checkout, not a missing `core/executables` directory:
 
 ```sh
-mise run test:fonts
+export XILA_APPLICATIONS_MANIFEST="$(realpath ../applications/Cargo.toml)"
+export XILA_APPLICATIONS_ROOT="$(realpath ../applications)"
+export XILA_FONT_CATALOG_ROOTS="$(realpath ../applications)"
 ```
 
-This checks generation, caching, selected-symbol linkage, and recovery from invalid build artifacts. No-allocator or size tests on native targets are not MCU measurements.
+Use matching Git-pinned revisions or an explicit patch file when testing local changes.
 
-## Localization
+## Applications or Wasmi change
 
-Translation IDs are stable dotted semantic keys, not English source strings. When altering strings or catalogs, run:
+From the `applications` checkout:
 
 ```sh
+mise run check:guest
+mise run build:applications
+mise run test:workspace
 mise run localization:lint
-node --test tolgee.extractor.test.mjs
-EMBEDDED_I18N_LOCALE=fr EMBEDDED_I18N_STRICT=1 mise run localization:check
 ```
 
-Repeat strict checks for affected locales, including `zh-CN` when changing Chinese catalogs or font subsetting. Review the key mapping files in <CodeReference path="tools/localization/mappings" />. A destructive Tolgee synchronization is not part of routine validation.
+For Wasmi and guest bindings, run the ABI translation and guest-memory-width tests configured by <CodeReference repo="applications" path=".github/workflows/ci.yml" />. That CI also validates the unsigned development package workflows. Check host/guest features independently.
 
-## Browser behavior
+## Platforms / demo / hardware change
 
-Build matching WASI guests and a browser filesystem image, then build the demonstration:
+From the `platforms` checkout:
 
 ```sh
-mise run image:wasm
-MISE_ENV=ci mise run pages:demo
+mise run build:native
+mise run check:browser
+mise run test:seed
+mise run test:drivers
 ```
 
-Serve `examples/wasm/dist` locally and exercise graphics, input and application close. For storage changes, verify save/reload and existing-disk preservation. Browser OPFS tests require compatible `wasm-bindgen-test-runner` and ChromeDriver, as described in <CodeReference path="examples/wasm/README.md" />.
+For an assembled browser image, build matching `.wasm` guests in Applications and set `XILA_APPLICATIONS_DIR` before `mise run image:browser`. For the **full localized deployment path**, invoke:
 
-## Completion
+```sh
+MISE_ENV=ci mise run pages:build
+```
 
-Record which tools, target architectures and tests actually passed. On hardware-impacting changes, run target firmware checks and inspect flash, peak stack and RAM on the intended board; a green Linux/browser CI does not prove that.
+The browser test surface includes OPFS persistence, UI events, application lifecycle and disk initialization. The <CodeReference repo="platforms" path=".github/workflows/integration.yml" /> workflow accepts explicit Core and Applications commits for compatibility testing.
 
-## Related documentation
+### Browser behavior
 
-- [Development commands](/reference/development-commands).
-- <CodeReference path=".github/workflows/ci.yml" /> and <CodeReference path=".github/workflows/extended.yml" />.
-- [Browser tutorial](/tutorials/browser).
+Run a freshly seeded installation and check Calculator, launcher, mouse/keyboard input, close/reopen and disk save/reload. Test on the new origin [platforms.xila.dev](https://platforms.xila.dev/) rather than assuming browser disks migrate from the old Core Pages origin. Existing stored disks are not updated by publishing a new seed.
+
+## Completion and limits
+
+Record the exact commit revisions of **all three** repositories, the locale, selected features/targets, commands executed and any hardware limitations. Native/Chrome CI does **not** establish correctness on ESP32, nor measured flash/peak RAM/stack usage.
+
+See [Development commands](/reference/development-commands), [Core/Applications/Platforms architecture](/explanation/architecture/) and [browser tutorial](/tutorials/browser).

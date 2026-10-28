@@ -1,54 +1,70 @@
 ---
 layout: doc
 docType: how-to
-description: Set up Core development locally with the pinned mise tasks and tools.
+description: Set up separate Core, Applications and Platforms workspaces with mise and pinned dependencies.
 ---
 
 # Set up a development environment
 
-Core uses **mise** for local development and GitHub Actions (Core #509–#510). The earlier Cargo Make / `xila-dev` development-container workflow is obsolete. The `xila-runtime` OCI image is a separate product for running the headless operating system, not building Core.
+Xila is now developed in **three Rust workspaces**. [Core](https://github.com/xila-project/core) owns portable OS libraries; [Applications](https://github.com/xila-project/applications) owns official apps and Wasmi; [Platforms](https://github.com/xila-project/platforms) owns native/browser assembly, hardware drivers, demos and reference images.
 
-## Prerequisites
+All three use [mise](https://mise.jdx.dev/) and Rust with repo-specific tasks. **Do not run the old `image:native`, `image:wasm` or `pages:demo` instructions in Core.**
 
-Use Debian/Ubuntu Linux on x86_64 for the documented native build path, with Git, network access, and [mise](https://mise.jdx.dev/getting-started.html) installed. Native GUI testing additionally needs a functioning Wayland display and GPU drivers. WSL2/WSLg requires a separate GUI smoke test; native Windows, macOS, ARM Linux and NixOS have not been validated here.
+## Prepare checkouts
 
-## Set up Core
-
-In a **host terminal**, clone and enter Core:
+On a supported x86_64 Debian/Ubuntu Linux development machine:
 
 ```sh
 git clone https://github.com/xila-project/core.git
+git clone https://github.com/xila-project/applications.git
+git clone https://github.com/xila-project/platforms.git
+
 cd core
 mise trust
-mise install --include-task-tools # optional upfront tool installation
 mise bootstrap packages apply --manager apt
 mise run deps:npm
+export XILA_APPLICATIONS_ROOT="$(realpath ../applications)"
+export XILA_APPLICATIONS_MANIFEST="$XILA_APPLICATIONS_ROOT/Cargo.toml"
+export XILA_FONT_CATALOG_ROOTS="$XILA_APPLICATIONS_ROOT"
 mise run check:all
+cd ../applications
+mise trust
+npm ci
+mise run build:applications
+cd ../platforms
+mise trust
+mise bootstrap packages apply --manager apt
+npm ci
+mise run build:native
 ```
 
-The `mise bootstrap` command may request sudo for native Debian/Ubuntu packages. `mise run` resolves pinned, task-scoped tool versions on demand; the optional `mise install` command fetches them ahead of time. No build container is required.
+The three manifests pin dependent Git revisions. Checking out the latest `main` in each directory **does not automatically override those pins**. For cross-repository development, generate the explicit Cargo patch file from <CodeReference repo="platforms" path="tools/dev/local_overrides.py" /> rather than editing locked dependencies casually. Do not commit a `Cargo.lock` regenerated under temporary local patches.
 
-`.miserc.toml` selects `mise.development.toml` by default. Shared tasks live in `mise.toml`, with version pins in its `[vars]` table. Use `mise tasks` to see available commands. CI uses `mise.ci.toml` and `MISE_ENV=ci` rather than reusing a development image.
+The exact native OS, linker, graphics/font and display dependencies vary by operation. Mise selects task-scoped tool versions and optional mr-boxington caching; `MISE_ENV=ci` uses separate CI definitions.
 
-## Build or run
+## Select the repository for the task
 
-From the same Core root, choose a task:
+| What you want to do                                                          | Where to run it   |
+| ---------------------------------------------------------------------------- | ----------------- |
+| Portable VFS, Task, Time, Graphics, Network, ABI and device APIs             | `core`            |
+| WASI applications, Wasmi, graphical/CLI shells, localization of applications | `applications`    |
+| Native/browser runtime, Linux/ESP drivers, seed images, OPFS and deployment  | `platforms`       |
+| Manifest/TAR development packages                                            | `package_manager` |
+| Static community publication declarations                                    | `packages`        |
+
+To assemble a desktop or browser demonstration, build WASI apps first, then point Platforms at them:
 
 ```sh
+cd platforms
+export XILA_APPLICATIONS_DIR="$(realpath ../applications/target/wasm32-wasip1/release-wasm)"
+export XILA_FONT_CATALOG_ROOTS="$(realpath ../applications)"
 mise run image:native
-mise run run:cargo -- -p xila-native-example --bin native_example -- --gui --no-network --seed-image target/seed/native/seed.img
 ```
 
-`image:native` builds matching guest applications and a 16 MiB seed image. A fresh native disk uses that seed; an existing installation is not overwritten. For a display-free test, use the native example's `--display-driver headless` and the Debug client described in the [native tutorial](/tutorials/native).
+For the browser use `image:browser`. The CI-only `pages:build` task can build complete localized demonstrations itself.
 
-For browser-hosted Xila, use `mise run image:wasm` to prepare the reference image, then follow the [browser tutorial](/tutorials/browser). For independent Cargo operations, `mise run build:cargo -- ...` and `mise run run:cargo -- ...` use the configured build integration.
+## Hardware and validation limits
 
-## Embedded targets
+A native Core/Platforms build does **not** establish ESP32 or Wokwi firmware support. The split still contains legacy ESP driver code needing target-specific validation. Build and flash with the intended ESP-IDF/toolchain, partition and board configuration before claiming hardware support.
 
-Native/guest checks do not establish firmware correctness. Install board-specific compilers, flashing tools, and serial permissions separately, following the esp-rs [Xtensa](https://docs.esp-rs.org/book/installation/riscv-and-xtensa.html) or [RISC-V](https://docs.esp-rs.org/book/installation/riscv.html) guides.
-
-## Related documentation
-
-- [Development environments and targets](/explanation/development-environments).
-- [Development commands](/reference/development-commands).
-- [Run Xila natively](/tutorials/native).
+Continue with [Development commands](/reference/development-commands), [native tutorial](/tutorials/native), and [browser tutorial](/tutorials/browser).

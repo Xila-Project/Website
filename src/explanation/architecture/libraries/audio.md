@@ -58,7 +58,7 @@ The default system contains **14 KiB of PCM queue storage** (8 KiB input and 6 K
 
 Core #515 adds a `HeadlessAudioOutput` adapter to `drivers_headless`. It reserves an output on a caller-owned pinned `AudioSystem`; the test drives mixing explicitly with `mix_next_block()`, then drains whole 48 kHz stereo F32 frames using `read(&mut buffer)`. Unlike a native sound device, it creates no threads, timers, additional queues or hardware dependencies. `read` returns zero when no frames are queued and rejects non-frame-aligned buffers without consuming audio. It exposes `dropped_blocks()` and releases its reservation on drop.
 
-This makes mixer output deterministic in host tests while leaving audible native and browser adapters independent. See <CodeReference path="drivers/headless/src/audio.rs" /> and <CodeReference path="drivers/headless/tests/audio.rs" />. Native ALSA development libraries are now needed only for opt-in host audio builds, not ordinary CI workspace audio tests.
+This makes mixer output deterministic in host tests while leaving audible native and browser adapters independent. See <CodeReference repo="platforms" path="drivers/headless/src/audio.rs" /> and <CodeReference repo="platforms" path="drivers/headless/tests/audio.rs" />. Native ALSA development libraries are now needed only for opt-in host audio builds, not ordinary CI workspace audio tests.
 
 ## Virtual filesystem integration
 

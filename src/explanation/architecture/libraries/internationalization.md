@@ -12,7 +12,7 @@ Xila uses the external `embedded-i18n` dependency for build-time localization. C
 
 Core's `.cargo/config.toml` selects locale and fallback using `EMBEDDED_I18N_LOCALE` and `EMBEDDED_I18N_FALLBACK`. English is the fallback. Executables use `embedded_i18n::translate!` for ordinary and C-string literals and keep translations in their `locales/` directories.
 
-Core includes compiled catalogs for **English (`en`), French (`fr`), Spanish (`es`), German (`de`), Brazilian Portuguese (`pt-BR`), Italian (`it`), Polish (`pl`) and Simplified Chinese (`zh-CN`)**. The seven Latin-script locales are included in the deployment demonstrations; Chinese can be built and validated but has not completed native-speaker/embedded-device review and is **not enabled in deployment bundles**. Languages require separately built, matching host, guest and seed-image artifacts; no runtime language selector is implemented.
+Core and Applications maintain compiled catalogs for **English (`en`), French (`fr`), Spanish (`es`), German (`de`), Brazilian Portuguese (`pt-BR`), Italian (`it`), Polish (`pl`) and Simplified Chinese (`zh-CN`)**. The seven Latin-script locales are included in the deployment demonstrations; Chinese can be built and validated but has not completed native-speaker/embedded-device review and is **not enabled in deployment bundles**. Languages require separately built, matching host, guest and seed-image artifacts; no runtime language selector is implemented.
 
 The selected translations are embedded in the build. This avoids carrying a dynamic catalog lookup in each runtime call; language choice belongs to the build configuration rather than a live session-language service. Quantity-dependent text uses CLDR plural variants where needed (for example, stopwatch laps, DNS record counts and ping byte counts); Polish requires `one`, `few`, `many` and `other`.
 
@@ -64,7 +64,7 @@ The Graphics font inputs live in `subsystems/graphics/fonts/` and generation is 
 
 English fallback prevents missing-key failures but does not guarantee appropriate terminology or glyph coverage. Language completeness needs review on the actual display and guest programs.
 
-- <CodeReference path="src/lib.rs" /> — public re-export.
+- <CodeReference path="core/src/lib.rs" /> — public re-export.
 - <CodeReference path=".cargo/config.toml" /> — locale defaults.
 - <CodeReference path="subsystems/graphics/build.rs" /> — glyph generation.
 - <CodeReference path="tools/localization/README.md" /> — semantic naming and translation conventions.
@@ -75,7 +75,7 @@ English fallback prevents missing-key failures but does not guarantee appropriat
 ## Related documentation
 
 - <HostReference crate="embedded_i18n" />
-- <CodeReference path="src/lib.rs" /> and <CodeReference path=".cargo/config.toml" />.
+- <CodeReference path="core/src/lib.rs" /> and <CodeReference path=".cargo/config.toml" />.
 - <CodeReference path="subsystems/graphics/build.rs" />.
 - <CodeReference path="tolgee.config.ts" /> and <CodeReference path="tolgee.extractor.mjs" />.
 - [Graphics](/explanation/architecture/subsystems/graphics).

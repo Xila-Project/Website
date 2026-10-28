@@ -48,7 +48,7 @@ The agent accepts input requests over its mounted transport; it does **not** imp
 
 ## Source and API references
 
-- <CodeReference path="executables/debug/src/lib.rs" /> — executable, service loop, dispatch and framing.
+- <CodeReference repo="applications" path="executables/debug/src/lib.rs" /> — executable, service loop, dispatch and framing.
 - <CodeReference path="libraries/debug_protocol/src/lib.rs" /> — request schema and size limits.
 - [Graphics subsystem](/explanation/architecture/subsystems/graphics) — actual capture and injection.
 - [Executable contract](/explanation/architecture/libraries/executable) — task launch and context.

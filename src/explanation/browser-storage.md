@@ -12,7 +12,7 @@ The browser example keeps Xila filesystems in origin-private OPFS images. Its de
 
 Each browser disk is a 16 MiB MBR/LittleFS image stored on the current origin. The legacy image is named `xila_drive.img`. New images created from the Help panel use `xila_YYYY-MM-DD.img`, with a numeric suffix when more than one image is created on the same date. The selected disk is remembered for the origin.
 
-Files, configuration, and credentials survive reloads when the browser keeps the corresponding OPFS image. Another origin has separate storage, even when it serves the same application.
+Files, configuration, and credentials survive reloads when the browser keeps the corresponding OPFS image. Another origin has separate storage, even when it serves the same application. **The demonstration moved from Core Pages to [platforms.xila.dev](https://platforms.xila.dev/); browsers do not transfer old-origin disks to the new site automatically.**
 
 A new image is initialized from a prebuilt, locale-matched LittleFS seed containing the bundled applications and shortcut metadata. Updating Xila or its reference seed does **not** silently replace applications already installed in an existing image; create another disk if you need the newer bundle while keeping the old disk as a backup.
 
@@ -57,4 +57,4 @@ Disk removal is an explicit user action; a mount failure does not grant startup 
 - [Browser capabilities](/reference/wasm-runtime#browser-capabilities).
 - [WASM drive integration](./architecture/drivers/wasm).
 - [Browser validation](/how-to/validate-core#browser-behavior).
-- <CodeReference path="drivers/wasm/src/devices/drive.rs" /> and <CodeReference path="examples/wasm/src/storage.rs" />.
+- <CodeReference repo="platforms" path="drivers/wasm/src/devices/drive.rs" /> and <CodeReference repo="platforms" path="examples/wasm/src/storage.rs" />.

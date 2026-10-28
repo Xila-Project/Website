@@ -24,11 +24,11 @@ Additionally, abstract driver interfaces may sometimes incur overhead. To mitiga
 
 - <HostReference crate="file_system" />: Contains character/block device and operation contracts.
 - <CodeReference path="drivers/core" />: Dependency-less implementation for basic drivers (like null device, etc.).
-- <CodeReference path="drivers/std" />: Standard library-based drivers for host environments.
-- <CodeReference path="drivers/espressif" />: Drivers for Espressif targets.
-- <CodeReference path="drivers/native" />: Native drivers for desktop platforms (Linux, Windows, macOS).
-- <CodeReference path="drivers/shared" />: Contains drivers that can be shared across multiple platforms.
-- <CodeReference path="drivers/wasm" />: Drivers for WebAssembly environments.
+- <CodeReference repo="platforms" path="drivers/std" />: Standard library-based drivers for host environments.
+- <CodeReference repo="platforms" path="drivers/espressif" />: Drivers for Espressif targets.
+- <CodeReference repo="platforms" path="drivers/native" />: Native drivers for desktop platforms (Linux, Windows, macOS).
+- <CodeReference repo="platforms" path="drivers/shared" />: Contains drivers that can be shared across multiple platforms.
+- <CodeReference repo="platforms" path="drivers/wasm" />: Drivers for WebAssembly environments.
 
 ## See also
 

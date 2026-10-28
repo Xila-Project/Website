@@ -12,7 +12,7 @@ Use the native example's assembly to connect Xila services and executables to yo
 
 Complete the [native tutorial](/tutorials/native) or establish a working [development environment](./setup-development). Read the [runtime assembly overview](/explanation/architecture/#runtime-assembly) and identify your display, time, storage, and executor drivers.
 
-The procedure is an integration outline; <CodeReference path="examples/native/src/main.rs" /> provides the complete executable example.
+The procedure is an integration outline; <CodeReference repo="platforms" path="examples/native/src/main.rs" /> provides the complete executable example.
 
 ## Add the dependencies
 

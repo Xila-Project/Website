@@ -42,14 +42,14 @@ The path field has a **240-character** UI limit, distinct from the 4096-byte edi
 
 ### Source references
 
-- <CodeReference path="executables/text_editor/src/storage.rs" /> — WorkingCopy, UTF-8 paging, save and Drop.
-- <CodeReference path="executables/text_editor/src/interface.rs" /> — actions, input length and event loop.
-- <CodeReference path="executables/text_editor/src/main.rs" /> — installer and guest startup.
+- <CodeReference repo="applications" path="executables/text_editor/src/storage.rs" /> — WorkingCopy, UTF-8 paging, save and Drop.
+- <CodeReference repo="applications" path="executables/text_editor/src/interface.rs" /> — actions, input length and event loop.
+- <CodeReference repo="applications" path="executables/text_editor/src/main.rs" /> — installer and guest startup.
 - [VFS subsystem](/explanation/architecture/subsystems/virtual_file_system) — backing file ownership.
 
 ## References
 
-- <CodeReference path="executables/text_editor/README.md" />
-- <CodeReference path="executables/text_editor" />
+- <CodeReference repo="applications" path="executables/text_editor/README.md" />
+- <CodeReference repo="applications" path="executables/text_editor" />
 - [WASM runtime](/reference/wasm-runtime)
 - [Browser storage](/explanation/browser-storage)

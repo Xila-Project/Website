@@ -1,31 +1,20 @@
 ---
-layout: page
+layout: doc
 docType: reference
-title: Guest API
-description: Generated Rust reference for Xila guest application helpers.
-footer: false
+description: Source and local Rustdoc instructions for the Xila guest API now hosted in Applications.
 ---
 
-<script setup>
-import { ref, onMounted } from 'vue'
-import { getReferenceIframeSrc } from '../../.vitepress/theme/utilities/reference-path.mjs'
+# Guest API
 
-const iframeSrc = ref('https://documentation.xila.dev/guest/wasm/index.html')
+The `xila-wasm` guest API moved into **[Xila Applications](https://github.com/xila-project/applications)** with the Wasmi host runtime (Core #551, Applications #2). Core Pages now publishes **only Core Rustdoc**, so the former `documentation.xila.dev/guest/` viewer is no longer a reliable current API reference.
 
-onMounted(() => {
-  if (typeof window !== 'undefined') {
-    const params = new URLSearchParams(window.location.search)
-    const path = params.get('path')
-    if (path) {
-      iframeSrc.value = getReferenceIframeSrc('guest', path)
-    }
-  }
-})
-</script>
+Browse the source directly:
 
-<div style="height: calc(100vh - 64px); width: 100%;">
-  <iframe
-    :src="iframeSrc"
-    style="width: 100%; height: 100%; border: none;">
-  </iframe>
-</div>
+- <CodeReference repo="applications" path="executables/wasm/src/guest/mod.rs" /> — guest API.
+- <CodeReference repo="applications" path="executables/wasm/src/guest/graphics" /> — supported LVGL guest wrappers.
+- <CodeReference repo="applications" path="executables/wasm/src/guest/wasi.rs" /> — WASI-facing integration.
+- <CodeReference repo="applications" path="executables/wasm/Cargo.toml" /> — host versus guest feature selection.
+
+To build a **local** Rustdoc reference for the guest crate in the Applications checkout, run an appropriate Cargo documentation command using `--no-default-features --features default_guest` and the `wasm32-unknown-unknown` target when its toolchain prerequisites are installed. Consult the repository's feature matrix; generated graphical bindings are not a promise of full LVGL coverage.
+
+For portable Core APIs, use the separate [Host API](/reference/host). See [Build a guest](/how-to/build-guest) and [Graphics bindings](/reference/graphics-bindings).

@@ -1,58 +1,66 @@
 ---
 layout: doc
 docType: tutorial
-description: Build a seeded native Xila installation and open its graphical desktop with mise.
+description: Build official WASI guests in Applications, seed Platforms and launch the native Linux runtime.
 ---
 
 # Run Xila natively
 
-Build Xila from Core, prepare a filesystem seed, and open its native desktop on Linux. Core uses **mise** for builds; the older Cargo Make/development-container instructions no longer apply.
+The native executable and disk generator live in [Platforms](https://github.com/xila-project/platforms); official guest applications live in [Applications](https://github.com/xila-project/applications). **Core is not a runnable desktop checkout** after the repository split.
 
 ## Before you begin
 
-Use x86_64 Debian/Ubuntu Linux with a working Wayland desktop for the graphical test. Install [mise](https://mise.jdx.dev/getting-started.html) and Git. The host toolchain and runtime have not been validated on native Windows, macOS, ARM Linux or NixOS. WSL2/WSLg requires its own GUI smoke test.
+Use x86_64 Debian/Ubuntu Linux with Git, [mise](https://mise.jdx.dev/) and a working Wayland display for GUI testing. Native Windows/macOS/ARM Linux and ESP32 are not established as supported desktop environments. Cloning adjacent workspaces helps when checking local changes.
 
-## 1. Prepare Core
-
-In a **host terminal**:
+## 1. Build the six guest applications
 
 ```sh
-git clone https://github.com/xila-project/core.git
-cd core
+git clone https://github.com/xila-project/applications.git
+git clone https://github.com/xila-project/platforms.git
+cd applications
 mise trust
-mise bootstrap packages apply --manager apt
-mise run deps:npm
-mise run check:all
+mise run build:applications
+cd ..
 ```
 
-The check covers selected Linux host and WASM guest-library builds, not the actual desktop. Mise installs task tools as needed; to preinstall the complete set, run `mise install --include-task-tools`.
+The WASI `.wasm` files are emitted under `applications/target/wasm32-wasip1/release-wasm/`.
 
-## 2. Prepare the native seed
-
-Still at Core's root:
+## 2. Create a native filesystem image
 
 ```sh
+cd platforms
+mise trust
+mise bootstrap packages apply --manager apt
+npm ci
+export XILA_APPLICATIONS_DIR="$(realpath ../applications/target/wasm32-wasip1/release-wasm)"
+export XILA_FONT_CATALOG_ROOTS="$(realpath ../applications)"
 mise run image:native
 ```
 
-This builds the bundled `wasm32-wasip1` applications and writes a 16 MiB LittleFS seed to `target/seed/native/seed.img`. Xila imports that seed **only when the live disk is absent**. It does not overwrite an existing installation or upgrade its bundled apps.
+The image is written to `target/seed/native/seed.img` by the **Platforms** `xila-fs-image` tool. It is a reference image, not a package-manager installation or an upgrade process. Existing writable disks are not overwritten by newer seeds.
 
-## 3. Start the graphical runtime
+## 3. Start the native runtime
+
+From the `platforms` checkout:
 
 ```sh
-mise run run:cargo -- -p xila-native-example --bin native_example -- --gui --no-network --seed-image target/seed/native/seed.img
+mise run run:cargo -- -p xila-native-example --bin native_example -- \
+  --gui --no-network --seed-image target/seed/native/seed.img
 ```
 
-A native Xila window should appear. On a new disk, log in as **administrator** with an empty password. Check that pointer input, the app launcher and window closing work. The default mutable disk is `./drive.img`; use `--disk-path PATH` to create a separate installation without risking saved data.
+If `run:cargo` is unavailable in the selected task profile, use `mise exec -- cargo run -p xila-native-example --bin native_example -- --gui --no-network --seed-image target/seed/native/seed.img`.
 
-For text-only operation, replace `--gui` with `--terminal`. For a display-free graphical debug session, pass `--display-driver headless --resolution 800x600` and use the `xila-debug` client from another terminal. See <CodeReference path="examples/native/README.md" /> for the headless workflow and output limits.
+On a new disk, log in as **administrator** with an empty password. Test pointer input, application launch and window close. The default writable file is `./drive.img`; select a different one with `--disk-path PATH` to avoid modifying an existing installation.
 
-## Check your result
+For terminal mode replace `--gui` with `--terminal`. Headless graphical debugging uses `--display-driver headless --resolution 800x600` plus the `xila-debug` tool.
 
-The build/check commands and the graphical smoke test should complete without errors. This confirms the tested Linux environment, **not** embedded flash/RAM requirements or microcontroller correctness.
+## Validation and caveats
 
-## Continue learning
+```sh
+mise run build:native
+mise run test:seed
+```
 
-- [Set up development](/how-to/setup-development).
-- [Run Calculator in the browser](./browser).
-- [Run the headless OCI runtime](/how-to/run-container-guest).
+Platforms also owns driver, browser, integration and runtime-container CI. Native correctness does **not** prove ESP32 operation or flash/RAM consumption. See <CodeReference repo="platforms" path="examples/native/README.md" /> and <CodeReference repo="platforms" path="mise.toml" /> for exact options.
+
+For the browser-hosted build, follow [the browser tutorial](/tutorials/browser).

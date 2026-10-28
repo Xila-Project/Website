@@ -68,6 +68,7 @@ const componentGroups: DefaultTheme.SidebarItem[] = [
     link: "/explanation/architecture/executables/",
     collapsed: true,
     items: [
+      ["Activity", "activity"],
       ["WASM guest bindings", "bindings"],
       ["Calculator", "calculator"],
       ["Clock", "clock"],
@@ -96,7 +97,7 @@ export const nav: DefaultTheme.NavItem[] = [
   { text: "Explanation", link: "/explanation/" },
   {
     text: "Demonstration",
-    link: "https://documentation.xila.dev/demonstrations/wasm/en/",
+    link: "https://platforms.xila.dev/",
   },
 ];
 
@@ -127,7 +128,7 @@ const documentationSidebar: DefaultTheme.SidebarItem[] = [
         text: "Run Xila with Docker",
         link: "/how-to/run-container-guest",
       },
-      { text: "Validate Core", link: "/how-to/validate-core" },
+      { text: "Validate Xila changes", link: "/how-to/validate-core" },
       { text: "Contribute to Core", link: "/how-to/contribute-core" },
       { text: "Manage browser disks", link: "/how-to/reset-browser-storage" },
       { text: "Write documentation", link: "/how-to/write-documentation" },

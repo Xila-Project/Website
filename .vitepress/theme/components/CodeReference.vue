@@ -1,17 +1,13 @@
 <script setup>
 import { computed } from "vue";
-import { getReferenceDisplayName } from "../utilities/reference";
+import { getSourceHref } from "../utilities/source-reference.mjs";
 
 const props = defineProps({
-  path: {
-    type: String,
-    required: true,
-  },
+  repo: { type: String, default: "core" },
+  path: { type: String, required: true },
 });
 
-const href = computed(() => {
-  return `https://github.com/Xila-Project/Core/tree/main/${props.path}`;
-});
+const href = computed(() => getSourceHref(props.repo, props.path));
 const label = computed(() => `<code>${props.path}</code>`);
 </script>
 

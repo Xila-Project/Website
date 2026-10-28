@@ -89,19 +89,19 @@ Graphics calls are versioned with the LVGL configuration used to generate the bi
 
 ### Source references
 
-- <CodeReference path="executables/wasm/src/host/main.rs" /> — options, modules and descriptor setup.
-- <CodeReference path="executables/wasm/src/host/execution.rs" /> — resumable calls, fuel and clock polling.
-- <CodeReference path="executables/wasm/src/host/wasi/context.rs" /> — descriptor table and ownership.
-- <CodeReference path="executables/wasm/src/host/wasi/register.rs" /> — implemented WASI imports.
-- <CodeReference path="executables/wasm/Cargo.toml" /> — host/guest/graphics feature gates.
+- <CodeReference repo="applications" path="executables/wasm/src/host/main.rs" /> — options, modules and descriptor setup.
+- <CodeReference repo="applications" path="executables/wasm/src/host/execution.rs" /> — resumable calls, fuel and clock polling.
+- <CodeReference repo="applications" path="executables/wasm/src/host/wasi/context.rs" /> — descriptor table and ownership.
+- <CodeReference repo="applications" path="executables/wasm/src/host/wasi/register.rs" /> — implemented WASI imports.
+- <CodeReference repo="applications" path="executables/wasm/Cargo.toml" /> — host/guest/graphics feature gates.
 - [Graphics bindings](/explanation/architecture/executables/bindings) — checked guest UI boundary.
 
 ## References
 
-- <HostReference crate="wasm" /> — host-side interpreter and integration APIs.
-- <GuestReference crate="wasm" /> — guest-facing WebAssembly helper APIs.
+- <HostReference repo="applications" crate="wasm" /> — host-side interpreter and integration APIs.
+- <GuestReference repo="applications" crate="wasm" /> — guest-facing WebAssembly helper APIs.
 
-- <CodeReference path="executables/wasm" />
+- <CodeReference repo="applications" path="executables/wasm" />
 - [Graphics bindings](/reference/graphics-bindings)
 - [Bindings](/explanation/architecture/executables/bindings)
 - [Executable runtime crate](/explanation/architecture/libraries/executable)

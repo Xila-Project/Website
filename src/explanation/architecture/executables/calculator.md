@@ -72,12 +72,12 @@ Calculator does not write its expression history to VFS. It depends on the windo
 
 ### Source references
 
-- <CodeReference path="executables/calculator/src/engine.rs" /> — numerical model, supported functions and tests.
-- <CodeReference path="executables/calculator/src/interface.rs" /> — button matrix, event handling and display.
-- <CodeReference path="executables/calculator/src/main.rs" /> — target-specific startup.
-- <CodeReference path="executables/calculator/src/install.rs" /> — launcher shortcut installation.
+- <CodeReference repo="applications" path="executables/calculator/src/engine.rs" /> — numerical model, supported functions and tests.
+- <CodeReference repo="applications" path="executables/calculator/src/interface.rs" /> — button matrix, event handling and display.
+- <CodeReference repo="applications" path="executables/calculator/src/main.rs" /> — target-specific startup.
+- <CodeReference repo="applications" path="executables/calculator/src/install.rs" /> — launcher shortcut installation.
 
 ## References
 
-- <CodeReference path="executables/calculator" />
+- <CodeReference repo="applications" path="executables/calculator" />
 - [WASM](/explanation/architecture/executables/wasm)
