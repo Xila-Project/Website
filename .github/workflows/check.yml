@@ -25,11 +25,6 @@ jobs:
       - name: "Setup | Node and locked dependencies"
         uses: xila-project/workspace/.github/actions/setup-node@537d54a3aefb7c689a5cb498f55c64a6afecbbdd
 
-      - name: "Diagnostics | Capture exact Prettier output"
-        run: |
-          mise exec -- npx prettier --write scripts/check-docs.mjs scripts/source-checkouts.mjs tests/source-checkouts.test.mjs
-          node -e 'const fs=require("node:fs"); for(const file of process.argv.slice(1)) console.log("FORMATTED_FILE="+JSON.stringify({file,content:fs.readFileSync(file,"utf8")}))' scripts/check-docs.mjs scripts/source-checkouts.mjs tests/source-checkouts.test.mjs
-
       - name: "Setup | Checkout core references"
         uses: actions/checkout@v5
         with:

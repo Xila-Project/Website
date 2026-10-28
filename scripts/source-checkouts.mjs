@@ -29,7 +29,8 @@ export function checkCodeReference(
 
   const key = sourceEnvironmentKey(repository);
   const configuredPath = environment[key];
-  const checkout = configuredPath ?? path.resolve(websiteRoot, "..", repository);
+  const checkout =
+    configuredPath ?? path.resolve(websiteRoot, "..", repository);
   const marker = repository === "packages" ? "README.md" : "Cargo.toml";
   const strict = environment.XILA_STRICT_SOURCE_REFERENCES === "1";
 

@@ -18,7 +18,10 @@ test("all published source repositories have CI environment keys", () => {
     "package_manager",
     "packages",
   ]);
-  assert.equal(sourceEnvironmentKey("package_manager"), "XILA_PACKAGE_MANAGER_PATH");
+  assert.equal(
+    sourceEnvironmentKey("package_manager"),
+    "XILA_PACKAGE_MANAGER_PATH",
+  );
 });
 
 test("CI fails closed when a referenced checkout is missing", (t) => {
@@ -60,7 +63,10 @@ test("validates every repository including the packages README-only checkout", (
     const checkout = path.join(directory, repository);
     fs.mkdirSync(checkout);
     fs.writeFileSync(
-      path.join(checkout, repository === "packages" ? "README.md" : "Cargo.toml"),
+      path.join(
+        checkout,
+        repository === "packages" ? "README.md" : "Cargo.toml",
+      ),
       "test",
     );
     const environment = {

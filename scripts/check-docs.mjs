@@ -152,7 +152,9 @@ if (errors.size) {
   process.exit(1);
 }
 console.log(
-  `Validated ${pages.length} source pages, ${links} rendered internal links, ${anchors} anchors, and ${references} source references (${Object.entries(sourceChecks)
+  `Validated ${pages.length} source pages, ${links} rendered internal links, ${anchors} anchors, and ${references} source references (${Object.entries(
+    sourceChecks,
+  )
     .map(([repository, count]) => `${repository}: ${count}`)
     .join(", ")}).`,
 );
