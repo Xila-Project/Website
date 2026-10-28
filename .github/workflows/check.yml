@@ -22,14 +22,8 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup | Node
-        uses: actions/setup-node@v6
-        with:
-          node-version: lts/*
-          cache: npm
-
-      - name: Setup | Install dependencies
-        run: npm ci
+      - name: Setup | Node and locked npm dependencies
+        uses: xila-project/workspace/.github/actions/setup-node@537d54a3aefb7c689a5cb498f55c64a6afecbbdd
 
       - name: Setup | Checkout source repositories for reference validation
         run: |
@@ -42,4 +36,4 @@ jobs:
           XILA_CORE_PATH: ${{ runner.temp }}/xila-core
           XILA_APPLICATIONS_PATH: ${{ runner.temp }}/xila-applications
           XILA_PLATFORMS_PATH: ${{ runner.temp }}/xila-platforms
-        run: npm run check
+        run: mise exec -- npm run check
