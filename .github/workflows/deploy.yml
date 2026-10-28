@@ -22,22 +22,18 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: "Setup | Checkout documentation"
         uses: actions/checkout@v5
         with:
           fetch-depth: 0
-      - name: Setup Node
-        uses: actions/setup-node@v6
-        with:
-          node-version: lts/*
-          cache: npm
-      - name: Setup Pages
+      - name: "Setup | Node and locked dependencies"
+        uses: xila-project/workspace/.github/actions/setup-node@537d54a3aefb7c689a5cb498f55c64a6afecbbdd
+      - name: "Publish | Configure Pages"
         uses: actions/configure-pages@v6
-      - name: Install dependencies
-        run: npm ci
-      - name: Check and build documentation
-        run: npm run check
-      - name: Upload artifact
+
+      - name: "Build | Validate documentation"
+        run: mise exec -- npm run check
+      - name: "Publish | Upload Pages artifact"
         uses: actions/upload-pages-artifact@v5
         with:
           path: .vitepress/dist
@@ -50,6 +46,6 @@ jobs:
     runs-on: ubuntu-latest
     name: Deploy
     steps:
-      - name: Deploy to GitHub Pages
+      - name: "Publish | Deploy Pages"
         id: deployment
         uses: actions/deploy-pages@v5

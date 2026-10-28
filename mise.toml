@@ -1,0 +1,11 @@
+# Toolchains are managed by mise, not floating Node LTS on GitHub runners.
+[tools]
+node = "24.22.0"
+
+[tasks."documentation:check"]
+description = "Validate references, formatting and build the VitePress documentation"
+run = "npm run check"
+
+[tasks."documentation:development"]
+description = "Start the VitePress local development server"
+run = "npm run docs:dev"
