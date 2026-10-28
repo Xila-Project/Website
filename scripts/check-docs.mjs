@@ -2,6 +2,11 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+import {
+  checkCodeReference,
+  SOURCE_REPOSITORY_NAMES,
+} from "./source-checkouts.mjs";
+
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const source = path.join(root, "src");
 const output = path.join(root, ".vitepress", "dist");
@@ -108,79 +113,31 @@ for (const [file, { html }] of documents) {
   }
 }
 
-// Optional local checkout validation; CI supplies all three source checkouts.
-// Core's source root is no longer the owner of Applications/Platforms paths.
-const sourceRoots = {
-  core: process.env.XILA_CORE_PATH ?? path.resolve(root, "..", "core"),
-  applications:
-    process.env.XILA_APPLICATIONS_PATH ??
-    path.resolve(root, "..", "applications"),
-  platforms:
-    process.env.XILA_PLATFORMS_PATH ?? path.resolve(root, "..", "platforms"),
-};
-const requiredCheckouts = {
-  core: Boolean(process.env.XILA_CORE_PATH),
-  applications: Boolean(process.env.XILA_APPLICATIONS_PATH),
-  platforms: Boolean(process.env.XILA_PLATFORMS_PATH),
-};
-const supportedRepositories = new Set([
-  ...Object.keys(sourceRoots),
-  "package_manager",
-  "packages",
-]);
+// Local checkouts are optional by default. CI sets explicit paths and strict
+// mode, so every supported source reference must resolve or the build fails.
 let references = 0;
-const sourceChecks = { core: 0, applications: 0, platforms: 0 };
+const sourceChecks = Object.fromEntries(
+  SOURCE_REPOSITORY_NAMES.map((repository) => [repository, 0]),
+);
 const omittedRepositories = new Set();
 
 for (const file of pages) {
   const text = fs.readFileSync(file, "utf8");
-  for (const match of text.matchAll(/<CodeReference\b([^>]*?)\/?\s*>/g)) {
+  for (const match of text.matchAll(/<CodeReference\\b([^>]*?)\\/?\\s*>/g)) {
     const attributes = match[1];
-    const repo = attributes.match(/\brepo="([^"]+)"/)?.[1] ?? "core";
-    const sourcePath = attributes.match(/\bpath="([^"]+)"/)?.[1];
+    const repo = attributes.match(/\\brepo="([^"]+)"/)?.[1] ?? "core";
+    const sourcePath = attributes.match(/\\bpath="([^"]+)"/)?.[1];
     references += 1;
-    if (!supportedRepositories.has(repo) || !sourcePath) {
-      errors.add(
-        `${path.relative(source, file)}: invalid CodeReference repository/path: ${repo} ${sourcePath ?? ""}`,
-      );
-      continue;
-    }
-    // Package tooling can be linked explicitly through the same source component.
-    const pathFromEnv =
-      repo === "package_manager"
-        ? process.env.XILA_PACKAGE_MANAGER_PATH
-        : repo === "packages"
-          ? process.env.XILA_PACKAGES_PATH
-          : sourceRoots[repo];
-    if (
-      !pathFromEnv ||
-      (!fs.existsSync(path.join(pathFromEnv, "Cargo.toml")) &&
-        !(
-          repo === "packages" &&
-          fs.existsSync(path.join(pathFromEnv, "README.md"))
-        ))
-    ) {
-      if (
-        requiredCheckouts[repo] ||
-        process.env[
-          repo === "package_manager"
-            ? "XILA_PACKAGE_MANAGER_PATH"
-            : "XILA_PACKAGES_PATH"
-        ]
-      ) {
-        errors.add(
-          `Missing source checkout for repository ${repo}: ${pathFromEnv}`,
-        );
-      } else {
-        omittedRepositories.add(repo);
-      }
-      continue;
-    }
-    sourceChecks[repo] = (sourceChecks[repo] ?? 0) + 1;
-    if (!fs.existsSync(path.join(pathFromEnv, sourcePath))) {
-      errors.add(
-        `${path.relative(source, file)}: missing ${repo} source ${sourcePath}`,
-      );
+
+    const result = checkCodeReference(repo, sourcePath, {
+      websiteRoot: root,
+    });
+    if (result.status === "error") {
+      errors.add(`${path.relative(source, file)}: ${result.message}`);
+    } else if (result.status === "skipped") {
+      omittedRepositories.add(repo);
+    } else {
+      sourceChecks[repo] += 1;
     }
   }
 }
@@ -195,5 +152,7 @@ if (errors.size) {
   process.exit(1);
 }
 console.log(
-  `Validated ${pages.length} source pages, ${links} rendered internal links, ${anchors} anchors, and ${references} repository-aware source references.`,
+  `Validated ${pages.length} source pages, ${links} rendered internal links, ${anchors} anchors, and ${references} source references (${Object.entries(sourceChecks)
+    .map(([repository, count]) => `${repository}: ${count}`)
+    .join(", ")}).`,
 );

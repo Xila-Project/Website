@@ -25,15 +25,57 @@ jobs:
       - name: "Setup | Node and locked dependencies"
         uses: xila-project/workspace/.github/actions/setup-node@537d54a3aefb7c689a5cb498f55c64a6afecbbdd
 
-      - name: "Setup | Checkout reference repositories"
-        run: |
-          git clone --quiet --depth 1 https://github.com/xila-project/core.git "$RUNNER_TEMP/xila-core"
-          git clone --quiet --depth 1 https://github.com/xila-project/applications.git "$RUNNER_TEMP/xila-applications"
-          git clone --quiet --depth 1 https://github.com/xila-project/platforms.git "$RUNNER_TEMP/xila-platforms"
+      - name: "Setup | Checkout core references"
+        uses: actions/checkout@v5
+        with:
+          repository: xila-project/core
+          ref: main
+          path: .reference-checkouts/core
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: "Setup | Checkout applications references"
+        uses: actions/checkout@v5
+        with:
+          repository: xila-project/applications
+          ref: main
+          path: .reference-checkouts/applications
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: "Setup | Checkout platforms references"
+        uses: actions/checkout@v5
+        with:
+          repository: xila-project/platforms
+          ref: main
+          path: .reference-checkouts/platforms
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: "Setup | Checkout package manager references"
+        uses: actions/checkout@v5
+        with:
+          repository: xila-project/package_manager
+          ref: main
+          path: .reference-checkouts/package_manager
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: "Setup | Checkout packages references"
+        uses: actions/checkout@v5
+        with:
+          repository: xila-project/packages
+          ref: main
+          path: .reference-checkouts/packages
+          fetch-depth: 1
+          persist-credentials: false
 
       - name: "Validate | Documentation and references"
         env:
-          XILA_CORE_PATH: ${{ runner.temp }}/xila-core
-          XILA_APPLICATIONS_PATH: ${{ runner.temp }}/xila-applications
-          XILA_PLATFORMS_PATH: ${{ runner.temp }}/xila-platforms
+          XILA_STRICT_SOURCE_REFERENCES: "1"
+          XILA_CORE_PATH: ${{ github.workspace }}/.reference-checkouts/core
+          XILA_APPLICATIONS_PATH: ${{ github.workspace }}/.reference-checkouts/applications
+          XILA_PLATFORMS_PATH: ${{ github.workspace }}/.reference-checkouts/platforms
+          XILA_PACKAGE_MANAGER_PATH: ${{ github.workspace }}/.reference-checkouts/package_manager
+          XILA_PACKAGES_PATH: ${{ github.workspace }}/.reference-checkouts/packages
         run: mise exec -- npm run check
